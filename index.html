@@ -4545,7 +4545,7 @@ function ahDraw(A,hc,back,lay,dst){
   ahSnap(cv,[P.b,P.lo,P.lo2,P.hi,P.sh,TC.c,TC.d,TC.h],Q2?{pal:[Q2.b,Q2.lo,Q2.lo2,Q2.hi,Q2.sh],on:A.sp2?(x=>back?x<32:x>=32):((x,y)=>y>=(A.oy||27)+16)}:null);
   const d=dst.getContext('2d'); d.save(); d.setTransform(1,0,0,1,0,0); d.drawImage(cv,0,0); d.restore(); }
 
-function mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi){
+function mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi,fem){
   const cv=document.createElement('canvas'); cv.width=32; cv.height=48; const g=cv.getContext('2d'); g.translate(0,8); const R=(x,y,w,h,c)=>{ g.fillStyle=c; g.fillRect(x,y,w,h); };
   const cvH=document.createElement('canvas'); cvH.width=64; cvH.height=96; const gh=cvH.getContext('2d'); gh.setTransform(2,0,0,2,0,16); let cvB=null; const RH=(x,y,w,h,c)=>{ gh.fillStyle=c; gh.fillRect(x,y,w,h); }; /* เลเยอร์ผมส่วนหน้า: วาดทับตา/คิ้ว */
   const H=HD[hs], O=OD[os], hc=hcs||H.c, hi=shade(hc,30), lo=shade(hc,-32), a=ocs||O.a, dk=shade(a,-35), W=H.w, t=6, x0=8-W, x1=23+W, bw=x1-x0+1, L=H.l, lc=O.l==='s'?sk:O.l, ll=fr===1?1:0, rl=fr===2?1:0;
@@ -4581,6 +4581,10 @@ function mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi){
   else if(P==='but') px([[15,24],[15,26],[15,28]],O.c);
   else if(P==='eye'){ R(14,25,4,3,'#fff'); R(15,26,2,1,'#1c1820'); }
   else if(P==='camo') px([[12,24,3,2],[17,25,3,2],[13,27,3,1]],O.b);
+  if(fem&&!sd){ /* ตัวละครผู้หญิง: เอวคอด (ช่องว่างข้างเอว = ขอบดำ) + เงาหน้าอกเบาๆ */
+    g.clearRect(11,27,1,2); g.clearRect(20,27,1,2); R(12,27,1,2,shade(a,-30)); R(19,27,1,2,shade(a,-30));
+    if(O.t!=='d'&&!rd){ R(10,29,12,1,a); R(10,29,1,1,dk); R(21,29,1,1,dk); } /* สะโพกผายออกเล็กน้อย */
+    if(!back&&!rd){ const bh=shade(a,34), bs=shade(a,-34); R(12,24,2,1,bh); R(18,24,2,1,bh); R(12,26,3,1,bs); R(17,26,3,1,bs); R(15,25,2,2,shade(a,-18)); } }
   R(8,9,16,13,sk); R(9,8,14,1,sk); R(9,22,14,1,sk);
   if(!back){ const ey=H.eye;
     if(eyi>=0){ }
@@ -4652,7 +4656,7 @@ function drawPerson_(x,y,o,moving,wt,time){
   const rd=o.rd||'', sw=moving?Math.sin(wt*11):0, fr=rd?0:(sw>.4?1:sw<-.4?2:0), back=rd?rd==='B':(o.fy||0)<0;
   const hs=N(o.hs!=null?o.hs:(o.fem?5:43),HSN), os=N(o.os!=null?o.os:hs,OSN), hcs=typeof o.hc==='string'?o.hc:'', ocs=typeof o.oc==='string'?o.oc:'', sk=o.sk||o.skin||'#f6d2b0', ex=back?0:(rd?(rd==='R'?1:rd==='L'?-1:0):Math.max(-1,Math.min(1,Math.round(o.fx||0))));
   const ac=N(o.ac||0,ACN), acc=ac?(isHex(o.acc)?o.acc:ACC[ac].c):'';
-  const eyi=back||o.ey==null?-1:N(o.ey,EYN), k=[hs,os,hcs,ocs,sk,back?1:0,fr,ex,rd,ac,acc,eyi>=0?1:0].join('|'); let s=SPR.get(k); if(!s){ if(SPR.size>400) SPR.clear(); s=mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi); SPR.set(k,s); }
+  const eyi=back||o.ey==null?-1:N(o.ey,EYN), k=[hs,os,hcs,ocs,sk,back?1:0,fr,ex,rd,ac,acc,eyi>=0?1:0,o.fem?1:0].join('|'); let s=SPR.get(k); if(!s){ if(SPR.size>400) SPR.clear(); s=mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi,!!o.fem); SPR.set(k,s); }
   const sz=o.sz==null?NPC_SZ:normSz(o.sz), ps=T*.03*sz/WS, bob=moving&&!rd?Math.abs(sw)*ps*1.2:0;
   if(!rd&&!o.noSh){ ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x,y,10*ps,3.2*ps,0,0,6.3); ctx.fill(); }
   ctx.imageSmoothingEnabled=false; const sx0=x-16*ps, sy0=y-46*ps-bob+(rd?3*ps:0), ecs=eyeHex(o.ec);

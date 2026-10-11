@@ -596,6 +596,53 @@ body.touch{--chB:calc(env(safe-area-inset-bottom,0px) + 168px);--chH:min(24vh,17
 #shop.prem .acg button{background:#2d1a55;border-color:#7a5cc0;color:#fff4d6}
 #shop.prem .acg button.on{background:linear-gradient(#ffd45e,#e0991a);color:#3a1d00;border-color:#fff0c0}
 #shop.prem .pmAlt{background:#2d1a55!important;color:#fff4d6!important;border:2px solid #7a5cc0}
+
+/* ===== v131: หน้าสร้างตัวละคร / ร้านแฟชั่น · ธีมเดียวกับกระเป๋า (กรอบไม้ · ป้ายหัว · ช่องเข้ม) · แบ่งหมวดเป็นแท็บ ไม่ต้องเลื่อนยาว ===== */
+#create{z-index:40}
+#create .panel.edT{position:relative;display:flex;flex-direction:column;height:min(94%,780px);max-height:94%;overflow:hidden;text-align:left;background:linear-gradient(180deg,#a8692d,#8a5425 60%,#7a4a1f);border:4px solid #3f2210;border-radius:8px;padding:10px 10px 12px;box-shadow:inset 0 0 0 3px #d8a465,0 6px 0 rgba(0,0,0,.45);color:#fff4d6}
+#create .edT .shophead{flex:none;position:relative;justify-content:center;margin:-2px -2px 8px;padding:5px 40px 7px;background:linear-gradient(#bf8040,#94602b);border:3px solid #4a2812;border-radius:6px;box-shadow:inset 0 2px 0 rgba(255,255,255,.28),0 3px 0 rgba(0,0,0,.35)}
+#create .edT .shophead h2{display:flex;align-items:center;gap:12px;margin:0;white-space:nowrap;font-size:24px;letter-spacing:1px;color:#fff6dc;text-shadow:-2px 0 #3a1d0a,2px 0 #3a1d0a,0 -2px #3a1d0a,0 2px #3a1d0a,-2px -2px #3a1d0a,2px 2px #3a1d0a,-2px 2px #3a1d0a,2px -2px #3a1d0a,0 4px 0 #3a1d0a}
+#create .edT .shophead h2::before,#create .edT .shophead h2::after{content:'◆';font-size:14px;color:#ffc53a;text-shadow:0 2px 0 #5a3000}
+#edX{display:none;align-items:center;justify-content:center;position:absolute;right:-6px;top:-6px;width:36px;height:34px;padding:0;border:3px solid #fff0d0;border-radius:6px;background:linear-gradient(#e0504a,#b02522);color:#fff;font-family:inherit;font-size:20px;font-weight:700;line-height:1;cursor:pointer;box-shadow:0 3px 0 #5a0f0d,inset 0 2px 0 rgba(255,255,255,.35)}
+#create.fash #edX{display:flex}
+.edTop{flex:none;display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
+.edPv{flex:none;width:100px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border-radius:6px;border:2px solid #86593a;background:radial-gradient(ellipse at 50% 88%,#5a3c27,#2a1a15 72%);box-shadow:inset 0 0 0 2px #1b100c,inset 0 4px 8px rgba(0,0,0,.55)}
+#create #pv{position:static;display:block;width:100px;height:150px;margin:0;background:transparent;border-radius:0;image-rendering:pixelated}
+.edSide{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:7px}
+#create #nameIn{box-sizing:border-box;width:100%;margin:0;padding:8px 10px;font-family:inherit;font-size:17px;color:#fff1d2;background:#241610;border:2px solid #5e3f29;border-radius:6px;box-shadow:inset 0 2px 4px rgba(0,0,0,.5)}
+#create #nameIn::placeholder{color:#a88a62}
+#create #optG{gap:6px;margin:0}
+#create #optG .btn{flex:1;min-width:0;margin:0;padding:7px 4px;font-size:16px;background:#5b3920;color:#ffeccb;border:2px solid #d3a468;border-radius:6px;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+#create #optG .btn.on{background:linear-gradient(#ffd45e,#e0991a);color:#4a2a05;border-color:#6b3d07}
+.edHint{font-size:13px;line-height:1.25;color:#f1d9ae}
+#edTabs{flex:none;display:flex;gap:4px;margin:0 0 6px}
+#edTabs button{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px 5px;font-family:inherit;font-size:13px;line-height:1.1;color:#f1d9ae;background:rgba(35,20,10,.35);border:2px solid #d3a468;border-radius:6px;cursor:pointer}
+#edTabs button span{font-size:19px;line-height:1.1}
+#edTabs button.on{color:#fff6dc;background:#5b3920;box-shadow:inset 0 -3px 0 #ffc53a,0 2px 0 rgba(0,0,0,.35)}
+#edBody{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px 8px 10px;background:#33211b;border:3px solid #e2b87c;border-radius:6px;box-shadow:inset 0 0 0 2px #1d120d;color:#fff4d6;text-align:left;scrollbar-width:thin;scrollbar-color:#8a6040 #24160f}
+#edBody .sec{margin:9px 0 6px;padding:0;border:0;font-size:15px;color:#ffd98a;text-align:left;background:none}
+#edBody .hgrid,#edBody .ogrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:4px}
+#edBody .hgrid button,#edBody .ogrid button{display:flex;flex-direction:column;align-items:center;padding:2px 2px 1px;font-family:inherit;line-height:1;color:#c9ab7e;background:#2a1a15;border:2px solid #86593a;border-radius:6px;box-shadow:inset 0 0 0 2px #1b100c;cursor:pointer}
+#edBody .hgrid canvas,#edBody .ogrid canvas{width:100%;height:auto;image-rendering:pixelated;background:transparent;border-radius:4px}
+#edBody .hgrid canvas{aspect-ratio:1}#edBody .ogrid canvas{aspect-ratio:64/76}
+#edBody .hgrid small,#edBody .ogrid small{font-size:11px;margin:1px 0 0}
+#edBody .hgrid button.on,#edBody .ogrid button.on{color:#fff;background:#4a3324;border-color:#ffe27a;box-shadow:inset 0 0 0 2px #1b100c,0 0 0 2px #ffe27a}
+#edBody .hgrid button.new{border-color:#ff7ad9}
+#edBody .sw{display:flex;flex-wrap:wrap;gap:7px;padding:2px}
+#edBody .sw button{width:32px;height:32px;padding:0;border-radius:6px;border:2px solid #1b100c;box-shadow:0 0 0 2px #86593a;cursor:pointer;font-family:inherit;font-size:16px;color:#ffeccb}
+#edBody .sw button.on{box-shadow:0 0 0 3px #ffe27a;transform:scale(1.08)}
+#edBody .sw button.orig{background:#5b3920}
+#edBody .nb{justify-content:flex-start}
+#edBody .nb button{background:#5b3920;color:#ffeccb;border:2px solid #d3a468;border-radius:6px}
+#edBody .nb button.on{background:linear-gradient(#ffd45e,#e0991a);color:#4a2a05;border-color:#6b3d07}
+#edBody .acg button{background:#2a1a15;color:#f1d9ae;border:2px solid #86593a;border-radius:6px;box-shadow:inset 0 0 0 2px #1b100c}
+#edBody .acg button.on{background:#4a3324;color:#fff;border-color:#ffe27a;box-shadow:inset 0 0 0 2px #1b100c,0 0 0 2px #ffe27a}
+#edBody .szr{margin:4px 2px 2px}#edBody .szr input{accent-color:#ffc53a}
+#edBody .cpk{color:#f1d9ae;margin-top:8px}
+#edBody p{margin:8px 0 2px;font-size:13px;line-height:1.35;color:#e8cf9f}
+#create .edT>.stack{flex:none;margin-top:8px;display:flex;gap:6px}
+#create .edT>.stack .btn{margin:0;background:linear-gradient(#ffd45e,#e0991a);color:#4a2a05;border:2px solid #6b3d07;border-radius:6px;box-shadow:0 3px 0 #5a3000,inset 0 2px 0 rgba(255,255,255,.4)}
+#create .edT>.stack .btn.ghost{background:#5b3920;color:#ffeccb;border-color:#d3a468;box-shadow:0 2px 0 rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -695,11 +742,18 @@ body.touch{--chB:calc(env(safe-area-inset-bottom,0px) + 168px);--chH:min(24vh,17
     </div>
   </div>
 
-  <div class="overlay" id="create"><div class="panel" style="text-align:center">
-    <h2 id="edTitle">🧑‍🌾 สร้างตัวละคร</h2><canvas id="pv" width="120" height="180" style="display:block;margin:4px auto"></canvas>
-    <div class="opt" id="optG"><button class="btn small tog" data-g="m">👦 ผู้ชาย</button><button class="btn small tog" data-g="f">👧 ผู้หญิง</button></div>
+  <div class="overlay" id="create"><div class="panel edT">
+    <div class="shophead"><h2 id="edTitle">สร้างตัวละคร</h2><button id="edX" type="button" aria-label="ปิด">✕</button></div>
+    <div class="edTop">
+      <div class="edPv"><canvas id="pv" width="120" height="180"></canvas></div>
+      <div class="edSide">
+        <input id="nameIn" maxlength="12" placeholder="ใส่ชื่อตัวละคร" autocomplete="off">
+        <div class="opt" id="optG"><button class="btn small tog" data-g="m">👦 ผู้ชาย</button><button class="btn small tog" data-g="f">👧 ผู้หญิง</button></div>
+        <div class="edHint" id="edHint">เลือกหมวดด้านล่าง แล้วแตะเพื่อลองแต่งได้เลย</div>
+      </div>
+    </div>
+    <div id="edTabs"></div>
     <div id="edBody"></div>
-    <input id="nameIn" maxlength="12" placeholder="ใส่ชื่อตัวละคร" autocomplete="off">
     <div class="stack"><button class="btn wide" id="createBtn">สร้างตัวละคร</button><button class="btn ghost wide" id="edCancel" style="display:none">ยกเลิก</button></div></div></div>
 
   <div class="overlay" id="servers"><div class="panel">
@@ -4577,7 +4631,7 @@ function normCh(c){ c=c||{}; return {g:c.g==='f'?'f':'m',ey:c.ey==null?0:N(c.ey,
 function charObj(c){ const n=normCh(c); return {fem:n.g==='f',ey:n.ey,ec:eyeHex(n.ec),hs:n.hs,hc:n.hc<0?null:HAIR[n.hc],ac:n.ac,acc:accHex(n.ac,n.ak),sk:SKIN[n.sk],os:n.os,oc:n.oc<0?null:OUT[n.oc],sz:n.sz,cs:n.cs,fx:0,fy:1}; }
 function drawPV(){ const pc=$('pv'), p=pc.getContext('2d'), t0=T, w0=WS; WS=1; T=80; ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,120,180); drawPerson(60,174,Object.assign(charObj(CH),{cs:0}),false,0,0); ctx=mainCtx; T=t0; WS=w0; }
 let edMode='create';
-function edUI(m){ edMode=m; const f=m==='fashion'; if(!f){ CH.ac=0; CH.ak=-1; CH.cs=0; } $('edTitle').textContent=f?'👗 ร้านแฟชั่น':'🧑‍🌾 สร้างตัวละคร'; $('nameIn').style.display=f?'none':''; $('optG').style.display=''; $('createBtn').textContent=f?'✅ เปลี่ยนเลย':'สร้างตัวละคร'; $('edCancel').style.display=f?'':'none'; }
+function edUI(m){ edMode=m; const f=m==='fashion'; edTab='hair'; edLast=''; $('create').classList.toggle('fash',f); $('edHint').textContent=f?'ลองแต่งได้ฟรี · จ่ายเพชรเฉพาะของแต่งชิ้นใหม่ตอนกดยืนยัน':'เลือกหมวดด้านล่าง แล้วแตะเพื่อลองแต่งได้เลย'; if(!f){ CH.ac=0; CH.ak=-1; CH.cs=0; } $('edTitle').textContent=f?'ร้านแฟชั่น':'สร้างตัวละคร'; $('nameIn').style.display=f?'none':''; $('optG').style.display=''; $('createBtn').textContent=f?'✅ เปลี่ยนเลย':'สร้างตัวละคร'; $('edCancel').style.display='none'; }
 
 function accUI(){ if(edMode!=='fashion') return ''; const own=S.own||[], hav=i=>own.includes(i), sec=t=>`<div class="sec">${t}</div>`;
   let h=sec('🎩 ของแต่งตัว · ชิ้นละ 💎'+ACC_PRICE+' (คุณมี 💎'+fmt(S.gems|0)+')')+'<div class="acg">'+ACC.map((a,i)=>`<button data-k="ac" data-i="${i}" class="${CH.ac===i?'on':''}"><span class="ae">${a.e}</span><span class="an">${a.n}</span><small>${i===0?'ถอดออก':hav(i)?'✓ มีแล้ว':'💎'+ACC_PRICE}</small></button>`).join('')+'</div>';
@@ -4595,8 +4649,25 @@ function hairThumbs(){ const cs=document.querySelectorAll('#edBody canvas.hth');
 function eyeColUI(){ const cur=eyeHex(CH.ec)||'#2b57c4';
   return '<div class="sec">🎨 สีตา</div><div class="nb" style="margin-bottom:6px"><button data-k="ec" data-i="-1" class="'+(CH.ec===-1?'on':'')+'" style="padding:0 12px">🎨 สีดั้งเดิม</button></div><div class="sw">'+EYCOL.map((c,i)=>`<button data-k="ec" data-i="${i}" style="background:${c}" class="${CH.ec===i?'on':''}" aria-label="สีตา ${i+1}"></button>`).join('')+`</div><label class="cpk">🌈 เลือกสีเอง <input type="color" id="ecPick" value="${cur}"></label>`; }
 function eyeThumbTint(){ const ec=eyeHex(CH.ec); if(!ec) return; document.querySelectorAll('#edBody img[data-ek]').forEach(im=>{ const t=tintEye(+im.dataset.ek,ec); if(t) im.src=t.toDataURL(); }); }
-function renderEd(){ const sec=t=>`<div class="sec">${t}</div>`, nb=(k,n,nw)=>'<div class="nb">'+Array.from({length:n},(_,i)=>`<button data-k="${k}" data-i="${i}" class="${CH[k]===i?'on':''}${nw&&nw.includes(i)?' new':''}">${i+1}</button>`).join('')+'</div>', sw=(k,a,o)=>(o?`<div class="nb" style="margin-bottom:6px"><button data-k="${k}" data-i="-1" class="${CH[k]<0?'on':''}" style="padding:0 12px">🎨 สีตามต้นฉบับ</button></div>`:'')+'<div class="sw">'+a.map((c,i)=>`<button data-k="${k}" data-i="${i}" style="background:${c}" class="${CH[k]===i?'on':''}" aria-label="สี ${i+1}"></button>`).join('')+'</div>';
-  $('edBody').innerHTML=sec('📏 ขนาดตัวละคร <b id="szVal">'+Math.round(CH.sz*100)+'%</b>')+`<div class="szr"><span>🐜</span><input type="range" id="szPick" min="${SZ_MIN*100}" max="${SZ_MAX*100}" step="5" value="${Math.round(CH.sz*100)}"><span>🦒</span></div><div class="nb" style="margin-top:6px"><button data-k="szr" data-i="1" style="padding:0 12px">↺ ขนาดปกติ 100%</button></div>`+sec('💇 ทรงผม (ทั้งหมด '+HSN+' แบบ)')+'<div class="newlg">🩷 กรอบสีชมพู = ทรงผมใหม่</div>'+hairGrid()+sec('สีผม')+sw('hc',HAIR,1)+sec('สีผิว')+sw('sk',SKIN)+sec('👁️ ตา (ทั้งหมด '+EYN+' แบบ)')+'<div class="acg ecg">'+EYN_NAMES.map((n,i)=>{ const b=(i>>1)*4+(i&1)*2; return `<button data-k="ey" data-i="${i}" class="${CH.ey===i?'on':''}"><span class="ae" style="background:${SKIN[CH.sk]}"><img data-ek="${b}" src="data:image/png;base64,${EYD[b]}" alt=""><img data-ek="${b+1}" src="data:image/png;base64,${EYD[b+1]}" alt=""></span><span class="an">${n}</span></button>`; }).join('')+'</div>'+eyeColUI()+sec('👚 ชุด (ทั้งหมด '+OSN+' แบบ)')+nb('os',OSN)+sec('สีชุด')+sw('oc',OUT,1)+accUI(); drawPV(); accBtn(); try{ hairThumbs(); eyeThumbTint(); }catch(e){ console.warn(e); } }
+let edTab='hair', edLast='';
+function edTabsUI(){ const f=edMode==='fashion', L=[['hair','💇','ผม'],['eye','👁️','ตา'],['out','👚','ชุด'],['body','🧍','ตัว']].concat(f?[['acc','🎩','ของแต่ง']]:[]); if(!L.some(t=>t[0]===edTab)) edTab='hair';
+  $('edTabs').innerHTML=L.map(t=>`<button type="button" data-et="${t[0]}" class="${edTab===t[0]?'on':''}"><span>${t[1]}</span>${t[2]}</button>`).join(''); }
+function outGrid(){ return '<div class="ogrid">'+Array.from({length:OSN},(_,i)=>`<button data-k="os" data-i="${i}" class="${CH.os===i?'on':''}" aria-label="ชุด ${i+1}"><canvas class="oth" width="64" height="76" data-o="${i}"></canvas><small>${i+1}</small></button>`).join('')+'</div>'; }
+function outThumbs(){ const cs=document.querySelectorAll('#edBody canvas.oth'); if(!cs.length) return; const t0=T, w0=WS, c0=ctx;
+  try{ WS=1; T=50; for(const c of cs){ const p=c.getContext('2d'); ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,c.width,c.height);
+      const o=Object.assign(charObj(CH),{cs:0,os:+c.dataset.o,ac:0,acc:'',sz:1,fx:0,fy:1,rd:'',noSh:true}); drawPerson(32,74,o,false,0,0); } }
+  finally{ ctx=c0; T=t0; WS=w0; } }
+function renderEd(){ const sec=t=>`<div class="sec">${t}</div>`, sw=(k,a,o)=>'<div class="sw">'+(o?`<button data-k="${k}" data-i="-1" class="orig${CH[k]<0?' on':''}" aria-label="สีตามต้นฉบับ" title="สีตามต้นฉบับ">↺</button>`:'')+a.map((c,i)=>`<button data-k="${k}" data-i="${i}" style="background:${c}" class="${CH[k]===i?'on':''}" aria-label="สี ${i+1}"></button>`).join('')+'</div>';
+  edTabsUI(); let h='';
+  if(edTab==='hair') h=sec('💇 ทรงผม · '+HSN+' แบบ')+hairGrid()+sec('🎨 สีผม <small>(↺ = สีตามต้นฉบับ)</small>')+sw('hc',HAIR,1);
+  else if(edTab==='eye') h=sec('👁️ ตา · '+EYN+' แบบ')+'<div class="acg ecg">'+EYN_NAMES.map((n,i)=>{ const b=(i>>1)*4+(i&1)*2; return `<button data-k="ey" data-i="${i}" class="${CH.ey===i?'on':''}"><span class="ae" style="background:${SKIN[CH.sk]}"><img data-ek="${b}" src="data:image/png;base64,${EYD[b]}" alt=""><img data-ek="${b+1}" src="data:image/png;base64,${EYD[b+1]}" alt=""></span><span class="an">${n}</span></button>`; }).join('')+'</div>'+eyeColUI();
+  else if(edTab==='out') h=sec('👚 ชุด · '+OSN+' แบบ')+outGrid()+sec('🎨 สีชุด <small>(↺ = สีตามต้นฉบับ)</small>')+sw('oc',OUT,1);
+  else if(edTab==='body') h=sec('🎨 สีผิว')+sw('sk',SKIN)+sec('📏 ขนาดตัวละคร <b id="szVal">'+Math.round(CH.sz*100)+'%</b>')+`<div class="szr"><span>🐜</span><input type="range" id="szPick" min="${SZ_MIN*100}" max="${SZ_MAX*100}" step="5" value="${Math.round(CH.sz*100)}"><span>🦒</span></div><div class="nb" style="margin-top:6px"><button data-k="szr" data-i="1" style="padding:0 12px">↺ ขนาดปกติ 100%</button></div>`;
+  else h=accUI();
+  const B=$('edBody'), st=edLast===edTab?B.scrollTop:0; B.innerHTML=h; B.scrollTop=st; edLast=edTab;
+  drawPV(); accBtn(); try{ hairThumbs(); outThumbs(); eyeThumbTint(); }catch(e){ console.warn(e); } }
+$('edTabs').addEventListener('click',e=>{ const b=e.target.closest('[data-et]'); if(b&&b.dataset.et!==edTab){ edTab=b.dataset.et; renderEd(); } });
+$('edX').addEventListener('click',()=>$('edCancel').click());
 function syncCh(){ document.querySelectorAll('#optG [data-g]').forEach(b=>b.classList.toggle('on',b.dataset.g===CH.g)); renderEd(); }
 $('edBody').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b){ if(b.dataset.k==='szr'){ CH.sz=1; renderEd(); return; } if(b.dataset.k==='ac'&&CH.ac!==+b.dataset.i) CH.ak=-1; CH[b.dataset.k]=+b.dataset.i; renderEd(); } });
 $('edBody').addEventListener('input',e=>{ if(e.target.id==='szPick'){ CH.sz=normSz(e.target.value/100); const v=$('szVal'); if(v) v.textContent=Math.round(CH.sz*100)+'%'; drawPV(); return; } if(e.target.id==='ecPick'&&isHex(e.target.value)){ CH.ec=e.target.value.toLowerCase(); drawPV(); document.querySelectorAll('#edBody [data-k="ec"]').forEach(b=>b.classList.remove('on')); return; } if(e.target.id==='acPick'&&isHex(e.target.value)){ CH.ak=e.target.value.toLowerCase(); drawPV(); document.querySelectorAll('#edBody [data-k="ak"]').forEach(b=>b.classList.remove('on')); } });

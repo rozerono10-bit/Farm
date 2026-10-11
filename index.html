@@ -4656,7 +4656,7 @@ function drawPerson_(x,y,o,moving,wt,time){
   const rd=o.rd||'', sw=moving?Math.sin(wt*11):0, fr=rd?0:(sw>.4?1:sw<-.4?2:0), back=rd?rd==='B':(o.fy||0)<0;
   const hs=N(o.hs!=null?o.hs:(o.fem?5:43),HSN), os=N(o.os!=null?o.os:hs,OSN), hcs=typeof o.hc==='string'?o.hc:'', ocs=typeof o.oc==='string'?o.oc:'', sk=o.sk||o.skin||'#f6d2b0', ex=back?0:(rd?(rd==='R'?1:rd==='L'?-1:0):Math.max(-1,Math.min(1,Math.round(o.fx||0))));
   const ac=N(o.ac||0,ACN), acc=ac?(isHex(o.acc)?o.acc:ACC[ac].c):'';
-  const eyi=back||o.ey==null?-1:N(o.ey,EYN), k=[hs,os,hcs,ocs,sk,back?1:0,fr,ex,rd,ac,acc,eyi>=0?1:0,o.fem?1:0].join('|'); let s=SPR.get(k); if(!s){ if(SPR.size>400) SPR.clear(); s=mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi,!!o.fem); SPR.set(k,s); }
+  const eyi=back||o.ey==null?-1:N(o.ey,EYN), k=[hs,os,hcs,ocs,sk,back?1:0,fr,ex,rd,ac,acc,eyi>=0?1:0,o.fem?1:0].join('|'); let s=SPR.get(k); if(!s){ if(SPR.size>500){ let n=120; for(const q of SPR.keys()){ SPR.delete(q); if(--n<=0) break; } } s=mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi,!!o.fem); if(!o.nc) SPR.set(k,s); }
   const sz=o.sz==null?NPC_SZ:normSz(o.sz), ps=T*.03*sz/WS, bob=moving&&!rd?Math.abs(sw)*ps*1.2:0;
   if(!rd&&!o.noSh){ ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x,y,10*ps,3.2*ps,0,0,6.3); ctx.fill(); }
   ctx.imageSmoothingEnabled=false; const sx0=x-16*ps, sy0=y-46*ps-bob+(rd?3*ps:0), ecs=eyeHex(o.ec);
@@ -4690,10 +4690,16 @@ function hairGrid(){ if(!edHG) edHG=HD[CH.hs]&&HD[CH.hs].g==='m'?'m':'f'; const 
   return `<div class="hgsel"><button type="button" data-hg="f" class="${edHG==='f'?'on':''}">👧 ผมผู้หญิง <small>${nf}</small></button><button type="button" data-hg="m" class="${edHG==='m'?'on':''}">👦 ผมผู้ชาย <small>${nm}</small></button></div><div class="hgnote">ใส่ได้ทุกเพศ เลือกจากหมวดไหนก็ได้</div>`
    +'<div class="hgrid">'+L.map((i,k)=>`<button data-k="hs" data-i="${i}" class="${CH.hs===i?'on':''}${i>=NEWFROM?' new':''}" aria-label="ทรงผม ${k+1}"><canvas class="hth" width="64" height="64" data-h="${i}"></canvas><small>${k+1}</small></button>`).join('')+'</div>'; }
 $('edBody').addEventListener('click',e=>{ const b=e.target.closest('[data-hg]'); if(b&&b.dataset.hg!==edHG){ edHG=b.dataset.hg; $('edBody').scrollTop=0; renderEd(); } });
-function hairThumbs(){ const cs=document.querySelectorAll('#edBody canvas.hth'); if(!cs.length) return; const t0=T, w0=WS, c0=ctx;
-  try{ WS=1; T=80; for(const c of cs){ const p=c.getContext('2d'); ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,c.width,c.height);
-      const o=Object.assign(charObj(CH),{cs:0,hs:+c.dataset.h,ac:0,acc:'',sz:1,fx:0,fy:1,rd:'',noSh:true}); drawPerson(32,88,o,false,0,0); } }
-  finally{ ctx=c0; T=t0; WS=w0; } }
+/* ภาพตัวอย่างในหน้าแต่งตัว: แคชแยก (LRU) ไม่ไปเบียดแคชตัวละครในโลก · ที่ยังไม่มีในแคชจะทยอยวาดทีละนิดต่อเฟรม (ไม่ค้างตอนเปิดร้าน) */
+const THC=new Map(); let thGen=0;
+function thumbJob(c,ov,T_,x,y){ const o=Object.assign(charObj(CH),{cs:0,ac:0,acc:'',sz:1,fx:0,fy:1,rd:'',noSh:true,nc:1},ov), k=[c.width,c.height,T_,x,y,o.hs,o.os,o.hc,o.oc,o.sk,o.ey,o.ec,o.fem?1:0].join('|');
+  return {c,k,run(){ let im=THC.get(k); if(im){ THC.delete(k); THC.set(k,im); }
+    else { im=document.createElement('canvas'); im.width=c.width; im.height=c.height; const t0=T, w0=WS, c0=ctx; try{ WS=1; T=T_; ctx=im.getContext('2d'); drawPerson(x,y,o,false,0,0); } finally{ ctx=c0; T=t0; WS=w0; } THC.set(k,im); if(THC.size>360) THC.delete(THC.keys().next().value); }
+    const p=c.getContext('2d'); p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,c.width,c.height); p.drawImage(im,0,0); }}; }
+function thumbsRun(jobs){ const gen=++thGen, rest=[]; for(const j of jobs){ if(THC.has(j.k)) j.run(); else rest.push(j); } /* มีในแคช = วาดทันที */
+  if(!rest.length) return; const step=()=>{ if(gen!==thGen) return; const t=performance.now(); while(rest.length&&performance.now()-t<7) rest.shift().run(); if(rest.length) requestAnimationFrame(step); };
+  requestAnimationFrame(step); }
+function edThumbs(){ const J=[]; document.querySelectorAll('#edBody canvas.hth').forEach(c=>J.push(thumbJob(c,{hs:+c.dataset.h},80,32,88))); document.querySelectorAll('#edBody canvas.oth').forEach(c=>J.push(thumbJob(c,{os:+c.dataset.o},50,32,74))); thumbsRun(J); }
 /* ---------- UI สีตา ---------- */
 function eyeColUI(){ const cur=eyeHex(CH.ec)||'#2b57c4';
   return '<div class="sec">🎨 สีตา</div><div class="nb" style="margin-bottom:6px"><button data-k="ec" data-i="-1" class="'+(CH.ec===-1?'on':'')+'" style="padding:0 12px">🎨 สีดั้งเดิม</button></div><div class="sw">'+EYCOL.map((c,i)=>`<button data-k="ec" data-i="${i}" style="background:${c}" class="${CH.ec===i?'on':''}" aria-label="สีตา ${i+1}"></button>`).join('')+`</div><label class="cpk">🌈 เลือกสีเอง <input type="color" id="ecPick" value="${cur}"></label>`; }
@@ -4702,10 +4708,6 @@ let edTab='hair', edLast='';
 function edTabsUI(){ const f=edMode==='fashion', L=[['hair','💇','ผม'],['eye','👁️','ตา'],['out','👚','ชุด'],['body','🧍','ตัว']].concat(f?[['acc','🎩','ของแต่ง']]:[]); if(!L.some(t=>t[0]===edTab)) edTab='hair';
   $('edTabs').innerHTML=L.map(t=>`<button type="button" data-et="${t[0]}" class="${edTab===t[0]?'on':''}"><span>${t[1]}</span>${t[2]}</button>`).join(''); }
 function outGrid(){ return '<div class="ogrid">'+Array.from({length:OSN},(_,i)=>`<button data-k="os" data-i="${i}" class="${CH.os===i?'on':''}" aria-label="ชุด ${i+1}"><canvas class="oth" width="64" height="76" data-o="${i}"></canvas><small>${i+1}</small></button>`).join('')+'</div>'; }
-function outThumbs(){ const cs=document.querySelectorAll('#edBody canvas.oth'); if(!cs.length) return; const t0=T, w0=WS, c0=ctx;
-  try{ WS=1; T=50; for(const c of cs){ const p=c.getContext('2d'); ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,c.width,c.height);
-      const o=Object.assign(charObj(CH),{cs:0,os:+c.dataset.o,ac:0,acc:'',sz:1,fx:0,fy:1,rd:'',noSh:true}); drawPerson(32,74,o,false,0,0); } }
-  finally{ ctx=c0; T=t0; WS=w0; } }
 function renderEd(){ const sec=t=>`<div class="sec">${t}</div>`, sw=(k,a,o)=>'<div class="sw">'+(o?`<button data-k="${k}" data-i="-1" class="orig${CH[k]<0?' on':''}" aria-label="สีตามต้นฉบับ" title="สีตามต้นฉบับ">↺</button>`:'')+a.map((c,i)=>`<button data-k="${k}" data-i="${i}" style="background:${c}" class="${CH[k]===i?'on':''}" aria-label="สี ${i+1}"></button>`).join('')+'</div>';
   edTabsUI(); let h='';
   if(edTab==='hair') h=sec('💇 ทรงผม')+hairGrid()+sec('🎨 สีผม <small>(↺ = สีตามต้นฉบับ)</small>')+sw('hc',HAIR,1);
@@ -4714,11 +4716,11 @@ function renderEd(){ const sec=t=>`<div class="sec">${t}</div>`, sw=(k,a,o)=>'<d
   else if(edTab==='body') h=sec('🎨 สีผิว')+sw('sk',SKIN)+sec('📏 ขนาดตัวละคร <b id="szVal">'+Math.round(CH.sz*100)+'%</b>')+`<div class="szr"><span>🐜</span><input type="range" id="szPick" min="${SZ_MIN*100}" max="${SZ_MAX*100}" step="5" value="${Math.round(CH.sz*100)}"><span>🦒</span></div><div class="nb" style="margin-top:6px"><button data-k="szr" data-i="1" style="padding:0 12px">↺ ขนาดปกติ 100%</button></div>`;
   else h=accUI();
   const B=$('edBody'), st=edLast===edTab?B.scrollTop:0; B.innerHTML=h; B.scrollTop=st; edLast=edTab;
-  drawPV(); accBtn(); try{ hairThumbs(); outThumbs(); eyeThumbTint(); }catch(e){ console.warn(e); } }
+  drawPV(); accBtn(); try{ edThumbs(); eyeThumbTint(); }catch(e){ console.warn(e); } }
 $('edTabs').addEventListener('click',e=>{ const b=e.target.closest('[data-et]'); if(b&&b.dataset.et!==edTab){ edTab=b.dataset.et; renderEd(); } });
 $('edX').addEventListener('click',()=>$('edCancel').click());
 function syncCh(){ document.querySelectorAll('#optG [data-g]').forEach(b=>b.classList.toggle('on',b.dataset.g===CH.g)); renderEd(); }
-$('edBody').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b){ if(b.dataset.k==='szr'){ CH.sz=1; renderEd(); return; } if(b.dataset.k==='ac'&&CH.ac!==+b.dataset.i) CH.ak=-1; CH[b.dataset.k]=+b.dataset.i; renderEd(); } });
+$('edBody').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b&&(b.dataset.k==='hs'||b.dataset.k==='os')&&b.closest('.hgrid,.ogrid')){ CH[b.dataset.k]=+b.dataset.i; b.parentNode.querySelectorAll('button.on').forEach(x=>x.classList.remove('on')); b.classList.add('on'); drawPV(); accBtn(); return; } if(b){ if(b.dataset.k==='szr'){ CH.sz=1; renderEd(); return; } if(b.dataset.k==='ac'&&CH.ac!==+b.dataset.i) CH.ak=-1; CH[b.dataset.k]=+b.dataset.i; renderEd(); } });
 $('edBody').addEventListener('input',e=>{ if(e.target.id==='szPick'){ CH.sz=normSz(e.target.value/100); const v=$('szVal'); if(v) v.textContent=Math.round(CH.sz*100)+'%'; drawPV(); return; } if(e.target.id==='ecPick'&&isHex(e.target.value)){ CH.ec=e.target.value.toLowerCase(); drawPV(); document.querySelectorAll('#edBody [data-k="ec"]').forEach(b=>b.classList.remove('on')); return; } if(e.target.id==='acPick'&&isHex(e.target.value)){ CH.ak=e.target.value.toLowerCase(); drawPV(); document.querySelectorAll('#edBody [data-k="ak"]').forEach(b=>b.classList.remove('on')); } });
 $('edBody').addEventListener('change',e=>{ if(e.target.id==='ecPick') renderEd(); });
 $('optG').addEventListener('click',e=>{ const b=e.target.closest('[data-g]'); if(b){ if(CH.g!==b.dataset.g){ CH.g=b.dataset.g; CH.hs=CH.g==='f'?5:43; CH.os=CH.g==='f'?5:31; edHG=CH.g; CH.hc=CH.oc=-1; } syncCh(); } });
@@ -5176,7 +5178,9 @@ function frame(t){
   last=t; const dt=Math.min(.05, el/1000);
   if(el<250&&S.perf!==1&&autoCap>1){ fAcc+=el; fN++; if(fAcc>=2000){ const avg=fAcc/fN; fAcc=0; fN=0;
     if(avg>27){ if(++slowN>=2){ slowN=0; autoCap=autoCap>1.5?1.5:autoCap>1.25?1.25:1; resize(); } } else slowN=0; } }
-  try{ update(dt); sndTick(dt); curInfo=ctxInfo(); draw(t); }
+  /* เปิดหน้าแต่งตัวอยู่: เกมยังเดินต่อ แต่วาดฉากด้านหลังแค่ ~4 ครั้ง/วินาที (ถูกบังอยู่แล้ว) ให้เครื่องว่างไปวาดหน้าแต่งตัวลื่น ๆ */
+  const edBg=frame.ed||(frame.ed=$('create')), skipDraw=edBg.classList.contains('on')&&t-(frame.dt||0)<250;
+  try{ update(dt); sndTick(dt); curInfo=ctxInfo(); if(!skipDraw){ frame.dt=t; draw(t); } }
   catch(e){ if(!frame.err){ frame.err=1; console.error(e); } ctx=mainCtx; ctx.setTransform(1,0,0,1,0,0); }
 }
 

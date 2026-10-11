@@ -627,7 +627,6 @@ body.touch{--chB:calc(env(safe-area-inset-bottom,0px) + 168px);--chH:min(24vh,17
 #edBody .hgrid canvas{aspect-ratio:1}#edBody .ogrid canvas{aspect-ratio:64/76}
 #edBody .hgrid small,#edBody .ogrid small{font-size:11px;margin:1px 0 0}
 #edBody .hgrid button.on,#edBody .ogrid button.on{color:#fff;background:#4a3324;border-color:#ffe27a;box-shadow:inset 0 0 0 2px #1b100c,0 0 0 2px #ffe27a}
-#edBody .hgrid button.new{border-color:#ff7ad9}
 #edBody .sw{display:flex;flex-wrap:wrap;gap:7px;padding:2px}
 #edBody .sw button{width:32px;height:32px;padding:0;border-radius:6px;border:2px solid #1b100c;box-shadow:0 0 0 2px #86593a;cursor:pointer;font-family:inherit;font-size:16px;color:#ffeccb}
 #edBody .sw button.on{box-shadow:0 0 0 3px #ffe27a;transform:scale(1.08)}
@@ -643,6 +642,11 @@ body.touch{--chB:calc(env(safe-area-inset-bottom,0px) + 168px);--chH:min(24vh,17
 #create .edT>.stack{flex:none;margin-top:8px;display:flex;gap:6px}
 #create .edT>.stack .btn{margin:0;background:linear-gradient(#ffd45e,#e0991a);color:#4a2a05;border:2px solid #6b3d07;border-radius:6px;box-shadow:0 3px 0 #5a3000,inset 0 2px 0 rgba(255,255,255,.4)}
 #create .edT>.stack .btn.ghost{background:#5b3920;color:#ffeccb;border-color:#d3a468;box-shadow:0 2px 0 rgba(0,0,0,.35)}
+#edBody .hgsel{display:flex;gap:6px;margin:2px 0 4px}
+#edBody .hgsel button{flex:1;min-width:0;padding:7px 4px;font-family:inherit;font-size:15px;color:#f1d9ae;background:rgba(35,20,10,.45);border:2px solid #86593a;border-radius:6px;cursor:pointer}
+#edBody .hgsel button small{font-size:12px;opacity:.8}
+#edBody .hgsel button.on{color:#4a2a05;background:linear-gradient(#ffd45e,#e0991a);border-color:#6b3d07}
+#edBody .hgnote{font-size:12px;color:#c9ab7e;margin:0 0 6px;text-align:center}
 </style>
 </head>
 <body>
@@ -4153,7 +4157,7 @@ const SKIN=['#fbe0cf','#f6d2b0','#e8b88a','#c68a5c','#8a5a3a','#fff0e6','#d9a07a
 const HAIR=['#a5573b','#d9c19a','#f2f2f6','#2b3558','#9bdcf5','#1f4a43','#1e1a22','#f08aa8','#2fa7a5','#e8c04a','#4a3f7a','#7a3a2a','#c9c7c3','#e84fb8'];
 const OUT=['#d9454f','#f08a3a','#f2cf3f','#4fae3a','#2fa7a5','#4a8fd8','#2b3558','#8a5cc8','#f08aa8','#f4f4f4','#2a2a32','#8a5a3a'];
 /* ===== ตัวละครพิกเซลชิบิ (ถอดแบบจากภาพ 40 ตัว: 40 ทรงผม + 40 ชุด) ===== */
-var HSN=42, OSN=40, NEWFROM=40, w_h; /* HSN/OSN ถูกตั้งใหม่จากความยาว HD/OD อัตโนมัติ · NEWFROM = ทรงผมตั้งแต่เลขนี้ (นับจาก 0) จะติดป้ายใหม่ */
+var HSN=42, OSN=40, NEWFROM=43, w_h; /* HSN/OSN ถูกตั้งใหม่จากความยาว HD/OD อัตโนมัติ · NEWFROM = ทรงผมตั้งแต่เลขนี้ (นับจาก 0) จะติดป้ายใหม่ */
 const HD=[
 /* 1-40: ทรงผมอนิเมะ/แฟชั่น วาดละเอียด 2 เท่า (ดู ahDraw · พารามิเตอร์ a) */
 {c:'#8b5a46',w:1,a:{bg:'split',sd:'pt',sl:34,len:44,tl:'twin',tln:64,curl:1,tc:'#d9454f'}},{c:'#d8b47c',w:2,a:{bg:'blunt',sd:'hime',sl:42,len:72,tip:'blunt',ah:1,vo:1}},{c:'#f4f4fa',w:2,a:{bg:'messy',sd:'pt',sl:33,len:44,tip:'pt',cw:3,vo:1}},{c:'#cdaa82',w:1,a:{bg:'wispy',sd:'in',sl:44,len:50,tip:'in',vo:1}},
@@ -4167,8 +4171,15 @@ const HD=[
 {c:'#8b5a46',w:2,a:{bg:'side',sd:'pt',sl:38,len:44,tl:'side',tln:68,tc:'#d9454f',wv:1.2,curl:1}},{c:'#a65a48',w:2,e:'ahoge,#a65a48',eye:'#3aa86a',a:{bg:'split',sd:'in',sl:42,len:46,tip:'in',vo:1}},{c:'#1c1820',w:2,a:{bg:'messy',sd:'pt',sl:34,len:46,cw:4,tip:'jag',vo:1}},{c:'#27a8a6',w:1,a:{bg:'wispy',sd:'pt',sl:34,len:44,tip:'pt'}},
 {c:'#f4f4f8',w:2,e:'panda,#1c1820',a:{bg:'split',sd:'curl',sl:46,len:72,tip:'curl',wv:1.5}},{c:'#1f3358',w:1,e:'clip,#ff6f9f',a:{bg:'blunt',sd:'hime',sl:38,len:56,tip:'blunt'}},{c:'#f0688a',w:2,a:{bg:'wispy',sd:'long',sl:50,len:0,tl:'pony',tln:76,tc:'#ffd84d',wv:1}},{c:'#7a2a24',w:2,a:{bg:'messy',sd:'pt',sl:38,len:50,cw:3,tip:'jag',vo:2}},
 {c:'#4a2c2b',w:1,b:0,s:4,l:0,spr:1},
-{c:'#1d1924',w:3,b:0,s:4,l:0,hi:1},
-{c:'#17121e',w:3,b:0,s:4,l:0,hi:2}]; /* 43: ผมสั้นประบ่า ดำ ไฮไลต์ม่วง-ชมพู (ภาพโมเดล Front/Back วาดทับหัว · hi:2 = ชุดภาพที่ 2) */; /* 41: ผมยาวลอนคลื่น (สไปรต์พิกเซลจากโมเดล) · 42: ผมชี้ฟูดำ ไฮไลต์ฟ้า (ภาพโมเดล Front/Back วาดทับหัว) */
+{c:'#1d1924',w:3,b:0,s:4,l:0,hi:1,g:'m'},
+{c:'#17121e',w:3,b:0,s:4,l:0,hi:2},
+/* 44-67: ทรงผมผู้ชายแนวอนิเมะ (g:'m' = อยู่หมวดผมผู้ชาย · ใช้ได้ทุกเพศ) */
+{c:'#2b2530',w:1,g:'m',a:{bg:'spiky',sd:'burn',sl:32,len:46,tip:'jag',cw:2,vo:1}},{c:'#e8c04a',w:2,g:'m',a:{bg:'spiky',sd:'burn',sl:30,len:44,tip:'pt',cw:4,vo:2}},{c:'#6b4a32',w:1,g:'m',a:{bg:'side',sd:'burn',sl:32,len:46,tip:'pt'}},{c:'#1f2f55',w:1,g:'m',a:{bg:'cpart',sd:'burn',sl:32,len:46,tip:'jag',vo:1}},
+{c:'#f2f2f6',w:1,g:'m',a:{bg:'emo',sd:'pt',sl:36,len:48,tip:'jag'}},{c:'#a5573b',w:1,g:'m',a:{bg:'up',sd:'burn',sl:30,len:44,tip:'pt'}},{c:'#1e1a22',w:1,g:'m',a:{bg:'short',sd:'burn',sl:30,len:44,tip:'pt',uc:1}},{c:'#4a3f7a',w:2,g:'m',a:{bg:'messy',sd:'burn',sl:34,len:48,tip:'jag',cw:3,vo:2}},
+{c:'#2fa7a5',w:2,g:'m',a:{bg:'long',sd:'pt',sl:38,len:50,tip:'jag',cw:2}},{c:'#d9c19a',w:1,g:'m',a:{bg:'cpart',sd:'pt',sl:40,len:54,tip:'pt'}},{c:'#16141a',w:1,g:'m',a:{bg:'spiky',sd:'pt',sl:36,len:50,tip:'jag',tl:'lowtail',tln:62,tc:'#d9454f'}},{c:'#7a3a2a',w:1,g:'m',a:{bg:'side',dir:-1,sd:'burn',sl:30,len:44,tip:'pt',uc:1}},
+{c:'#f08aa8',w:1,g:'m',a:{bg:'spiky',sd:'burn',sl:32,len:46,tip:'pt',cw:1,ah:1}},{c:'#9bdcf5',w:1,g:'m',a:{bg:'emo',dir:-1,sd:'burn',sl:32,len:46,tip:'jag',vo:1}},{c:'#c9c7c3',w:1,g:'m',a:{bg:'up',sd:'none',len:44,tip:'pt',uc:1,cw:2}},{c:'#3a2414',w:1,g:'m',a:{bg:'wispy',sd:'burn',sl:32,len:46,tip:'pt'}},
+{c:'#1f4a43',w:1,g:'m',a:{bg:'long',sd:'long',sl:56,len:72,tip:'pt',tl:'lowtail',tln:74,tc:'#2b3558'}},{c:'#e84fb8',w:2,g:'m',a:{bg:'messy',sd:'burn',sl:32,len:46,tip:'jag',cw:6,cwh:1.25,vo:2}},{c:'#1e1a22',w:1,g:'m',a:{bg:'cpart',sd:'burn',sl:34,len:46,tip:'jag',tl:'mbun',tc:'#3a3040'}},{c:'#e8883a',w:2,g:'m',a:{bg:'spiky',sd:'pt',sl:38,len:52,tip:'jag',cw:3,vo:2}},
+{c:'#2b3558',w:1,g:'m',a:{bg:'short',sd:'burn',sl:30,len:44,tip:'pt',ah:1}},{c:'#f4f4f8',w:1,g:'m',a:{bg:'split',sd:'pt',sl:40,len:50,tip:'jag',vo:1}},{c:'#8a1f2a',w:1,g:'m',a:{bg:'emo',sd:'long',sl:48,len:56,tip:'v'}},{c:'#6b4a32',w:1,g:'m',a:{bg:'curtain',sd:'burn',sl:32,len:46,tip:'jag'}}]; /* 43: ผมสั้นประบ่า ดำ ไฮไลต์ม่วง-ชมพู (ภาพโมเดล Front/Back วาดทับหัว · hi:2 = ชุดภาพที่ 2) */; /* 41: ผมยาวลอนคลื่น (สไปรต์พิกเซลจากโมเดล) · 42: ผมชี้ฟูดำ ไฮไลต์ฟ้า (ภาพโมเดล Front/Back วาดทับหัว) */
 const OD=['d,#c8404f,#7a2030,#1c1820,s,#2a1a1a,x,0','h,#4a3a3a,#f4f4f4,#8a7a6a,s,#1c1820,chk,1','d,#8a86c8,#5a56a0,#ffffff,s,#6a2a30,n,0','d,#2b3558,#1a2038,#ffffff,s,#2a2030,n,0',
 'h,#5a6a3a,#3a4a2a,#222222,s,#2a2a22,camo,0','d,#f08a3a,#d9602a,#ffd84d,s,#d9602a,dot,0','h,#23202a,#8a8f9a,#d9454f,#8a8f9a,#8a8f9a,emb,1','p,#202028,#23232c,#d8e03a,#8a8f9a,#8a8f9a,emb,1',
 'd,#9ab83a,#7a9a2a,#e8c040,s,#6a4a30,emb,0','p,#f4f4f4,#2b3f7a,#4a8fd8,#2b3f7a,#4a8fd8,cross,0','d,#efe4c4,#d8c8a0,#ffffff,s,#6a4a30,n,1','k,#f0a0b8,#2b3558,#ffffff,s,#e8a0b0,n,1',
@@ -4417,7 +4428,7 @@ function ahDraw(A,hc,back,lay,dst){
   const tie=(x,y,w,h)=>{ col(TC.c); g.fillRect(x-w/2,y-h/2,w,h); col(TC.h); g.fillRect(x-w/2,y-h/2,w,1); col(TC.d); g.fillRect(x-w/2,y+h/2-1,w,1); };
 
   /* ---------- ผมด้านหลัง (เส้นผมยาวทั้งก้อน) ---------- */
-  const backMass=(onTop)=>{ if(!len) return; const yE=len, XA=13.5-vo, XB=50.5+vo, fl=tip==='in'?-1:Math.max(0,Math.min(4,(yE-48)/7)), base=onTop?P.b:P.lo;
+  const backMass=(onTop)=>{ if(!len) return; const yE=len, nk=len<=48&&!onTop, XA=nk?16.5-vo*.5:13.5-vo, XB=nk?47.5+vo*.5:50.5+vo, /* ผมสั้น: ผมหลังแคบ ซ่อนหลังหน้า ไม่ให้ดูเป็นบ๊อบ */ fl=tip==='in'?-1:Math.max(0,Math.min(4,(yE-48)/7)), base=onTop?P.b:P.lo;
     col(base); g.beginPath(); g.ellipse(32,28,18.5+vo,19,0,Math.PI,0); g.fill(); g.fillRect(XA+3,26,XB-XA-6,Math.max(2,yE-38));
     const n=back?10:9, inner=[], outer=[];
     for(let i=0;i<n;i++){ const u=i/(n-1), side=u<.5?-1:1, edge=Math.abs(u-.5)*2, x=XA+(XB-XA)*u;
@@ -4443,6 +4454,7 @@ function ahDraw(A,hc,back,lay,dst){
     if(tl==='twin'||tl==='twinhi'){ const hy=tl==='twinhi'?12:22, L2=A.tln||62, w=tl==='twinhi'?11:9; for(const m of [0,1]) tailL(m,tl==='twinhi'?11:12,hy+2,L2,w,A.curl); }
     if(tl==='pony'){ const L2=A.tln||64; const a=[46,8,53,L2,10,5,wv,0,.75], b=[49,14,56,L2-6,6,3.5,wv,1,.8]; col(P.lo); st(...b); col(P.b); st(...a); ON(); crease([a],P.lo,.15); col(P.hi); st(48,12,51,24,1.6,1,0,0,1); OFF(); }
     if(tl==='half'){ col(P.lo); const a=[32,10,32,(A.tln||58),12,0,wv,0,.8]; st(...a); }
+    if(tl==='lowtail'&&(A.tln||60)>56){ col(P.lo); st(32,40,33,A.tln||60,7,1,wv,0,.8); }
   } else if(back){ /* มองด้านหลัง: ทั้งหัว + ผมหลังทับตัว */
     if(tl==='bun2') for(const x of [20,44]){ col(P.b); el(x,9,6.5,6); ON(); col(P.lo); st(x-4,8,x+1,14,1.6,2,0,0,1); st(x+2,4,x+5,11,1.4,1,0,0,1); col(P.hi); st(x-3,6,x,5,1.6,0,0,0,1); OFF(); }
     col(P.b); el(32,28,18.5+vo,18.5); g.fillRect(14-vo,28,36+vo*2,18);
@@ -4456,15 +4468,20 @@ function ahDraw(A,hc,back,lay,dst){
     if(tl==='side'){ const L2=A.tln||66, m=dir<0?1:0; const a=M([14,28,15,L2,10,-3,wv+1,0,.75],m), b=M([12,32,12,L2-6,6,-2,wv+1,1,.8],m); col(P.lo); st(...b); col(P.b); st(...a); ON(); crease([a],P.lo,.1); OFF(); tie(m?50:14,28,6,4); }
     if(tl==='half'){ col(P.b); el(32,13,5,4); ON(); col(P.lo); st(29,12,34,16,1.4,1,0,0,1); OFF(); tie(32,17,8,2); }
     if(tl==='bun2') for(const x of [20,44]) tie(x,14,7,2);
+    if(A.uc&&!len){ col(P.lo2); g.fillRect(16,36,32,9); }
+    if(tl==='mbun'){ col(P.b); el(32,12,5.5,5); ON(); col(P.lo); st(28,11,35,15,1.5,1.5,0,0,1,1); col(P.hi); st(29,9,32,8,1.5,0,0,0,1); OFF(); tie(32,17,7,2); }
+    if(tl==='lowtail'){ const L2=A.tln||60, a=[32,40,32.5,L2,7,1,wv,0,.8]; col(P.b); st(...a); ON(); crease([a],P.lo,.15); OFF(); tie(32,41,6,3); }
   } else { /* ชั้นหน้า: กระหม่อม + ปอยข้าง + หน้าม้า */
     /* มวยอยู่หลังกระหม่อม */
     if(tl==='bun2') for(const x of [17,47]){ col(P.b); el(x,6.5,7.5,7); ON(); col(P.lo); st(x-5.5,6,x+1,13.5,1.6,3,0,0,1,1); st(x+1,0,x+6,9,1.5,2,0,0,1,1); st(x-3,1,x+2,4,1.3,-1,0,0,1,1); col(P.hi); st(x-4,4,x-1,1.5,1.8,0,0,0,1); col(P.sh); g.fillRect(x-3,3,1,1); OFF(); }
     if(tl==='half'){ col(P.b); el(32,8,5,4); }
+    if(tl==='mbun'){ col(P.b); el(32,5,5.5,4.8); ON(); col(P.lo); st(28,5,34,8,1.4,1.5,0,0,1,1); col(P.hi); st(29,3,32,2,1.4,0,0,0,1); OFF(); }
     if(tl==='twinhi') for(const m of [0,1]){ col(P.b); st(...M([18,13,8,10,7,-1,0,0,.6],m)); }
     /* กระหม่อม */
-    g.save(); g.beginPath(); g.rect(0,-16,64,38); g.rect(0,22,17,7); g.rect(47,22,17,7); g.clip(); col(P.b); el(32,29.5,18+vo,20.5); g.restore();
+    g.save(); g.beginPath(); g.rect(0,-16,64,38); if(!A.uc){ g.rect(0,22,17,7); g.rect(47,22,17,7); } g.clip(); col(P.b); el(32,29.5,18+vo,20.5); g.restore();
+    if(A.uc){ col(P.lo2); g.fillRect(15.5,21,2.5,9); g.fillRect(46,21,2.5,9); } /* อันเดอร์คัต: ข้างหัวไถสั้น */
     /* ปอยชี้บนหัว */
-    const cw=A.cw|0, CW=[[22,14,17,5,6,-2],[29,12,27,2,6,-1],[36,12,40,3,6,2],[42,14,49,6,6,2]].slice(0,cw);
+    const cw=A.cw|0, ch=A.cwh||1, CW=[[22,14,17,5,6,-2],[29,12,27,2,6,-1],[36,12,40,3,6,2],[42,14,49,6,6,2],[18,18,10,12,6,-2],[46,18,54,12,6,2]].slice(0,cw).map(a=>[a[0],a[1],a[0]+(a[2]-a[0])*ch,a[1]+(a[3]-a[1])*ch,a[4],a[5]]);
     col(P.b); for(const a of CW) st(...a,0,0,.9);
     if(A.ah){ col(P.b); st(33,11,38,0,3.2,3,0,0,.9); st(36,4,31,0,2.2,-1,0,0,1); }
     /* ปอยข้างแก้ม */
@@ -4473,6 +4490,7 @@ function ahDraw(A,hc,back,lay,dst){
     else if(sdT==='hime') SD.push([16.4,17,16.2,sdl,4.6,0,0,0,.12],[19.6,17,19.8,sdl+.6,4.6,0,0,0,.12]);
     else if(sdT==='in') SD.push([16.5,17,19.5,sdl,7.5,-3.2,0,0,.6],[19.5,19,21,sdl-5,4,-1.2]);
     else if(sdT==='curl') SD.push([17.5,17,15.5,sdl-5,7,-1.5,0,0,.5],[15,sdl-9,19.5,sdl,4.5,-2.4]);
+    else if(sdT==='burn') SD.push([17.4,17,16.6,sdl,5,-.8,0,0,.9]);
     else if(sdT==='long'||sdT==='brd') SD.push([17,17,14,sdl,6.5,-2.5,wv,0,.8],[20,19,18.5,Math.min(sdl,40),3.8,-1]);
     const SDA=sym(SD); col(P.b); for(const a of SDA) st(...a);
     /* หน้าม้า */
@@ -4484,7 +4502,12 @@ function ahDraw(A,hc,back,lay,dst){
     else if(bgT==='side') BG=[[34,9,16,23,8,-3],[37,10,16.4,29.5,9.5,-4.5],[40,11,23,32.5,9,-4],[43,12,30.5,34.5,8,-3],[45.2,14,38,33,7,-1.6],[47,17,46.6,30,5,-.5],[18.2,16,15.6,30,5,-1]].map(a=>M(a,dir<0));
     else if(bgT==='curtain') BG=sym([[31,10,19,32.5,7.5,-5],[28,11,16.4,30,7,-4],[31.6,11,26.5,30,4.6,-2.5],[32,12,29.8,29.5,3,-.8]]);
     else if(bgT==='messy') BG=[[31,10,30,34.5,5.5,1],[27,10,22,33,7,-2.5],[23,11,17.5,30.5,7,-3],[19,14,15.6,28.5,5,-1],[34,10,38.5,33,6,2],[38,11,43,33.5,7,2.5],[42,12,47,30.5,6,2],[45.4,15,48.3,28.5,5,1],[37,11,28,31.5,5,-3]];
-    BG=BG.map(a=>{ a=a.slice(); a[3]+=1.5; if(a[8]==null){ a[6]=a[6]||0; a[7]=a[7]||0; a[8]=.68; } return a; });
+    else if(bgT==='spiky') BG=sym([[31,10,31,35,5,0,0,0,.95],[27.5,10,23,32.5,7,-2.5,0,0,.95],[23,11,17.6,30.5,7,-3.2,0,0,.95],[19,14,14.8,27.5,6,-2,0,0,.95],[29.5,11,27.6,29,4,-1,0,0,.95]]);
+    else if(bgT==='up') BG=[[24,21,19.5,4,7,-2,0,0,.9],[30,20,28.5,1,8,-1,0,0,.9],[36,20,39,2,8,2,0,0,.9],[42,21,47,6,7,2,0,0,.9],[19,22,15.6,27,5,-1],[45,22,48.4,27,5,1],[33.5,15,36,30,3,1.8]].map(a=>M(a,dir<0));
+    else if(bgT==='cpart') BG=sym([[31,10,21,28.5,7.5,-4],[28,11,17,27,7,-3],[31.6,11,27.5,31,4.5,-1.5]]);
+    else if(bgT==='emo') BG=[[40,10,21.5,37,11,-5],[43,11,30,38,9,-3.5],[36,10,16.6,30,8,-3],[46,14,42.5,32.5,7,-1.5],[48,17,47,29,5,-.5],[18,16,15.6,29,5,-1]].map(a=>M(a,dir<0));
+    else if(bgT==='short') BG=sym([[30.5,10,30,25,6,0],[26.5,10.5,24,24.5,7,-1],[22,12,19,24,7,-1.5],[18.5,15,16.5,25,5,-1]]);
+    BG=BG.map(a=>{ a=a.slice(); a[3]+=bgT==='up'?0:1.5; if(a[8]==null){ a[6]=a[6]||0; a[7]=a[7]||0; a[8]=.68; } return a; });
     col(P.b); for(const a of BG) st(...a);
     /* เส้นผม + เงา + ไฮไลต์ (อยู่บนผมเท่านั้น) */
     ON(); sheen(19,19.5-vo*.5,44.5+vo*.5,P.hi,P.sh); crease(BG,P.lo,.3); crease(SDA,P.lo,.3); crease(CW,P.lo,.3);
@@ -4610,7 +4633,7 @@ function drawPerson(x,y,o,moving,wt,time){ try{ drawPerson_(x,y,o,moving,wt,time
 function drawPerson_(x,y,o,moving,wt,time){
   if(o.cs&&drawSkin(x,y,o,moving,wt)) return;
   const rd=o.rd||'', sw=moving?Math.sin(wt*11):0, fr=rd?0:(sw>.4?1:sw<-.4?2:0), back=rd?rd==='B':(o.fy||0)<0;
-  const hs=N(o.hs!=null?o.hs:(o.fem?5:31),HSN), os=N(o.os!=null?o.os:hs,OSN), hcs=typeof o.hc==='string'?o.hc:'', ocs=typeof o.oc==='string'?o.oc:'', sk=o.sk||o.skin||'#f6d2b0', ex=back?0:(rd?(rd==='R'?1:rd==='L'?-1:0):Math.max(-1,Math.min(1,Math.round(o.fx||0))));
+  const hs=N(o.hs!=null?o.hs:(o.fem?5:43),HSN), os=N(o.os!=null?o.os:hs,OSN), hcs=typeof o.hc==='string'?o.hc:'', ocs=typeof o.oc==='string'?o.oc:'', sk=o.sk||o.skin||'#f6d2b0', ex=back?0:(rd?(rd==='R'?1:rd==='L'?-1:0):Math.max(-1,Math.min(1,Math.round(o.fx||0))));
   const ac=N(o.ac||0,ACN), acc=ac?(isHex(o.acc)?o.acc:ACC[ac].c):'';
   const eyi=back||o.ey==null?-1:N(o.ey,EYN), k=[hs,os,hcs,ocs,sk,back?1:0,fr,ex,rd,ac,acc,eyi>=0?1:0].join('|'); let s=SPR.get(k); if(!s){ if(SPR.size>400) SPR.clear(); s=mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi); SPR.set(k,s); }
   const sz=o.sz==null?NPC_SZ:normSz(o.sz), ps=T*.03*sz/WS, bob=moving&&!rd?Math.abs(sw)*ps*1.2:0;
@@ -4625,13 +4648,13 @@ function drawPerson_(x,y,o,moving,wt,time){
 
 /* ---------- character / ร้านแฟชั่น (ใช้หน้าจอเดียวกับตอนสร้างตัวละคร) ---------- */
 const N=(v,m)=>((v|0)%m+m)%m;
-const CH={g:'m',ey:0,ec:-1,hs:31,hc:-1,ac:0,ak:-1,sk:1,os:31,oc:-1,sz:1,cs:0};
+const CH={g:'m',ey:0,ec:-1,hs:43,hc:-1,ac:0,ak:-1,sk:1,os:31,oc:-1,sz:1,cs:0};
 const SZ_MIN=.7,SZ_MAX=1.5, normSz=v=>{ v=+v; return isFinite(v)&&v>0?Math.round(Math.max(SZ_MIN,Math.min(SZ_MAX,v))*20)/20:1; };
 function normCh(c){ c=c||{}; return {g:c.g==='f'?'f':'m',ey:c.ey==null?0:N(c.ey,EYN),ec:isHex(c.ec)?c.ec.toLowerCase():((typeof c.ec==='number'&&c.ec>=0)?N(c.ec,EYCOL.length):-1),hs:N(c.hs!=null?c.hs:c.hair,HSN),hc:c.hc===-1?-1:N(c.hc!=null?c.hc:c.hair,HAIR.length),ac:N(c.ac,ACN),ak:isHex(c.ak)?c.ak.toLowerCase():(typeof c.ak==='number'&&c.ak>=0?N(c.ak,ACOL.length):-1),sk:N(c.sk!=null?c.sk:c.skin,SKIN.length),os:N(c.os!=null?c.os:c.out,OSN),oc:c.oc===-1?-1:N(c.oc!=null?c.oc:c.out,OUT.length),sz:normSz(c.sz),cs:N(c.cs|0,SKINS.length)}; }
 function charObj(c){ const n=normCh(c); return {fem:n.g==='f',ey:n.ey,ec:eyeHex(n.ec),hs:n.hs,hc:n.hc<0?null:HAIR[n.hc],ac:n.ac,acc:accHex(n.ac,n.ak),sk:SKIN[n.sk],os:n.os,oc:n.oc<0?null:OUT[n.oc],sz:n.sz,cs:n.cs,fx:0,fy:1}; }
 function drawPV(){ const pc=$('pv'), p=pc.getContext('2d'), t0=T, w0=WS; WS=1; T=80; ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,120,180); drawPerson(60,174,Object.assign(charObj(CH),{cs:0}),false,0,0); ctx=mainCtx; T=t0; WS=w0; }
 let edMode='create';
-function edUI(m){ edMode=m; const f=m==='fashion'; edTab='hair'; edLast=''; $('create').classList.toggle('fash',f); $('edHint').textContent=f?'ลองแต่งได้ฟรี · จ่ายเพชรเฉพาะของแต่งชิ้นใหม่ตอนกดยืนยัน':'เลือกหมวดด้านล่าง แล้วแตะเพื่อลองแต่งได้เลย'; if(!f){ CH.ac=0; CH.ak=-1; CH.cs=0; } $('edTitle').textContent=f?'ร้านแฟชั่น':'สร้างตัวละคร'; $('nameIn').style.display=f?'none':''; $('optG').style.display=''; $('createBtn').textContent=f?'✅ เปลี่ยนเลย':'สร้างตัวละคร'; $('edCancel').style.display='none'; }
+function edUI(m){ edMode=m; const f=m==='fashion'; edTab='hair'; edLast=''; edHG=''; $('create').classList.toggle('fash',f); $('edHint').textContent=f?'ลองแต่งได้ฟรี · จ่ายเพชรเฉพาะของแต่งชิ้นใหม่ตอนกดยืนยัน':'เลือกหมวดด้านล่าง แล้วแตะเพื่อลองแต่งได้เลย'; if(!f){ CH.ac=0; CH.ak=-1; CH.cs=0; } $('edTitle').textContent=f?'ร้านแฟชั่น':'สร้างตัวละคร'; $('nameIn').style.display=f?'none':''; $('optG').style.display=''; $('createBtn').textContent=f?'✅ เปลี่ยนเลย':'สร้างตัวละคร'; $('edCancel').style.display='none'; }
 
 function accUI(){ if(edMode!=='fashion') return ''; const own=S.own||[], hav=i=>own.includes(i), sec=t=>`<div class="sec">${t}</div>`;
   let h=sec('🎩 ของแต่งตัว · ชิ้นละ 💎'+ACC_PRICE+' (คุณมี 💎'+fmt(S.gems|0)+')')+'<div class="acg">'+ACC.map((a,i)=>`<button data-k="ac" data-i="${i}" class="${CH.ac===i?'on':''}"><span class="ae">${a.e}</span><span class="an">${a.n}</span><small>${i===0?'ถอดออก':hav(i)?'✓ มีแล้ว':'💎'+ACC_PRICE}</small></button>`).join('')+'</div>';
@@ -4640,7 +4663,12 @@ function accUI(){ if(edMode!=='fashion') return ''; const own=S.own||[], hav=i=>
   return h+'<p>ลองใส่ดูก่อนได้ฟรี · ตอนกดปุ่มด้านล่างถึงจะหักเพชร · ซื้อแล้วเป็นของคุณตลอด สลับใส่/ถอดได้ฟรี<br>💎 แลกเพชรได้ที่ <b>พ่อค้าเพชร</b> ที่เดินอยู่ในเมืองกลาง (🪙'+fmt(GEM_RATE)+' = 💎1)</p>'; }
 function accBtn(){ if(edMode!=='fashion') return; const need=CH.ac>0&&!(S.own||[]).includes(CH.ac); $('createBtn').textContent=need?'💎 ซื้อ '+ACC_PRICE+' เม็ด แล้วใส่เลย':'✅ เปลี่ยนเลย'; }
 /* ---------- UI ทรงผม: ปุ่มพรีวิวทุกทรง (สร้างจาก HD อัตโนมัติ — เพิ่มทรงใหม่ใน HD แล้วจะโผล่เอง) ---------- */
-function hairGrid(){ return '<div class="hgrid">'+Array.from({length:HSN},(_,i)=>`<button data-k="hs" data-i="${i}" class="${CH.hs===i?'on':''}${i>=NEWFROM?' new':''}" aria-label="ทรงผม ${i+1}"><canvas class="hth" width="64" height="64" data-h="${i}"></canvas><small>${i+1}</small></button>`).join('')+'</div>'; }
+let edHG='';
+const hairGrp=g=>Array.from({length:HSN},(_,i)=>i).filter(i=>(HD[i].g==='m')===(g==='m'));
+function hairGrid(){ if(!edHG) edHG=HD[CH.hs]&&HD[CH.hs].g==='m'?'m':'f'; const L=hairGrp(edHG), nf=hairGrp('f').length, nm=HSN-nf;
+  return `<div class="hgsel"><button type="button" data-hg="f" class="${edHG==='f'?'on':''}">👧 ผมผู้หญิง <small>${nf}</small></button><button type="button" data-hg="m" class="${edHG==='m'?'on':''}">👦 ผมผู้ชาย <small>${nm}</small></button></div><div class="hgnote">ใส่ได้ทุกเพศ เลือกจากหมวดไหนก็ได้</div>`
+   +'<div class="hgrid">'+L.map((i,k)=>`<button data-k="hs" data-i="${i}" class="${CH.hs===i?'on':''}${i>=NEWFROM?' new':''}" aria-label="ทรงผม ${k+1}"><canvas class="hth" width="64" height="64" data-h="${i}"></canvas><small>${k+1}</small></button>`).join('')+'</div>'; }
+$('edBody').addEventListener('click',e=>{ const b=e.target.closest('[data-hg]'); if(b&&b.dataset.hg!==edHG){ edHG=b.dataset.hg; $('edBody').scrollTop=0; renderEd(); } });
 function hairThumbs(){ const cs=document.querySelectorAll('#edBody canvas.hth'); if(!cs.length) return; const t0=T, w0=WS, c0=ctx;
   try{ WS=1; T=80; for(const c of cs){ const p=c.getContext('2d'); ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,c.width,c.height);
       const o=Object.assign(charObj(CH),{cs:0,hs:+c.dataset.h,ac:0,acc:'',sz:1,fx:0,fy:1,rd:'',noSh:true}); drawPerson(32,88,o,false,0,0); } }
@@ -4659,7 +4687,7 @@ function outThumbs(){ const cs=document.querySelectorAll('#edBody canvas.oth'); 
   finally{ ctx=c0; T=t0; WS=w0; } }
 function renderEd(){ const sec=t=>`<div class="sec">${t}</div>`, sw=(k,a,o)=>'<div class="sw">'+(o?`<button data-k="${k}" data-i="-1" class="orig${CH[k]<0?' on':''}" aria-label="สีตามต้นฉบับ" title="สีตามต้นฉบับ">↺</button>`:'')+a.map((c,i)=>`<button data-k="${k}" data-i="${i}" style="background:${c}" class="${CH[k]===i?'on':''}" aria-label="สี ${i+1}"></button>`).join('')+'</div>';
   edTabsUI(); let h='';
-  if(edTab==='hair') h=sec('💇 ทรงผม · '+HSN+' แบบ')+hairGrid()+sec('🎨 สีผม <small>(↺ = สีตามต้นฉบับ)</small>')+sw('hc',HAIR,1);
+  if(edTab==='hair') h=sec('💇 ทรงผม')+hairGrid()+sec('🎨 สีผม <small>(↺ = สีตามต้นฉบับ)</small>')+sw('hc',HAIR,1);
   else if(edTab==='eye') h=sec('👁️ ตา · '+EYN+' แบบ')+'<div class="acg ecg">'+EYN_NAMES.map((n,i)=>{ const b=(i>>1)*4+(i&1)*2; return `<button data-k="ey" data-i="${i}" class="${CH.ey===i?'on':''}"><span class="ae" style="background:${SKIN[CH.sk]}"><img data-ek="${b}" src="data:image/png;base64,${EYD[b]}" alt=""><img data-ek="${b+1}" src="data:image/png;base64,${EYD[b+1]}" alt=""></span><span class="an">${n}</span></button>`; }).join('')+'</div>'+eyeColUI();
   else if(edTab==='out') h=sec('👚 ชุด · '+OSN+' แบบ')+outGrid()+sec('🎨 สีชุด <small>(↺ = สีตามต้นฉบับ)</small>')+sw('oc',OUT,1);
   else if(edTab==='body') h=sec('🎨 สีผิว')+sw('sk',SKIN)+sec('📏 ขนาดตัวละคร <b id="szVal">'+Math.round(CH.sz*100)+'%</b>')+`<div class="szr"><span>🐜</span><input type="range" id="szPick" min="${SZ_MIN*100}" max="${SZ_MAX*100}" step="5" value="${Math.round(CH.sz*100)}"><span>🦒</span></div><div class="nb" style="margin-top:6px"><button data-k="szr" data-i="1" style="padding:0 12px">↺ ขนาดปกติ 100%</button></div>`;
@@ -4672,7 +4700,7 @@ function syncCh(){ document.querySelectorAll('#optG [data-g]').forEach(b=>b.clas
 $('edBody').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b){ if(b.dataset.k==='szr'){ CH.sz=1; renderEd(); return; } if(b.dataset.k==='ac'&&CH.ac!==+b.dataset.i) CH.ak=-1; CH[b.dataset.k]=+b.dataset.i; renderEd(); } });
 $('edBody').addEventListener('input',e=>{ if(e.target.id==='szPick'){ CH.sz=normSz(e.target.value/100); const v=$('szVal'); if(v) v.textContent=Math.round(CH.sz*100)+'%'; drawPV(); return; } if(e.target.id==='ecPick'&&isHex(e.target.value)){ CH.ec=e.target.value.toLowerCase(); drawPV(); document.querySelectorAll('#edBody [data-k="ec"]').forEach(b=>b.classList.remove('on')); return; } if(e.target.id==='acPick'&&isHex(e.target.value)){ CH.ak=e.target.value.toLowerCase(); drawPV(); document.querySelectorAll('#edBody [data-k="ak"]').forEach(b=>b.classList.remove('on')); } });
 $('edBody').addEventListener('change',e=>{ if(e.target.id==='ecPick') renderEd(); });
-$('optG').addEventListener('click',e=>{ const b=e.target.closest('[data-g]'); if(b){ if(CH.g!==b.dataset.g){ CH.g=b.dataset.g; CH.hs=CH.os=CH.g==='f'?5:31; CH.hc=CH.oc=-1; } syncCh(); } });
+$('optG').addEventListener('click',e=>{ const b=e.target.closest('[data-g]'); if(b){ if(CH.g!==b.dataset.g){ CH.g=b.dataset.g; CH.hs=CH.g==='f'?5:43; CH.os=CH.g==='f'?5:31; edHG=CH.g; CH.hc=CH.oc=-1; } syncCh(); } });
 function openFashion(){ if(!S.char) return; resetInput(); shopOpen=true; Object.assign(CH,normCh(S.char)); edUI('fashion'); syncCh(); $('create').classList.add('on'); }
 $('edCancel').addEventListener('click',()=>{ shopOpen=false; $('create').classList.remove('on'); });
 

@@ -4199,6 +4199,8 @@ const OD=['d,#c8404f,#7a2030,#1c1820,s,#2a1a1a,x,0','h,#4a3a3a,#f4f4f4,#8a7a6a,s
 'h,#4fae3a,#1c1820,#ffffff,s,#1c1820,eye,0','p,#7a7a3a,#2b3a5a,#e8e0c0,#2b3a5a,#2b3a5a,emb,1','h,#f4f4f4,#1c1820,#1c1820,s,#1c1820,x,0','d,#1c1820,#2a2a32,#ffffff,s,#4fae3a,n,0',
 'd,#1c1820,#2a2a32,#ffffff,s,#1c1820,n,1','k,#d9454f,#7a5a3a,#4a8fd8,s,#7a5a3a,emb,0','k,#4fae3a,#8a5ab8,#e8d83a,s,#4fae3a,emb,0','p,#f4f4f4,#1c1820,#8a5ab8,#1c1820,#1c1820,n,0'
 ].map(s=>{const a=s.split(',');return{t:a[0],a:a[1],b:a[2],c:a[3],l:a[4],o:a[5],p:a[6],sl:+a[7]};});
+/* ทรงที่ซ้ำกับทรงอื่นมากเกินไป: ซ่อนจากหน้าเลือก (ยังเก็บไว้ ตัวละครที่ใส่อยู่แล้วไม่เพี้ยน) · เลขในวงเล็บ = เลขทรงเดิม 1-based */
+[17,20,27,39,44,46,51,52,54,56,60,62,63,64,68,70,74,75,92].forEach(i=>{ if(HD[i]) HD[i].x=1; }); /* (18,21,28,40 ผญ · 45,47,52,53,55,57,61,63,64,65,69,71,75,76,93 ผช) */
 HSN=HD.length; OSN=OD.length;
 
 /* ---------- ของแต่งตัว (ร้านแฟชั่น ใช้เพชร 💎1 ต่อชิ้น ซื้อแล้วใส่ได้ตลอด ปรับสีได้ฟรี) ---------- */
@@ -4679,8 +4681,8 @@ function accUI(){ if(edMode!=='fashion') return ''; const own=S.own||[], hav=i=>
 function accBtn(){ if(edMode!=='fashion') return; const need=CH.ac>0&&!(S.own||[]).includes(CH.ac); $('createBtn').textContent=need?'💎 ซื้อ '+ACC_PRICE+' เม็ด แล้วใส่เลย':'✅ เปลี่ยนเลย'; }
 /* ---------- UI ทรงผม: ปุ่มพรีวิวทุกทรง (สร้างจาก HD อัตโนมัติ — เพิ่มทรงใหม่ใน HD แล้วจะโผล่เอง) ---------- */
 let edHG='';
-const hairGrp=g=>Array.from({length:HSN},(_,i)=>i).filter(i=>(HD[i].g==='m')===(g==='m'));
-function hairGrid(){ if(!edHG) edHG=HD[CH.hs]&&HD[CH.hs].g==='m'?'m':'f'; const L=hairGrp(edHG), nf=hairGrp('f').length, nm=HSN-nf;
+const hairGrp=g=>Array.from({length:HSN},(_,i)=>i).filter(i=>(HD[i].g==='m')===(g==='m')&&(!HD[i].x||i===CH.hs));
+function hairGrid(){ if(!edHG) edHG=HD[CH.hs]&&HD[CH.hs].g==='m'?'m':'f'; const L=hairGrp(edHG), nf=hairGrp('f').length, nm=hairGrp('m').length;
   return `<div class="hgsel"><button type="button" data-hg="f" class="${edHG==='f'?'on':''}">👧 ผมผู้หญิง <small>${nf}</small></button><button type="button" data-hg="m" class="${edHG==='m'?'on':''}">👦 ผมผู้ชาย <small>${nm}</small></button></div><div class="hgnote">ใส่ได้ทุกเพศ เลือกจากหมวดไหนก็ได้</div>`
    +'<div class="hgrid">'+L.map((i,k)=>`<button data-k="hs" data-i="${i}" class="${CH.hs===i?'on':''}${i>=NEWFROM?' new':''}" aria-label="ทรงผม ${k+1}"><canvas class="hth" width="64" height="64" data-h="${i}"></canvas><small>${k+1}</small></button>`).join('')+'</div>'; }
 $('edBody').addEventListener('click',e=>{ const b=e.target.closest('[data-hg]'); if(b&&b.dataset.hg!==edHG){ edHG=b.dataset.hg; $('edBody').scrollTop=0; renderEd(); } });

@@ -889,13 +889,8 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
 #shop.prem .pmT{background:rgba(255,255,255,.07);border-color:#7a5cc0;color:#fff4d6}#shop.prem .pmT small{color:#cfc3ef}#shop.prem .pmT em{color:#8ff08f}
 #shop.prem .pmTabs button{background:#2d1a55;color:#e9defc;border-color:#7a5cc0}
 /* 💎 ร้านพรีเมียมหรู: ขอบทองวิ่ง · พื้นกำมะหยี่ม่วง · ประกายลอย */
-#shop.prem .panel.shopT{background:radial-gradient(ellipse at 50% -10%,rgba(255,215,110,.28),transparent 45%),radial-gradient(ellipse at 50% 110%,rgba(160,90,255,.35),transparent 50%),linear-gradient(170deg,#3b2170,#22123f 55%,#140a28)!important;border:3px solid transparent!important;background-clip:padding-box!important;position:relative;animation:pmGlow 3s ease-in-out infinite alternate}
-#shop.prem .panel.shopT::before{content:'';position:absolute;inset:-3px;border-radius:16px;padding:3px;background:conic-gradient(from var(--pa,0deg),#fff3b0,#f2c53d,#a8761e,#f2c53d,#fff3b0,#c08bff,#fff3b0);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;animation:pmSpin 6s linear infinite;z-index:3}
-@property --pa{syntax:'<angle>';initial-value:0deg;inherits:false}
-@keyframes pmSpin{to{--pa:360deg}}
-@keyframes pmGlow{from{box-shadow:0 0 18px rgba(255,200,40,.45),0 0 0 rgba(160,90,255,0)}to{box-shadow:0 0 30px rgba(255,210,80,.75),0 0 44px rgba(160,90,255,.45)}}
-#shop.prem .panel.shopT::after{content:'✦  ✧    ✦      ✧   ✦';position:absolute;left:0;right:0;top:44%;text-align:center;font-size:18px;letter-spacing:22px;color:rgba(255,240,180,.16);pointer-events:none;animation:pmFloat 7s ease-in-out infinite;z-index:0}
-@keyframes pmFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-26px)}}
+#shop.prem .panel.shopT{background:radial-gradient(ellipse at 50% -10%,rgba(255,215,110,.28),transparent 45%),radial-gradient(ellipse at 50% 110%,rgba(160,90,255,.35),transparent 50%),linear-gradient(170deg,#3b2170,#22123f 55%,#140a28)!important;border:3px solid #f2c53d!important;animation:pmGlow 3s ease-in-out infinite alternate,pmBorder 2.4s ease-in-out infinite}
+@keyframes pmBorder{0%{border-color:#f2c53d}50%{border-color:#fff3b0}100%{border-color:#d9a33a}}
 #shop.prem .shopT .shophead{background:linear-gradient(180deg,#8a5ae0,#5a2fb0 55%,#3c1d80)!important;border:2px solid #ffe08a!important;border-radius:12px!important;box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.25),0 0 16px rgba(255,210,90,.45)!important}
 #shop.prem .shopT .shophead h2{background:linear-gradient(180deg,#fffbe0 10%,#ffd75a 55%,#d99a22 90%);-webkit-background-clip:text;background-clip:text;color:transparent!important;text-shadow:none!important;filter:drop-shadow(0 2px 0 #1c1038) drop-shadow(0 0 6px rgba(255,210,90,.6));letter-spacing:.04em}
 #shop.prem .pmTabs{display:grid!important;grid-template-columns:repeat(4,1fr);gap:6px;padding:5px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid rgba(242,197,61,.45)}
@@ -5696,7 +5691,7 @@ const SKM={
       R(9,37,14,1,GOLD); R(10,38,12,7,W1); R(9,40,14,5,W1); R(9,45,14,1,OL); R(9,40,1,5,OL); R(22,40,1,5,OL); R(12,39,1,5,W2); R(19,39,1,5,W2);
       if(!bk){ R(15,37,2,8,GOLD); R(15,39,2,1,TURQ); R(15,42,2,1,TURQ); R(14,44,4,1,GOLDD); }
       else { R(15,38,2,7,'#1c161c'); R(15,44,2,1,GOLD); } }},
- 4:{p:{fem:false,hs:44,hc:'#1a1626',ec:'#9a5cff',ey:0,sk:'#f6d2b0',os:1,oc:'#1c1828',ac:0}, /* 🌑 จอมมารเงาม่วง: โค้ตยาวดำ ขอบเงิน ออร่าม่วงที่ชายโค้ต */
+ 4:{p:{fem:false,hs:67,hc:'#1a1626',ec:'#9a5cff',ey:0,sk:'#f6d2b0',os:1,oc:'#1c1828',ac:0}, /* 🌑 จอมมารเงาม่วง: โค้ตยาวดำ ขอบเงิน ออร่าม่วงที่ชายโค้ต */
     ov:(R,bk)=>{ const C1='#1a1724', C2='#2a2638', SV='#9aa0b8', PU='#8a4dff', PL='#c39bff';
       R(8,29,3,2,C1); R(21,29,3,2,C1); R(9,29,1,2,SV); R(22,29,1,2,SV);
       R(7,31,3,13,C1); R(22,31,3,13,C1); R(9,31,1,12,SV); R(22,31,1,12,SV); R(7,31,1,13,'#0e0c16'); R(24,31,1,13,'#0e0c16');

@@ -893,7 +893,7 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
 @keyframes pmBorder{0%{border-color:#f2c53d}50%{border-color:#fff3b0}100%{border-color:#d9a33a}}
 #shop.prem .shopT .shophead{background:linear-gradient(180deg,#8a5ae0,#5a2fb0 55%,#3c1d80)!important;border:2px solid #ffe08a!important;border-radius:12px!important;box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.25),0 0 16px rgba(255,210,90,.45)!important}
 #shop.prem .shopT .shophead h2{background:linear-gradient(180deg,#fffbe0 10%,#ffd75a 55%,#d99a22 90%);-webkit-background-clip:text;background-clip:text;color:transparent!important;text-shadow:none!important;filter:drop-shadow(0 2px 0 #1c1038) drop-shadow(0 0 6px rgba(255,210,90,.6));letter-spacing:.04em}
-#shop.prem .pmTabs{display:grid!important;grid-template-columns:repeat(4,1fr);gap:6px;padding:5px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid rgba(242,197,61,.45)}
+#shop.prem .pmTabs{display:grid!important;grid-template-columns:repeat(3,1fr);gap:6px;padding:5px;border-radius:14px;background:rgba(0,0,0,.28);border:1px solid rgba(242,197,61,.45)}
 #shop.prem .pmTabs button{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:14px!important;padding:6px 2px!important;border-radius:10px!important;background:linear-gradient(180deg,#3a2470,#24144a)!important;border:2px solid #7a5cc0!important;color:#efe4ff!important}
 #shop.prem .pmTabs button .pe{font-size:22px;line-height:1.1;filter:drop-shadow(0 0 4px rgba(255,220,120,.5))}
 #shop.prem .pmTabs button.on{background:linear-gradient(180deg,#fff2b0,#f2c53d 55%,#c88a1e)!important;color:#3a1d00!important;border-color:#fff6d0!important;box-shadow:0 0 14px rgba(255,210,80,.7),0 3px 0 rgba(0,0,0,.35)}
@@ -908,11 +908,6 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
 #shop.prem .shopT .btn:not(:disabled){position:relative;overflow:hidden;background:linear-gradient(180deg,#fff2b0,#f2c53d 50%,#c8861a)!important;border:2px solid #fff3c8!important;color:#3a1d00!important;box-shadow:0 4px 0 #6a3d08,0 0 14px rgba(255,210,80,.45)}
 #shop.prem .shopT .btn:not(:disabled)::after{content:'';position:absolute;top:0;bottom:0;width:35%;left:-60%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.75),rgba(255,255,255,0));animation:fsShine 2.8s ease-in-out infinite;pointer-events:none}
 #shop.prem .shopT #shopClose{background:linear-gradient(#ef5a54,#b02522)!important;color:#fff!important;border-color:#ffc0b8!important}
-/* ✨ เวทีพรีวิวท่าเก็บ */
-.hpStage{position:relative;display:flex;flex-direction:column;align-items:center;margin:0 auto 8px;width:min(260px,100%);border-radius:16px;border:2px solid #ffe08a;background:radial-gradient(ellipse at 50% 90%,rgba(255,215,120,.55),transparent 38%),radial-gradient(ellipse at 50% 0%,rgba(255,240,200,.4),transparent 55%),linear-gradient(180deg,#3c2556,#1a1024);box-shadow:0 0 16px rgba(255,210,90,.4),inset 0 0 0 2px rgba(0,0,0,.35)}
-.hpStage canvas{width:200px;height:200px}
-#shop.prem .hpc .btn:disabled{opacity:1!important;color:#ffe7a8!important;background:rgba(255,224,138,.12)!important;border:2px dashed #d9b45a!important;box-shadow:none!important}
-.hpCap{margin:-4px 0 8px;padding:2px 12px;border-radius:999px;background:rgba(0,0,0,.4);color:#ffe7a8;font-size:15px;border:1px solid rgba(255,224,138,.5)}
 #shop.prem .pmTabs button.on{background:linear-gradient(#ffd45e,#e0991a);color:#3a1d00;border-color:#fff0c0}#shop.prem .pmHint,#shop.prem .pmNote,#shop.prem .shopT p{color:#cfc3ef}
 #shop.prem .acg button{background:#2d1a55;border-color:#7a5cc0;color:#fff4d6}
 #shop.prem .acg button.on{background:linear-gradient(#ffd45e,#e0991a);color:#3a1d00;border-color:#fff0c0}
@@ -945,13 +940,6 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
 #create.fash #createBtn{position:relative;overflow:hidden;color:#3a2408;background:linear-gradient(180deg,#fff2b8,#f0c14e 50%,#c8902a);border:2px solid #fff3c8;box-shadow:0 4px 0 #6a4510,0 0 16px rgba(255,210,100,.5)}
 #create.fash #createBtn::after{content:'';position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.7),rgba(255,255,255,0));animation:fsShine 2.6s ease-in-out infinite}
 @keyframes fsShine{0%{left:-60%}60%,100%{left:130%}}
-/* ✨ การ์ดท่าเก็บผลผลิต */
-.hpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;margin:6px 0}
-.hpc{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px 8px;text-align:center;border-radius:12px;background:linear-gradient(180deg,#34214a,#1d1229);border:2px solid #6a5226;cursor:pointer}
-.hpc .he{font-size:32px;line-height:1.15;filter:drop-shadow(0 0 6px rgba(255,215,110,.5))}.hpc b{color:#ffe7a8;font-size:15px}.hpc small{font-size:11.5px;line-height:1.25;min-height:2.5em}
-.hpc.pv{border-color:#c7a0ff;box-shadow:0 0 12px rgba(180,130,255,.55)}.hpc.on{border-color:#ffe08a;box-shadow:0 0 0 2px rgba(255,224,138,.35),0 0 14px rgba(255,210,100,.6)}
-.hpc .btn{margin-top:auto;width:100%;color:#3a2408;background:linear-gradient(180deg,#fff0b0,#e8b84a 60%,#c08a2a);border:2px solid #fff0c0;box-shadow:0 3px 0 #5a3a10}
-.hpc .btn:disabled{opacity:1;color:#ffe7a8;background:rgba(255,224,138,.12);border:2px dashed #d9b45a;box-shadow:none}
 #create.fash .hgsel button.on small{color:#5a3a10;opacity:1}
 .edTop{flex:none;display:flex;gap:8px;align-items:stretch;margin:0 0 8px}
 .edPv{flex:none;width:100px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border-radius:6px;border:2px solid #86593a;background:radial-gradient(ellipse at 50% 88%,#5a3c27,#2a1a15 72%);box-shadow:inset 0 0 0 2px #1b100c,inset 0 4px 8px rgba(0,0,0,.55)}
@@ -1557,9 +1545,8 @@ function trialClick(b){ const T_=TRL;
   if(g==='confirm'&&T_.npcOk){ T_.st=3; renderShop(); clearTimeout(T_.tm); T_.tm=setTimeout(()=>{ T_.npcCf=1; try{ sfx('open',4,1); }catch(e){} toast('🤝 ทดลองเทรดสำเร็จ (โหมดทดลอง ไม่มีการโอนของ)',2400); if(shopOpen&&shopMode==='trial') renderShop(); },900); return true; }
   return true; }
 function renderPrem(){ $('shopTitle').textContent='👑 ร้านพรีเมียม'; const gh=S.gems|0, need=Math.max(0,PREM_GEM-gh), own=!!S.crown;
-  const tabs=`<div class="pmTabs">${[['crown','👑','มงกุฎ'],['fashion','👗','แฟชั่น'],['pose','✨','ท่าเก็บ'],['shield','🛡️','โล่อีกา']].map(t=>`<button data-ptab="${t[0]}" class="${premTab===t[0]?'on':''}"><span class="pe">${t[1]}</span>${t[2]}</button>`).join('')}</div>`;
+  const tabs=`<div class="pmTabs">${[['crown','👑','มงกุฎ'],['fashion','👗','แฟชั่น'],['shield','🛡️','โล่อีกา']].map(t=>`<button data-ptab="${t[0]}" class="${premTab===t[0]?'on':''}"><span class="pe">${t[1]}</span>${t[2]}</button>`).join('')}</div>`;
   const bal=`<div class="pmBal">💎 เพชรของคุณ <b>${fmt(gh)}</b></div>`;
-  if(premTab==='pose'){ $('shopBody').innerHTML=tabs+bal+poseUI(); $('shopCoins').textContent=fmt(S.coins); gemUI(); hpLoop(); return; }
   if(premTab==='shield'){ const bal2=`<div class="pmBal">🪙 เหรียญของคุณ <b>${fmt(S.coins)}</b></div>`;
     $('shopBody').innerHTML=tabs+bal2+`<div class="pmHero"><div class="pmCr">🛡️</div><div class="pmTx"><h3>โล่กันอีกา</h3><div class="pmPr">🪙${fmt(SHIELD_PRICE)} / อัน</div></div></div>
       <div class="shNote">มีอยู่ <b>${fmt(S.shields|0)}</b> อัน · ยืนหน้าต้นที่ยังไม่โตแล้วกด ทำ (E) เพื่อติดโล่ — อีกาขโมยต้นนั้นไม่ได้จนกว่าจะเก็บเกี่ยว · ติ๊ก 🤖 ออโต้ "ใส่โล่กันอีกา" ให้ใส่ทุกต้นเอง</div>
@@ -2611,7 +2598,7 @@ function drawPond(m,time,items){ const r=m.pond, P=S.pond, LV=Math.max(1,Math.mi
 /* ---------- state ---------- */
 function defaultState(){
   return { job:'', jobs:{}, v:0, rows:0, coins:20, gems:0, crown:0, salt:0, locks:{}, shields:0, hammers:0, rshield:0, rsAuto:{on:false,n:10}, rsBuyN:10, rsUnl:0, noRaid:0, rlog:[], rtSeen:0, rnT:0, rl:[], own:[], helpers:[], seed:Object.assign(Z(),{corn:3,carrot:3}), seedG:Z(), seedR:Z(), bags:0, fs:{}, rod:0, rods:[], fish:[], pond:{own:0,lv:1,f:[],br:0,t:0,n:0,rd:[]}, veh:[], ride:-1, crop:Z(), gold:Z(), vd:Z(), vbags:0, mv:{crop:Z(),gold:Z(),rb:Z(),vd:Z()}, auto:false, autoSell:false, ai:{plant:true,harvest:true,sell:true,fry:true,gold:false}, fb:{npc:'gold',back:true,leg:false}, st:{gold:0,grow:0,fish:0}, xp:0, lv:1, sel:'corn',
-           crops:{}, rb:Z(), hv:0, farm:'', char:null, code:Math.random().toString(36).slice(2,8).toUpperCase(), muteWx:false, perf:0, bloom:1, hp:0, ownHp:[], vol:100, volWx:100, ntf:{}, hide:{bar:0,ready:0,time:0,money:0,shield:0,shine:0}, map:'land', x:11.5, y:9.5, fx:0, fy:1 };
+           crops:{}, rb:Z(), hv:0, farm:'', char:null, code:Math.random().toString(36).slice(2,8).toUpperCase(), muteWx:false, perf:0, bloom:1, vol:100, volWx:100, ntf:{}, hide:{bar:0,ready:0,time:0,money:0,shield:0,shine:0}, map:'land', x:11.5, y:9.5, fx:0, fy:1 };
 }
 let S = defaultState();
 let FC={}, DB=null, myId='', FID='', unF=null, SRV={}, ONL=[];
@@ -2931,7 +2918,7 @@ function harvestAt(tx,ty,c){ if(CROPS[c.type].gch) return false; if(rdLk(c)){ to
   S[INV[g]][c.type]+=dbl; iv[c.type]=(iv[c.type]||0)+mult*dbl; { const sk=c.type+':'+g+':'+fz, st=S.fs[sk]||(S.fs[sk]={n:0,m:0}); st.n+=dbl; st.m+=mult*dbl; } S.hv+=dbl; addJobXp('farm',dbl); addJobXp('porter',dbl); c.p=1; c.t=Date.now(); c.w=0; /* ต้นอยู่ต่อ ชนิด/ขนาดต้นคงเดิม สถานะอากาศหมดไปกับผลที่เก็บ */
   floatText(tx+.5,ty+.3,'+'+dbl+' '+VG[g]+CROPS[c.type].emoji+(mult>1.04?' x'+mult.toFixed(2):'')+(w?['','💧','⚡'][w]:'')); if(c.sh) toast('💠 ต้น Shine! ราคาผล x'+SHINE_MUL,1600); else if(dbl>1) toast('🌾 โชคดี! ได้ผลผลิต x2 (อาชีพฟาร์ม)',1800); floatText(tx+.5,ty-.2,'+'+xp+' XP');
   if(g) toast(g===3?'🕳️ ต้นวอยด์! ออกผลวอยด์ทุกครั้ง ขายได้ x'+MUT[3]:g===2?'🌈 ต้นรุ้ง! ออกผลรุ้งทุกครั้ง ขายได้ x'+MUT[2]:'✨ ต้นทอง! ออกผลทองทุกครั้ง ขายได้ x'+MUT[1],1800);
-  sfx('harvest',g,fz); hpPlay();
+  sfx('harvest',g,fz);
   if(fz>=5) toast('🍈 ผลขนาดใหญ่ x'+fz+'! ราคา x'+SZM(fz).toFixed(2),1800);
   gainXp(xp); updateHUD(); save(); pushFarm(key); }
 function pullAt(tx,ty){ const key=tx+','+ty; if(rdLk(FC[key])){ toast('🔒 ต้นนี้ถูกล็อก ถอนไม่ได้',1600); return; } delete FC[key]; floatText(tx+.5,ty+.3,'🗑️'); updateHUD(); save(); pushFarm(key,1); }
@@ -3903,7 +3890,6 @@ $('shopBody').addEventListener('click', e => {
   if(b.dataset.tani){ taniToggle(); return; }
   if(b.dataset.hire){ hireHelper(b.dataset.hire); return; }
   if(b.dataset.ptab){ premTab=b.dataset.ptab; fsSel=-1; renderShop(); return; }
-  if(b.dataset.hp!==undefined){ hpUse(+b.dataset.hp); return; }
   if(b.dataset.fsel!==undefined){ fsSel=+b.dataset.fsel; renderShop(); return; }
   if(b.dataset.fact){ fsAct(); return; }
   if(b.dataset.skmini!==undefined){ S.skMini=b.dataset.skmini==='1'?1:0; pfSig=''; lastPres=''; try{ sendPres(); }catch(e){} save(); renderShop(); toast(S.skMini?'🎮 ชุดพรีเมียมทุกชุดแสดงเป็นตัวแบบในเกมแล้ว':'✨ ชุดพรีเมียมกลับเป็นแบบชุดหลักแล้ว',2000); return; }
@@ -5725,56 +5711,13 @@ const SZ_MIN=.7,SZ_MAX=1.5, normSz=v=>{ v=+v; return isFinite(v)&&v>0?Math.round
 function normCh(c){ c=c||{}; return {g:c.g==='f'?'f':'m',ey:c.ey==null?0:N(c.ey,EYN),ec:isHex(c.ec)?c.ec.toLowerCase():((typeof c.ec==='number'&&c.ec>=0)?N(c.ec,EYCOL.length):-1),hs:N(c.hs!=null?c.hs:c.hair,HSN),hc:c.hc===-1?-1:N(c.hc!=null?c.hc:c.hair,HAIR.length),ac:N(c.ac,ACN),ak:isHex(c.ak)?c.ak.toLowerCase():(typeof c.ak==='number'&&c.ak>=0?N(c.ak,ACOL.length):-1),sk:N(c.sk!=null?c.sk:c.skin,SKIN.length),os:N(c.os!=null?c.os:c.out,OSN),oc:c.oc===-1?-1:N(c.oc!=null?c.oc:c.out,OUT.length),sz:normSz(c.sz),cs:N(c.cs|0,SKINS.length)}; }
 function charObj(c){ const n=normCh(c); return {fem:n.g==='f',ey:n.ey,ec:eyeHex(n.ec),hs:n.hs,hc:n.hc<0?null:HAIR[n.hc],ac:n.ac,acc:accHex(n.ac,n.ak),sk:SKIN[n.sk],os:n.os,oc:n.oc<0?null:OUT[n.oc],sz:n.sz,cs:n.cs,fx:0,fy:1}; }
 function drawPV(){ const pc=$('pv'), p=pc.getContext('2d'), t0=T, w0=WS; WS=1; T=80; ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,120,180); drawPerson(60,174,Object.assign(charObj(CH),{cs:0}),false,0,0); ctx=mainCtx; T=t0; WS=w0; }
-/* ✨ ท่าเก็บผลผลิต (ซื้อในร้านแฟชั่น · เล่นทุกครั้งที่เก็บผลผลิต) — เพิ่มท่าใหม่ต่อท้าย HPOSE แล้วเขียนท่าใน hpDraw/hpFx */
-const HPOSE=[{n:'ท่าปกติ',e:'🧺',p:0,d:'เก็บแบบธรรมดา'},{n:'ชูสองนิ้ว',e:'✌️',p:3,d:'เด้งตัวชู ✌️ มีประกาย'},{n:'กระโดดดีใจ',e:'🦘',p:3,d:'กระโดดสูง ดาวกระจาย'},{n:'หมุนตัว',e:'🌀',p:5,d:'หมุนรอบตัว 2 รอบ มีวงลม'},
-  {n:'โค้งขอบคุณ',e:'🙇',p:3,d:'ก้มตัวขอบคุณ กลีบซากุระร่วง'},{n:'ส่งหัวใจ',e:'🫶',p:5,d:'เด้งดึ๋ง หัวใจลอยฟุ้ง'},{n:'เต้นส่ายสะโพก',e:'💃',p:5,d:'ส่ายไปมา มีโน้ตเพลง'},{n:'โชว์กล้าม',e:'💪',p:5,d:'ตัวพองโชว์พลัง มีเส้นพลังรอบตัว'},{n:'ท่าฮีโร่',e:'⚡',p:10,d:'แสงทองระเบิด สายฟ้าสองข้าง'}];
-const HP_DUR=1.0; let HPN=null;
-function hpPlay(){ const id=S.hp|0, n=performance.now()/1000; if(id>0&&HPOSE[id]&&(!HPN||n-HPN.t0>HP_DUR*.75)) HPN={id,t0:n}; }
-function hpDraw(id,k,x,y,o,t,mv,wt){ const u=T*.03*normSz(o.sz==null?1:o.sz)/WS, hy=y-50*u, s=Math.sin(Math.PI*Math.min(1,k)), D=[[0,1],[1,0],[0,-1],[-1,0]];
-  let dy=0,sx=1,sy=1,rot=0;
-  if(id===1) dy=-s*5*u;
-  else if(id===2){ dy=-Math.max(0,Math.sin(Math.PI*Math.min(1,k*1.15)))*16*u; sy=k<.12||k>.9?.88:1.05; sx=2-sy; }
-  else if(id===3){ const d=D[Math.floor(k*8)%4]; o=Object.assign({},o,{fx:d[0],fy:d[1]}); dy=-s*4*u; }
-  else if(id===4){ sy=1-.17*s; sx=1+.05*s; }
-  else if(id===5) dy=-Math.abs(Math.sin(k*Math.PI*3))*3.5*u;
-  else if(id===6){ rot=Math.sin(k*Math.PI*6)*.17*s; dy=-Math.abs(Math.sin(k*Math.PI*6))*3*u; }
-  else if(id===7){ sx=sy=1+.13*s; }
-  else if(id===8){ sx=sy=1+.08*s; dy=-s*3*u; }
-  ctx.save(); ctx.translate(x,y+dy); ctx.rotate(rot); ctx.scale(sx,sy); ctx.translate(-x,-y); drawPerson(x,y,o,mv,wt||0,t); ctx.restore();
-  hpFx(id,k,x,y+dy,hy+dy,u*1.3); }
-function hpFx(id,k,x,y,hy,u){ if(id<=0) return; const a=Math.max(0,Math.min(1,(1-k)*2.2)); ctx.save(); ctx.globalAlpha=a;
-  if(id===1){ emoD('✌️',x+12*u,hy+3*u-k*4*u,15*u); for(let i=0;i<4;i++){ const an=i*1.57+k*3; vStar(ctx,x+Math.cos(an)*18*u,hy+Math.sin(an)*10*u,(2+1.5*Math.sin(k*9+i))*u,'#fff6a0'); } }
-  else if(id===2){ for(let i=0;i<8;i++){ const an=i/8*6.283, r=(6+k*26)*u; vStar(ctx,x+Math.cos(an)*r,y-16*u+Math.sin(an)*r*.6,Math.max(.5,(3-k*1.5)*u),i%2?'#ffd84d':'#fff'); } }
-  else if(id===3){ ctx.strokeStyle='rgba(150,225,255,.9)'; ctx.lineWidth=2*u; ctx.beginPath(); ctx.ellipse(x,y-3*u,(14+k*6)*u,(4+k*2)*u,0,k*12,k*12+4); ctx.stroke(); for(let i=0;i<3;i++){ const an=k*14+i*2.1; vStar(ctx,x+Math.cos(an)*16*u,y-22*u+Math.sin(an)*6*u,2.5*u,'#c8ffff'); } }
-  else if(id===4){ ctx.font='bold '+Math.max(9,Math.round(8*u))+'px '+FONT; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.fillStyle='#fff'; const ty=hy-6*u-k*6*u; ctx.strokeText('ขอบคุณค้าบ~',x,ty); ctx.fillText('ขอบคุณค้าบ~',x,ty); emoD('🌸',x-15*u,hy+4*u+k*14*u,8*u); emoD('🌸',x+15*u,hy+8*u+k*12*u,7*u); }
-  else if(id===5){ for(let i=0;i<6;i++){ const q=(k*1.2+i*.16)%1; ctx.globalAlpha=a*Math.min(1,(1-q)*1.8); ctx.fillStyle=i%2?'#ff5fa0':'#ff9cc8'; heartP(ctx,x+Math.sin(i*2.3+q*5)*13*u,hy+8*u-q*26*u,(4.5+i%3)*u); } }
-  else if(id===6){ for(let i=0;i<4;i++){ const q=(k*1.6+i*.25)%1; ctx.globalAlpha=a*Math.min(1,(1-q)*2); emoD(i%2?'🎵':'🎶',x+(i%2?15:-15)*u,hy+6*u-q*18*u,8*u); } }
-  else if(id===7){ emoD('💪',x+14*u,hy+16*u,11*u*(1+.15*Math.sin(k*20))); ctx.strokeStyle='#ffe14a'; ctx.lineWidth=1.6*u; for(let i=0;i<8;i++){ const an=i/8*6.283+.2, r0=(15+k*6)*u, r1=r0+6*u; ctx.beginPath(); ctx.moveTo(x+Math.cos(an)*r0,y-22*u+Math.sin(an)*r0); ctx.lineTo(x+Math.cos(an)*r1,y-22*u+Math.sin(an)*r1); ctx.stroke(); } }
-  else if(id===8){ const g=ctx.createRadialGradient(x,y-22*u,2,x,y-22*u,42*u); g.addColorStop(0,'rgba(255,240,150,.6)'); g.addColorStop(1,'rgba(255,200,60,0)'); ctx.fillStyle=g; ctx.fillRect(x-42*u,y-64*u,84*u,84*u); ctx.strokeStyle='#fff6a0'; ctx.lineWidth=2*u; ctx.lineJoin='round';
-    for(const sg of [-1,1]){ const bx=x+sg*19*u; ctx.beginPath(); ctx.moveTo(bx,hy-4*u); ctx.lineTo(bx-sg*4*u,hy+7*u); ctx.lineTo(bx+sg*2*u,hy+7*u); ctx.lineTo(bx-sg*3*u,hy+19*u); ctx.stroke(); } }
-  ctx.restore(); }
-/* 🎬 พรีวิวท่าเก็บในร้านพรีเมียม: ตัวละครของเรา (รวมชุดพรีเมียม) เล่นท่าที่เลือกวนบนเวที */
-let hpTok=0;
-function hpLoop(){ const tok=++hpTok, t0=performance.now(); const step=()=>{ const cv=document.getElementById('hpCv'); if(tok!==hpTok||!cv||!shopOpen) return;
-    const t=(performance.now()-t0)/1000, p=cv.getContext('2d'), T0=T, W0=WS, c0=ctx; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,cv.width,cv.height);
-    try{ WS=1; T=120; ctx=p; const o=Object.assign(charObj(S.char||CH),{fx:0,fy:1,rd:'',noSh:false}), k=(t%1.8)/HP_DUR; if(k<=1&&hpPv>0) hpDraw(hpPv,k,120,212,o,t); else drawPerson(120,212,o,false,0,t); }catch(e){} finally{ ctx=c0; T=T0; WS=W0; }
-    requestAnimationFrame(step); }; requestAnimationFrame(step); }
 /* 🎬 พรีวิวในร้านแฟชั่น: เวทีหมุนโชว์ 4 ทิศ · หมวดท่าเก็บ = เล่นท่าที่เลือกวนไป */
-let pvTok=0, hpPv=-1;
+let pvTok=0;
 function pvLoop(){ const tok=++pvTok, t0=performance.now(); const step=()=>{ if(tok!==pvTok||!$('create').classList.contains('on')||edMode!=='fashion') return; drawPVA((performance.now()-t0)/1000); requestAnimationFrame(step); }; requestAnimationFrame(step); }
 function drawPVA(t){ const pc=$('pv'), p=pc.getContext('2d'), t0=T, w0=WS, c0=ctx; WS=1; T=80; ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,pc.width,pc.height);
   try{ const o=Object.assign(charObj(CH),{cs:0}), x=60, y=172;
     { const D=[[0,1],[1,0],[0,-1],[-1,0]], d=D[Math.floor(t/1.8)%4]; o.fx=d[0]; o.fy=d[1]; drawPerson(x,y,o,false,0,t); } }
   finally{ ctx=c0; T=t0; WS=w0; } }
-function poseUI(){ const own=S.ownHp||[], cur=S.hp|0; if(hpPv<0) hpPv=cur||1;
-  let h='<div class="hpStage"><canvas id="hpCv" width="240" height="240"></canvas><div class="hpCap">'+HPOSE[hpPv].e+' '+HPOSE[hpPv].n+'</div></div><div class="sec">✨ ท่าเก็บผลผลิต <small>(แตะการ์ดเพื่อดูท่า)</small></div><div class="hpg">';
-  HPOSE.forEach((q,i)=>{ const have=i===0||own.includes(i), on=cur===i;
-    h+=`<div class="hpc${on?' on':''}${hpPv===i?' pv':''}" data-hpv="${i}"><span class="he">${q.e}</span><b>${q.n}</b><small>${q.d}</small><button type="button" class="btn small${on?' ghost':''}" data-hp="${i}" ${on?'disabled':''}>${on?'✓ ใช้อยู่':have?'ใช้ท่านี้':'💎 '+q.p+' ซื้อ'}</button></div>`; });
-  return h+'</div><p>ซื้อครั้งเดียวเป็นของคุณตลอด · เลือกได้ทีละท่า · ท่าจะเล่นทุกครั้งที่เก็บผลผลิต (ทั้งเก็บเองและออโต้)</p>'; }
-function hpUse(i){ const q=HPOSE[i]; if(!q) return; S.ownHp=S.ownHp||[]; const have=i===0||S.ownHp.includes(i);
-  if(!have){ if((S.gems|0)<q.p){ toast('💎 เพชรไม่พอ — ต้องใช้ '+q.p+' เม็ด (แลกได้ที่พ่อค้าเพชรในเมืองกลาง)',3000); return; } S.gems=(S.gems|0)-q.p; S.ownHp.push(i); try{ sfx('catch',1); }catch(e){} toast(q.e+' ซื้อท่า "'+q.n+'" แล้ว! (-💎'+q.p+')',2600); }
-  else toast(q.e+' ใช้ท่า "'+q.n+'" ตอนเก็บผลผลิต',1800);
-  S.hp=i; hpPv=i; updateHUD(); save(); renderShop(); }
 let edMode='create';
 function edUI(m){ edMode=m; const f=m==='fashion'; edTab='hair'; edLast=''; edHG=''; $('create').classList.toggle('fash',f); $('edHint').textContent=f?'ลองแต่งได้ฟรี · จ่ายเพชรเฉพาะของแต่งชิ้นใหม่ตอนกดยืนยัน':'เลือกหมวดด้านล่าง แล้วแตะเพื่อลองแต่งได้เลย'; if(!f){ CH.ac=0; CH.ak=-1; CH.cs=0; } $('edTitle').textContent=f?'✦ Fashion Boutique ✦':'สร้างตัวละคร'; $('nameIn').style.display=f?'none':''; $('optG').style.display=''; $('createBtn').textContent=f?'✅ เปลี่ยนเลย':'สร้างตัวละคร'; $('edCancel').style.display='none'; }
 function accUI(){ if(edMode!=='fashion') return ''; const own=S.own||[], hav=i=>own.includes(i), sec=t=>`<div class="sec">${t}</div>`;
@@ -5823,7 +5766,6 @@ function syncCh(){ document.querySelectorAll('#optG [data-g]').forEach(b=>b.clas
 $('edBody').addEventListener('click',e=>{ const b=e.target.closest('button[data-k]'); if(b&&(b.dataset.k==='hs'||b.dataset.k==='os')&&b.closest('.hgrid,.ogrid')){ CH[b.dataset.k]=+b.dataset.i; b.parentNode.querySelectorAll('button.on').forEach(x=>x.classList.remove('on')); b.classList.add('on'); drawPV(); accBtn(); return; } if(b){ if(b.dataset.k==='szr'){ CH.sz=1; renderEd(); return; } if(b.dataset.k==='ac'&&CH.ac!==+b.dataset.i) CH.ak=-1; CH[b.dataset.k]=+b.dataset.i; renderEd(); } });
 $('edBody').addEventListener('input',e=>{ if(e.target.id==='szPick'){ CH.sz=normSz(e.target.value/100); const v=$('szVal'); if(v) v.textContent=Math.round(CH.sz*100)+'%'; drawPV(); return; } if(e.target.id==='ecPick'&&isHex(e.target.value)){ CH.ec=e.target.value.toLowerCase(); drawPV(); document.querySelectorAll('#edBody [data-k="ec"]').forEach(b=>b.classList.remove('on')); return; } if(e.target.id==='acPick'&&isHex(e.target.value)){ CH.ak=e.target.value.toLowerCase(); drawPV(); document.querySelectorAll('#edBody [data-k="ak"]').forEach(b=>b.classList.remove('on')); } });
 $('edBody').addEventListener('change',e=>{ if(e.target.id==='ecPick') renderEd(); });
-$('shopBody').addEventListener('click',e=>{ if(e.target.closest('button')) return; const c=e.target.closest('[data-hpv]'); if(!c) return; hpPv=+c.dataset.hpv; document.querySelectorAll('#shopBody .hpc').forEach(x=>x.classList.toggle('pv',x===c)); const cap=document.querySelector('#shopBody .hpCap'); if(cap) cap.textContent=HPOSE[hpPv].e+' '+HPOSE[hpPv].n; });
 $('optG').addEventListener('click',e=>{ const b=e.target.closest('[data-g]'); if(b){ if(CH.g!==b.dataset.g){ CH.g=b.dataset.g; CH.hs=CH.g==='f'?5:43; CH.os=CH.g==='f'?5:31; edHG=CH.g; CH.hc=CH.oc=-1; } syncCh(); } });
 function openFashion(){ if(!S.char) return; try{ sfx('menu'); }catch(e){} resetInput(); shopOpen=true; Object.assign(CH,normCh(S.char)); edUI('fashion'); syncCh(); $('create').classList.add('on'); pvLoop(); }
 $('edCancel').addEventListener('click',()=>{ shopOpen=false; $('create').classList.remove('on'); });
@@ -5980,7 +5922,7 @@ function draw(tms){
       ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(cx,y,T/WS*VK*(v.t===5?.3:.42),T/WS*VK*.12,0,0,6.3); ctx.fill();
       if(vg){ const gl=ctx.createRadialGradient(cx,y-T*.4,2,cx,y-T*.4,T*.85); gl.addColorStop(0,vg===2?`hsla(${(time*160)%360},95%,62%,.75)`:'rgba(255,215,64,.75)'); gl.addColorStop(1,'rgba(255,215,64,0)'); ctx.fillStyle=gl; ctx.fillRect(cx-T,y-T*1.2,T*2,T*1.7); }
       drawVeh(v.t,vd,cx,y,moving,walkT,time,vg,0,vb); }
-    { const po=Object.assign(charObj(S.char||CH),{fx:S.fx,fy:S.fy,rd:v?vd:''}), hk=HPN?(performance.now()/1000-HPN.t0)/HP_DUR:2; if(hk<1&&!v) hpDraw(HPN.id,hk,S.x*T,yy,po,time,moving,walkT); else { HPN=hk<1?HPN:null; drawPerson(S.x*T, yy, po, moving, walkT, time); } }
+    drawPerson(S.x*T, yy, Object.assign(charObj(S.char||CH),{fx:S.fx,fy:S.fy,rd:v?vd:''}), moving, walkT, time);
     if(v) drawVeh(v.t,vd,S.x*T,y,moving,walkT,time,vg,1,vb);
     if(S.char){ const ly=yy-T/WS*1.5*Math.max(.8,normSz(S.char.sz)); ctx.font=`${Math.max(11,T*.3)}px ${FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=4; ctx.strokeStyle='rgba(0,0,0,.55)'; ctx.fillStyle='#fff8e6'; ctx.strokeText(S.char.name,S.x*T,ly); ctx.fillText(S.char.name,S.x*T,ly); if(S.crown) crownBeforeName(S.x*T,ly,S.char.name,time); if(FI.on&&FI.map===S.map) fishBar(S.x*T,ly-T*.42,time);
       if(restT>0){ const ry=ly-T*.4; ctx.font=`${Math.max(12,T*.34)}px ${FONT}`; ctx.lineWidth=4; ctx.strokeStyle='rgba(0,0,0,.7)'; ctx.fillStyle='#ffd25a'; const rt='😮‍💨 กำลังพัก '+Math.ceil(restT)+'วิ'; ctx.strokeText(rt,S.x*T,ry); ctx.fillText(rt,S.x*T,ry); } } } });
@@ -6397,7 +6339,7 @@ cv.addEventListener('click',e=>{ if(!playing||shopOpen||bagOpen) return;
 $('fishBtn').addEventListener('click',()=>openBot('fish'));
 resize();
 buildHotbar();
-load(); S.hide=Object.assign({bar:0,ready:0,time:0,money:0,shield:0,shine:0},S.hide&&typeof S.hide==='object'?S.hide:{}); S.muteWx=!!S.muteWx; { const o=(S.ntf&&typeof S.ntf==='object')?S.ntf:{}, n={}; for(const c of NTF_CATS) n[c[0]]=o[c[0]]?1:0; if(S.noToast) for(const k in n) n[k]=1; if(S.noFish) n.fish=1; if(S.noLg) n.lg=1; S.ntf=n; S.noToast=false; S.noFish=false; S.noLg=false; } /* ย้ายค่าเก่า (ปิดแจ้งเตือน/ปลา/ตำนาน) เข้าระบบรวม */ try{ chatToggle(!S.chatMin,true); }catch(e){} S.perf=S.perf===1?1:0; S.bloom=S.bloom===0?0:1; S.ownHp=Array.isArray(S.ownHp)?[...new Set(S.ownHp.map(x=>x|0).filter(x=>x>0&&x<HPOSE.length))]:[]; S.hp=(S.hp|0)>0&&S.ownHp.includes(S.hp|0)?S.hp|0:0; { const c=v=>Math.max(0,Math.min(100,Number.isFinite(+v)?Math.round(+v):100)); S.vol=c(S.vol); S.volWx=c(S.volWx); S.noToast=!!S.noToast; } applyPerf(); labSnd();
+load(); S.hide=Object.assign({bar:0,ready:0,time:0,money:0,shield:0,shine:0},S.hide&&typeof S.hide==='object'?S.hide:{}); S.muteWx=!!S.muteWx; { const o=(S.ntf&&typeof S.ntf==='object')?S.ntf:{}, n={}; for(const c of NTF_CATS) n[c[0]]=o[c[0]]?1:0; if(S.noToast) for(const k in n) n[k]=1; if(S.noFish) n.fish=1; if(S.noLg) n.lg=1; S.ntf=n; S.noToast=false; S.noFish=false; S.noLg=false; } /* ย้ายค่าเก่า (ปิดแจ้งเตือน/ปลา/ตำนาน) เข้าระบบรวม */ try{ chatToggle(!S.chatMin,true); }catch(e){} S.perf=S.perf===1?1:0; S.bloom=S.bloom===0?0:1; delete S.hp; delete S.ownHp; /* ท่าเก็บผลผลิตเอาออกแล้ว */ { const c=v=>Math.max(0,Math.min(100,Number.isFinite(+v)?Math.round(+v):100)); S.vol=c(S.vol); S.volWx=c(S.volWx); S.noToast=!!S.noToast; } applyPerf(); labSnd();
 FC=S.crops;
 spawnHelpers(); buildWalkers(); if(S.char){ Object.assign(S.char,normCh(S.char)); if(S.char.ac>0&&!(S.own||[]).includes(S.char.ac)){ S.char.ac=0; S.char.ak=-1; } if(S.char.cs>0&&!(S.ownSk||[]).includes(S.char.cs)) S.char.cs=0; }
 updateHUD();

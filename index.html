@@ -779,6 +779,7 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
 #shop .skS{font-size:13px;color:#cfc3ef}
 #shop .skC.on .skS{color:#7dff8a}
 #shop .skC .btn{width:100%;margin:2px 0 0;font-size:15px;padding:6px 4px}
+#shop .skMode .beta{display:inline-block;margin-left:4px;padding:0 6px;border-radius:8px;font-size:11px;line-height:1.5;vertical-align:middle;background:#7a4fd0;color:#fff;border:1px solid #c7a0ff}
 #shop .skMode{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0 4px;padding:4px;border-radius:12px;background:rgba(0,0,0,.25)}
 #shop .skMode button{font-family:inherit;font-size:15px;padding:8px 4px;border-radius:9px;border:2px solid #7a5cc0;background:#2d1a55;color:#e9defc;cursor:pointer}
 #shop .skMode button.on{background:linear-gradient(#ffd45e,#e0991a);color:#3a1d00;border-color:#fff0c0}
@@ -1570,7 +1571,7 @@ function renderPrem(){ $('shopTitle').textContent='👑 ร้านพรีเ
   if(premTab==='fashion'&&S.char){ const cur=S.char.ac|0; if(fsSel<0||fsSel>=ACN) fsSel=cur; const ow=S.own||[], hav=i=>i===0||ow.includes(i);
     const sel=fsSel, buy=sel>0&&!hav(sel), lack=buy&&gh<ACC_PRICE;
     const btn=sel===cur?`<button class="btn pmBtn" disabled>👗 ${sel?'ใส่อยู่แล้ว':'ยังไม่ได้ใส่ของแต่งตัว'}</button>`:`<button class="btn pmBtn" data-fact="1" ${lack?'disabled':''}>${buy?(lack?'เพชรไม่พอ — ขาดอีก 💎'+(ACC_PRICE-gh):'💎 ซื้อและใส่เลย '+ACC_PRICE):(sel?'✅ ใส่เลย (ของคุณแล้ว)':'🚫 ถอดออก')}</button>`;
-    $('shopBody').innerHTML=tabs+bal+`<div class="skModeBox"><div class="skModeT">🔄 เลือกแบบตัวละคร <span>เปลี่ยนได้ตลอด · ฟรี</span></div><div class="skMode"><button type="button" data-skmini="0" class="${skMini()?'':'on'}"><b>✨ แบบชุดหลัก</b><small>ตัวใหญ่ ละเอียด ท่าทางเต็ม</small>${skMini()?'':'<i>✓ ใช้อยู่</i>'}</button><button type="button" data-skmini="1" class="${skMini()?'on':''}"><b>🎮 แบบตัวในเกม</b><small>ตัวเล็กหัวโต เหมือนตัวละครในเกม</small>${skMini()?'<i>✓ ใช้อยู่</i>':''}</button></div><div class="skModeH">👇 แตะเลือกแล้วตัวละครด้านล่าง, ในเกม และรูปโปรไฟล์จะเปลี่ยนทันที</div></div>`+skCard(gh)
+    $('shopBody').innerHTML=tabs+bal+`<div class="skModeBox"><div class="skModeT">🔄 เลือกแบบตัวละคร <span>เปลี่ยนได้ตลอด · ฟรี</span></div><div class="skMode"><button type="button" data-skmini="1" class="${skMini()?'on':''}"><b>🎮 แบบตัวในเกม</b><small>ตัวเล็กหัวโต เหมือนตัวละครในเกม · แบบหลัก</small>${skMini()?'<i>✓ ใช้อยู่</i>':''}</button><button type="button" data-skmini="0" class="${skMini()?'':'on'}"><b>✨ แบบชุดใหญ่ <span class="beta">แถม (Beta)</span></b><small>ตัวใหญ่ ละเอียด ท่าทางเต็ม</small>${skMini()?'':'<i>✓ ใช้อยู่</i>'}</button></div><div class="skModeH">👇 แตะเลือกแล้วตัวละครด้านล่าง, ในเกม และรูปโปรไฟล์จะเปลี่ยนทันที</div></div>`+skCard(gh)
       +`<p class="pmNote">ซื้อครั้งเดียว ใส่/ถอดได้ฟรีตลอด</p>`;
     $('shopCoins').textContent=fmt(S.coins); gemUI(); fsDraw(); skLoop(); setTimeout(()=>{ if(shopOpen&&premTab==='fashion') fsDraw(); },700); return; }
   const tile=(ic,t,d)=>`<div class="pmT"><span>${ic}</span><b>${t}</b><small>${d}</small></div>`;
@@ -2613,7 +2614,7 @@ function drawPond(m,time,items){ const r=m.pond, P=S.pond, LV=Math.max(1,Math.mi
 /* ---------- state ---------- */
 function defaultState(){
   return { job:'', jobs:{}, v:0, rows:0, coins:20, gems:0, crown:0, salt:0, locks:{}, shields:0, hammers:0, rshield:0, rsAuto:{on:false,n:10}, rsBuyN:10, rsUnl:0, noRaid:0, rlog:[], rtSeen:0, rnT:0, rl:[], own:[], helpers:[], seed:Object.assign(Z(),{corn:3,carrot:3}), seedG:Z(), seedR:Z(), bags:0, fs:{}, rod:0, rods:[], fish:[], pond:{own:0,lv:1,f:[],br:0,t:0,n:0,rd:[]}, veh:[], ride:-1, crop:Z(), gold:Z(), vd:Z(), vbags:0, mv:{crop:Z(),gold:Z(),rb:Z(),vd:Z()}, auto:false, autoSell:false, ai:{plant:true,harvest:true,sell:true,fry:true,gold:false}, fb:{npc:'gold',back:true,leg:false}, st:{gold:0,grow:0,fish:0}, xp:0, lv:1, sel:'corn',
-           crops:{}, rb:Z(), hv:0, farm:'', char:null, code:Math.random().toString(36).slice(2,8).toUpperCase(), muteWx:false, perf:0, bloom:1, vol:100, volWx:100, ntf:{}, hide:{bar:0,ready:0,time:0,money:0,shield:0,shine:0}, map:'land', x:11.5, y:9.5, fx:0, fy:1 };
+           crops:{}, rb:Z(), hv:0, farm:'', char:null, code:Math.random().toString(36).slice(2,8).toUpperCase(), muteWx:false, perf:0, bloom:1, skMini:1, skV:2, vol:100, volWx:100, ntf:{}, hide:{bar:0,ready:0,time:0,money:0,shield:0,shine:0}, map:'land', x:11.5, y:9.5, fx:0, fy:1 };
 }
 let S = defaultState();
 let FC={}, DB=null, myId='', FID='', unF=null, SRV={}, ONL=[];
@@ -3913,7 +3914,7 @@ $('shopBody').addEventListener('click', e => {
   if(b.dataset.hp!==undefined){ hpUse(b.dataset.hp); return; }
   if(b.dataset.fsel!==undefined){ fsSel=+b.dataset.fsel; renderShop(); return; }
   if(b.dataset.fact){ fsAct(); return; }
-  if(b.dataset.skmini!==undefined){ S.skMini=b.dataset.skmini==='1'?1:0; pfSig=''; lastPres=''; try{ sendPres(); }catch(e){} save(); renderShop(); toast(S.skMini?'🎮 ชุดพรีเมียมทุกชุดแสดงเป็นตัวแบบในเกมแล้ว':'✨ ชุดพรีเมียมกลับเป็นแบบชุดหลักแล้ว',2000); return; }
+  if(b.dataset.skmini!==undefined){ S.skMini=b.dataset.skmini==='1'?1:0; pfSig=''; lastPres=''; try{ sendPres(); }catch(e){} save(); renderShop(); toast(S.skMini?'🎮 ชุดพรีเมียมทุกชุดแสดงเป็นตัวแบบในเกมแล้ว':'✨ ชุดพรีเมียมเป็นแบบชุดใหญ่ (Beta) แล้ว',2000); return; }
   if(b.dataset.skact){ skAct(+b.dataset.skact); return; }
   if(b.dataset.fopen){ closeShop(); openFashion(); return; }
   if(b.dataset.frod!==undefined){ const i=+b.dataset.frod, r=RODS[i]; if(r&&!r.gacha){ if(!rodCan(r)){ fishWhy(r.gem?'💎 ซื้อไม่ได้: เพชรไม่พอ — '+r.n+' ราคา 💎'+fmt(r.gem)+' (มี 💎'+fmt(S.gems|0)+' · ขาดอีก 💎'+fmt(r.gem-(S.gems|0))+') · แลกเพชรได้ที่พ่อค้าเพชร':'🪙 ซื้อไม่ได้: เหรียญไม่พอ — '+r.n+' ราคา 🪙'+fmt(r.price)+' (มี 🪙'+fmt(S.coins)+' · ขาดอีก 🪙'+fmt(r.price-S.coins)+')',3200); return; } if(r.gem){ S.gems=(S.gems|0)-r.gem; try{ gemUI(); }catch(e){} } else S.coins-=r.price; const first=!S.rods.includes(i+1); if(!S.rodN) S.rodN={}; S.rodN[i+1]=((S.rodN[i+1]|0)||(first?0:1))+1; if(first){ S.rods.push(i+1); S.rods.sort((a,b)=>a-b); if(FI.on) stopFish(); S.rod=i+1; } try{ sfx('open',1,1); }catch(e){} if(first) toast('🎣 ซื้อ'+r.n+'แล้ว! เก็บไว้ในกระเป๋า (เลือกใช้ได้ที่ 🎒) · ตอนนี้ใช้เบ็ดนี้อยู่ ไปยืนใกล้น้ำแล้วกด 🎣 ตกปลา ได้เลย',3600); else toast('🎣 ซื้อ'+r.n+'เพิ่มแล้ว · ตอนนี้มี '+S.rodN[i+1]+' อัน',2400); updateHUD(); save(); } return; }
@@ -4151,7 +4152,7 @@ function renderSet(){
       +`<div class="slab">⚡ โหมดการแสดงผล</div><div class="mrow"><button class="btn small tog ${S.perf===1?'ghost':'on'}" data-perf="0">🚀 ปกติ</button><button class="btn small tog ${S.perf===1?'on':'ghost'}" data-perf="1">🐢 ประหยัด</button></div><p class="sNote">ประหยัด = ลดความละเอียด/เอฟเฟกต์ เครื่องไม่ร้อน แบตอยู่นาน</p>`
       +`<div class="slab">✨ Bloom (แสงฟุ้ง นุ่ม ๆ)</div><div class="mrow"><button class="btn small tog ${S.bloom!==0?'on':'ghost'}" data-bloom="1">✨ เปิด</button><button class="btn small tog ${S.bloom===0?'on':'ghost'}" data-bloom="0">⬜ ปิด</button></div><p class="sNote">ทำให้ภาพดูฟุ้ง ๆ มีแสงนุ่ม · โหมดประหยัดจะปิดให้อัตโนมัติ${S.perf===1&&S.bloom!==0?' (ตอนนี้ปิดอยู่เพราะเปิดโหมดประหยัด)':''}</p>`
       +`<div class="slab">🧭 แถบปุ่มล่าง (ออโต้/ตกปลา/แชท …)</div><div class="mrow"><button class="btn small tog ${S.warpMin?'ghost':'on'}" data-warp="0">📂 แสดง</button><button class="btn small tog ${S.warpMin?'on':'ghost'}" data-warp="1">◀ ย่อเก็บ</button></div>`
-      +`<div class="slab">👗 ชุดพรีเมียม</div><div class="mrow"><button class="btn small tog ${skMini()?'ghost':'on'}" data-skm="0">✨ แบบชุดหลัก</button><button class="btn small tog ${skMini()?'on':'ghost'}" data-skm="1">🎮 แบบตัวในเกม</button></div>`;
+      +`<div class="slab">👗 ชุดพรีเมียม</div><div class="mrow"><button class="btn small tog ${skMini()?'on':'ghost'}" data-skm="1">🎮 แบบตัวในเกม</button><button class="btn small tog ${skMini()?'ghost':'on'}" data-skm="0">✨ แบบชุดใหญ่ (Beta)</button></div>`;
   }
   $('setTitle').textContent=STT[setTab];
   document.querySelectorAll('#setTabs [data-st]').forEach(b=>b.classList.toggle('ghost',b.dataset.st!==setTab));
@@ -6420,7 +6421,7 @@ cv.addEventListener('click',e=>{ if(!playing||shopOpen||bagOpen) return;
 $('fishBtn').addEventListener('click',()=>openBot('fish'));
 resize();
 buildHotbar();
-load(); S.hide=Object.assign({bar:0,ready:0,time:0,money:0,shield:0,shine:0},S.hide&&typeof S.hide==='object'?S.hide:{}); S.muteWx=!!S.muteWx; { const o=(S.ntf&&typeof S.ntf==='object')?S.ntf:{}, n={}; for(const c of NTF_CATS) n[c[0]]=o[c[0]]?1:0; if(S.noToast) for(const k in n) n[k]=1; if(S.noFish) n.fish=1; if(S.noLg) n.lg=1; S.ntf=n; S.noToast=false; S.noFish=false; S.noLg=false; } /* ย้ายค่าเก่า (ปิดแจ้งเตือน/ปลา/ตำนาน) เข้าระบบรวม */ try{ chatToggle(!S.chatMin,true); }catch(e){} S.perf=S.perf===1?1:0; S.bloom=S.bloom===0?0:1; S.ownHp=Array.isArray(S.ownHp)?S.ownHp.filter(k=>typeof k==='string'&&hpGet(k)):[]; S.hp=typeof S.hp==='string'&&S.ownHp.includes(S.hp)?S.hp:''; { const c=v=>Math.max(0,Math.min(100,Number.isFinite(+v)?Math.round(+v):100)); S.vol=c(S.vol); S.volWx=c(S.volWx); S.noToast=!!S.noToast; } applyPerf(); labSnd();
+load(); S.hide=Object.assign({bar:0,ready:0,time:0,money:0,shield:0,shine:0},S.hide&&typeof S.hide==='object'?S.hide:{}); S.muteWx=!!S.muteWx; { const o=(S.ntf&&typeof S.ntf==='object')?S.ntf:{}, n={}; for(const c of NTF_CATS) n[c[0]]=o[c[0]]?1:0; if(S.noToast) for(const k in n) n[k]=1; if(S.noFish) n.fish=1; if(S.noLg) n.lg=1; S.ntf=n; S.noToast=false; S.noFish=false; S.noLg=false; } /* ย้ายค่าเก่า (ปิดแจ้งเตือน/ปลา/ตำนาน) เข้าระบบรวม */ try{ chatToggle(!S.chatMin,true); }catch(e){} S.perf=S.perf===1?1:0; S.bloom=S.bloom===0?0:1; if(S.skV!==2){ S.skMini=1; S.skV=2; } /* ชุดพรีเมียม: แบบตัวในเกม = แบบหลัก (ย้ายทุกคนครั้งเดียว) · แบบชุดใหญ่ = แถม (Beta) */ S.ownHp=Array.isArray(S.ownHp)?S.ownHp.filter(k=>typeof k==='string'&&hpGet(k)):[]; S.hp=typeof S.hp==='string'&&S.ownHp.includes(S.hp)?S.hp:''; { const c=v=>Math.max(0,Math.min(100,Number.isFinite(+v)?Math.round(+v):100)); S.vol=c(S.vol); S.volWx=c(S.volWx); S.noToast=!!S.noToast; } applyPerf(); labSnd();
 FC=S.crops;
 spawnHelpers(); buildWalkers(); if(S.char){ Object.assign(S.char,normCh(S.char)); if(S.char.ac>0&&!(S.own||[]).includes(S.char.ac)){ S.char.ac=0; S.char.ak=-1; } if(S.char.cs>0&&!(S.ownSk||[]).includes(S.char.cs)) S.char.cs=0; }
 updateHUD();

@@ -1598,9 +1598,9 @@ function pmCrownPv(p,W,H,t){ const SC=4, D=2.6, i=Math.floor(t/D)%SC, k=(t%D)/D,
   for(let j=0;j<SC;j++){ p.fillStyle=j===i?'#ffe08a':'rgba(255,255,255,.3)'; p.beginPath(); p.arc(rx-18+j*12,H-10,3.5,0,6.2832); p.fill(); } }
 function renderPrem(){ $('shopTitle').textContent='👑 ร้านพรีเมียม'; const gh=S.gems|0, need=Math.max(0,PREM_GEM-gh), own=!!S.crown;
   const tabs=`<div class="pmTabs">${[['crown','👑','มงกุฎ'],['fashion','👗','แฟชั่น'],['pose','✨','ท่าเก็บ'],['shield','🛡️','โล่อีกา']].map(t=>`<button data-ptab="${t[0]}" class="${premTab===t[0]?'on':''}"><span class="pe">${t[1]}</span>${t[2]}</button>`).join('')}</div>`;
-  const bal=`<div class="pmBal">💎 เพชรของคุณ <b>${fmt(gh)}</b></div>`;
+  const bal=''; /* ยอดเพชร/เหรียญแสดงในแถบด้านบนร้านแล้ว */
   if(premTab==='pose'){ $('shopBody').innerHTML=tabs+bal+poseUI(); $('shopCoins').textContent=fmt(S.coins); gemUI(); hpPvLoop(); return; }
-  if(premTab==='shield'){ const bal2=`<div class="pmBal">🪙 เหรียญของคุณ <b>${fmt(S.coins)}</b></div>`;
+  if(premTab==='shield'){ const bal2='';
     $('shopBody').innerHTML=tabs+bal2+`<div class="pmHero"><div class="pmCr">🛡️</div><div class="pmTx"><h3>โล่กันอีกา</h3><div class="pmPr">🪙${fmt(SHIELD_PRICE)} / อัน</div></div></div>
       <div class="pmPv"><canvas id="pmCv" width="320" height="170"></canvas></div>
       <div class="pmWhy"><b>🤔 ทำไมต้องซื้อ?</b>

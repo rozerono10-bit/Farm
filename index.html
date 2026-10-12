@@ -1934,7 +1934,7 @@ function wStep(dt,m){ m=m||maps.land; if(!m.walkers) return;
 const RODS=[{n:'เบ็ดธรรมดา',tier:'Common',color:'#9aa0a6',price:1000,wmin:5,wmax:10},{n:'🔱 เบ็ดตรีศูลโพไซดอน (Trident)',tier:'Mythic',color:'#2ec4d6',price:0,gem:10,wmin:5,wmax:5,multi:3},{n:'เบ็ดดาบ (Sword)',ic:'⚔️',tier:'Epic',color:'#e2334a',price:0,gem:1,wmin:5,wmax:10,sp:1,rm:'sw'},{n:'เบ็ดโบว์ (Bow)',ic:'🎀',tier:'Epic',color:'#ff6fb5',price:0,gem:1,wmin:5,wmax:10,sp:2,rm:'bow'}]; /* wmin-wmax = วินาทีรอปลากินเบ็ด · เพิ่มเบ็ดระดับอื่นต่อท้ายได้ */
 /* ⚔️🎀 เบ็ด Epic: ตกปลาแล้วมีโอกาส FISH_SP_CH ติดสถานะพิเศษ ราคา x FISH_SP_MUL (เก็บใน f[7]: 1 = ฟันแบบสุคุนะ · 2 = โบว์แรร์) */
 const FISH_SP_CH=.1, FISH_SP_MUL=20, FISH_SP={1:{e:'⚔️',n:'ฟันแบบสุคุนะ',c:'#e2334a'},2:{e:'🎀',n:'โบว์แรร์',c:'#ff6fb5'}};
-const spTag=p=>FISH_SP[p]?' '+FISH_SP[p].e+FISH_SP[p].n:'', rodIc=r=>r.ic||(rodIc(r));
+const spTag=p=>FISH_SP[p]?' '+FISH_SP[p].e+FISH_SP[p].n:'', rodIc=r=>r.ic||(r.multi?'🔱':'🎣');
 const FISH_CAP=1400, /* ปลาสูงสุดในกระเป๋า = ช่องสูงสุด 350 x ช่องละ 4 */ FISH_ST=[.05,.01,.01]; /* โอกาสสถานะ ทอง/รุ้ง/วอยด์ รวม 10% */
 const FISH={
   sea0:{n:'ปลาทู',e:'🐟',z:'sea',sell:20,w:40}, sea1:{n:'ปลาการ์ตูน',e:'🐠',z:'sea',sell:44,w:28}, sea2:{n:'ปลาปักเป้า',e:'🐡',z:'sea',sell:67,w:18}, sea3:{n:'ปลากะพง',e:'🐟',z:'sea',sell:198,w:10}, sea4:{n:'ปลาฉลามน้อย',e:'🦈',z:'sea',sell:500,w:4},

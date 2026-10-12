@@ -85,6 +85,9 @@ body.touch #touch{display:block}
 #act{position:absolute;right:calc(env(safe-area-inset-right,0px) + 26px);bottom:calc(env(safe-area-inset-bottom,0px) + 40px);width:92px;height:92px;border-radius:50%;
   background:var(--accent);color:var(--accent-ink);border:4px solid #fff8e6;font-family:inherit;font-size:24px;cursor:pointer;touch-action:none;
   box-shadow:0 4px 0 rgba(0,0,0,.3);padding:0}
+#shAll{position:absolute;right:calc(env(safe-area-inset-right,0px) + 22px);bottom:calc(env(safe-area-inset-bottom,0px) + 150px);z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;width:84px;height:84px;padding:0;border-radius:50%;font-family:inherit;color:#fff;background:radial-gradient(circle at 35% 30%,#6fa8ff,#2a5cc8);border:3px solid #fff;box-shadow:0 4px 0 #173a80,0 0 0 3px rgba(0,0,0,.25);pointer-events:auto;touch-action:manipulation;cursor:pointer}
+#shAll .e{display:block;width:34px;height:34px;line-height:0}#shAll .e .pxi{width:34px;height:34px}#shAll b{font-size:14px;line-height:1.1}#shAll small{font-size:12px;line-height:1;opacity:.95}
+#shAll:active{transform:translateY(3px);box-shadow:0 1px 0 #173a80}
 #act.dim{background:#8c8472;opacity:.8}
 #act:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.3)}
 
@@ -854,7 +857,14 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
 #settings .sec small{font-size:.7em;opacity:.8}
 .iRow .nm small{font-size:12px}
 .iRow>b{white-space:nowrap;font-size:14px}
-#settings .aStep{display:flex;align-items:center;gap:8px;margin:12px 0 6px;font-size:16px;font-weight:600}
+#settings .aflow{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:6px 0 2px;font-size:14px}.aflow span{background:#fff;border:2px solid #d9b27a;border-radius:14px;padding:2px 8px;white-space:nowrap}.aflow i{font-style:normal;color:#a0743a;font-weight:700}
+.amode b{font-size:16px}
+.pdPick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 8px}
+.pdOpt{display:flex;flex-direction:column;align-items:center;gap:3px;padding:14px 6px;font-family:inherit;color:#4a2c10;background:#fff3d6;border:3px solid #4a2812;border-radius:10px;box-shadow:inset 0 0 0 2px #e8c58a,0 4px 0 rgba(0,0,0,.35);cursor:pointer}
+.pdOpt .e{font-size:40px;line-height:1}.pdOpt b{font-size:20px}.pdOpt small{font-size:13px;opacity:.8;text-align:center}.pdOpt i{font-style:normal;font-size:13px;margin-top:2px;padding:1px 8px;border-radius:9px;background:rgba(0,0,0,.12)}
+.pdOpt.hot i{background:#e0504a;color:#fff}.pdOpt:active{transform:translateY(3px)}
+.pdNav{display:flex;align-items:center;gap:8px;margin:0 0 8px}.pdNav b{font-size:18px}
+.aStep{display:flex;align-items:center;gap:8px;margin:12px 0 6px;font-size:16px;font-weight:600}
 #settings .aStep b{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-ink);font-size:15px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 #rdAlert{position:fixed;right:calc(env(safe-area-inset-right,0px) + 10px);top:var(--hudB,calc(env(safe-area-inset-top,0px) + 150px));z-index:85;width:min(64vw,260px);padding:0;border-radius:14px;overflow:hidden;background:#1d0a0b;border:2px solid #ff6a5a;box-shadow:0 0 14px rgba(255,80,60,.5),0 4px 0 rgba(0,0,0,.35);color:#ffe9e6;font-size:13px;line-height:1.3;opacity:0;transform:translateX(30px);transition:opacity .25s,transform .25s;pointer-events:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 #rdAlert.on{opacity:1;transform:none;pointer-events:auto}
@@ -1151,6 +1161,7 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
   <div id="touch">
     <div id="joy"><div id="knob"></div></div>
     <button id="act">ทำ</button>
+    <button id="shAll" type="button" style="display:none"><span class="e"></span><b>ใส่โล่</b><small></small></button>
   </div>
 
   <div class="overlay" id="shop">
@@ -2068,7 +2079,7 @@ const legTag=l=>l?' 🌟ตำนาน':''; const shTag=s=>s?' 💠Shine':''; c
 const fishVal=()=>S.fish.reduce((a,f)=>a+fishPrice(f[0],f[1],f[2],f[4],f[5],f[6],f[7]),0);
 const rodCostTx=r=>r.gem?'💎'+fmt(r.gem):'🪙'+fmt(r.price), rodCan=r=>r.gem?(S.gems|0)>=r.gem:S.coins>=r.price; /* 🎣 ราคาเบ็ด: เพชร (gem) หรือเหรียญ (price) */
 const FISH_BITE=1.2; /* วินาทีสุดท้ายก่อนปลากินเบ็ด: ทุ่นสั่น + เสียงเตือน */
-const FI={on:false,bt:0,t:0,wait:0,bx:0,by:0,px:0,py:0,zone:'sea',map:''};
+const FI={pend:null,on:false,bt:0,t:0,wait:0,bx:0,by:0,px:0,py:0,zone:'sea',map:''};
 function rollFish(zone){ const L=FISHK[zone], tot=L.reduce((a,k)=>a+FISH[k].w,0); let r=Math.random()*tot, id=L[L.length-1]; for(const k of L){ if(r<FISH[k].w){ id=k; break; } r-=FISH[k].w; }
   { const LN=legNow(); if(LN.map===FI.map&&Math.random()<FISH_LGD_CH*(S.job==='fisher'?1+jobF('fisher'):1)) id=LN.id; } /* 🏆 ปลาในตำนาน: ตกได้เฉพาะแมพที่ระบบประกาศ (เปลี่ยนที่ทุก LG_SEC วินาที) */
   const x=Math.random(); let g=0; if(x<FISH_ST[2]) g=3; else if(x<FISH_ST[2]+FISH_ST[1]) g=2; else if(x<FISH_ST[2]+FISH_ST[1]+FISH_ST[0]) g=1;
@@ -2083,7 +2094,12 @@ function fishUI(){ const b=document.getElementById('fishBtn'); if(b) b.classList
 function fToast(msg,ms,ico){ toast(msg,ms,ico,'fish'); } /* แจ้งเตือนเรื่องปลา — ปิดได้ใน ⚙️ > แจ้งเตือน */
 function fishWhy(msg,ms){ toast(msg,ms||2600,null,'fish'); }
 const noRodMsg=()=>S.rods&&S.rods.length?'🎒 ตกไม่ได้: ยังไม่ได้เลือกเบ็ด — เปิดกระเป๋า แล้วกด "ใช้" เลือกเบ็ดก่อนนะ':'🎣 ตกไม่ได้: ยังไม่มีเบ็ด — ซื้อได้ที่ลุงตกปลา (หาดทะเล) · กดปุ่ม 🎣 จะวาปไปให้';
-function stopFish(msg){ if(msg) LF.on=false; if(!FI.on) return; FI.on=false; fishUI(); if(typeof msg==='string') fishWhy(msg,2600); else if(msg) fToast('🎣 เก็บเบ็ดแล้ว',1400); }
+/* ▶️ ตกปลาต่อแบบรอคิว: ถ้าตอนนั้นเปิดเมนูอยู่ จะเริ่มตกทันทีที่ปิดเมนู */
+function fishLater(o){ FI.pend=o||{}; }
+function fishResume(){ const p=FI.pend; FI.pend=null; if(!p||!S.rod) return;
+  if(p.leg){ LF.on=true; startFish(); if(!FI.on&&!FT.on) LF.on=false; return; }
+  if(bagTot()<BAGCAP){ startFish(p.rs||undefined); if(p.lf&&FI.on) LF.on=true; } }
+function stopFish(msg){ if(msg){ LF.on=false; FI.pend=null; } if(!FI.on) return; FI.on=false; fishUI(); if(typeof msg==='string') fishWhy(msg,2600); else if(msg) fToast('🎣 เก็บเบ็ดแล้ว',1400); }
 const CAST_R=6; /* ระยะเหวี่ยงเบ็ดสูงสุด (ช่อง) เวลาแตะจุดน้ำบนจอ */
 function waterAt(m,tx,ty){ return tx>=0&&ty>=0&&tx<m.w&&ty<m.h&&m.t[ty*m.w+tx]===(m.sea?SEA:WTR); }
 function startFish(tgt){
@@ -2180,7 +2196,7 @@ function tripStep(dt){
   if(S.auto){ tripCancel('🤖 เปิดออโต้ — ยกเลิกการเดินไปขายปลา'); return; }
   if(FT.wait>0){ FT.wait-=dt; moving=false; return; }
   if(FT.ph==='end'){ tripEnd(); toast('🎒 ขายของเสร็จแล้ว',1800); return; }
-  if(FT.ph==='leg'){ legStep(dt); return; }
+  if(FT.ph==='leg'||FT.ph==='wtr'){ legStep(dt); return; }
   const k=FT.npc, m=maps[S.map], go=FT.ph==='go';
   let destMap, npc=null, bk=FT.back;
   if(go){ npc=fbFind(k); if(!npc){ tripCancel('❌ ไม่พบ NPC ที่จะไปขาย'); return; } destMap=FB_NPC[k].map; }
@@ -2191,7 +2207,7 @@ function tripStep(dt){
     if(go&&Math.hypot(npc.x-S.x,npc.y-S.y)<=2.0){ moving=false; tripSell(); return; }
     if(!go&&Math.hypot(bk.x-S.x,bk.y-S.y)<=.75){ S.x=bk.x; S.y=bk.y; S.fx=bk.fx; S.fy=bk.fy; moving=false; sendPres();
       const rs=FT.resume, lf=FT.lf; tripEnd(); toast('🎣 ถึงจุดตกปลาแล้ว',1400);
-      setTimeout(()=>{ if(playing&&!shopOpen&&!bagOpen&&!FI.on&&!FT.on&&!S.auto&&bagTot()<BAGCAP){ startFish(rs||undefined); if(lf&&FI.on) LF.on=true; } },500); return; } }
+      fishLater({rs,lf}); return; } }
   /* ให้พ่อค้าทอง (เดินไปมา) ยืนรอ + ถ้าเขาขยับไปไกลจากจุดเป้าหมาย → คำนวณทางใหม่ */
   if(go&&S.map===destMap&&npc.walk){ if(Math.hypot(npc.x-S.x,npc.y-S.y)<6) npc.talk=Math.max(npc.talk||0,1.2);
     if(FT.path&&Math.abs(Math.floor(npc.x)-FT.tx)+Math.abs(Math.floor(npc.y)-FT.ty)>1) FT.path=null; }
@@ -2225,11 +2241,11 @@ function legTripStart(){
   FT.on=true; AS.on=true; FT.ph='leg'; FT.npc=''; FT.path=null; FT.stuck=0; FT.fail=0; FT.wait=0; FT.chk=0; FT.back=null; FT.resume=null; FT.lm=''; FT.lf=true; LF.on=true;
   fToast('🏆 บอทตกปลา: เดินไปตกปลาในตำนานที่ '+L.n,3000,[L.id]); return true; }
 function legStep(dt){
-  const L=legNow(), m=maps[S.map];
-  task('🚶 เดินไปตกปลาในตำนาน: '+L.n);
+  const wtr=FT.ph==='wtr', L=wtr?{map:FT.wm,n:maps[FT.wm].name}:legNow(), m=maps[S.map];
+  task(wtr?'🚶 เดินไปหาน้ำแล้วตกปลาต่อ':'🚶 เดินไปตกปลาในตำนาน: '+L.n);
   if(FT.lm!==L.map){ FT.lm=L.map; FT.path=null; FT.fail=0; } /* ปลาย้ายแมพระหว่างเดิน → คำนวณทางใหม่ */
   if(S.map===L.map&&nearWater()){ moving=false; tripEnd();
-    setTimeout(()=>{ if(playing&&!shopOpen&&!bagOpen&&!FI.on&&!FT.on&&!S.auto){ LF.on=true; startFish(); if(!FI.on&&!FT.on) LF.on=false; } },300); return; }
+    fishLater(wtr?{lf:1}:{leg:1}); return; }
   if(!FT.path||!FT.path.length){
     const r=bfs(m,Math.floor(S.x),Math.floor(S.y)); let p=null;
     if(S.map!==L.map){ const nm=S.map==='land'?L.map:'land'; let bn=-1;
@@ -2239,6 +2255,12 @@ function legStep(dt){
     if(!p||!p.length){ if(++FT.fail>12){ tripCancel('❌ หาทางไปจุดตกปลาในตำนานไม่เจอ'); } FT.wait=.25; return; }
     FT.path=p; }
   tripWalk(m,dt); }
+/* 🚶🎣 เดินไปหาน้ำที่ใกล้ที่สุดในแมพนี้ แล้วลงเบ็ดเอง (ใช้ตอนกดเริ่มออโต้ตกปลาแต่ยืนไกลน้ำ / วาร์ปแมพระหว่างออโต้ตกปลา) */
+const mapHasWater=id=>{ const m=maps[id]; if(!m) return false; const W0=m.sea?SEA:WTR; return m.t.includes(W0); };
+function waterTrip(){ if(FT.on||!playing||S.farm||!S.rod||!mapHasWater(S.map)) return false;
+  resetInput(); if(S.auto){ S.auto=false; updateHUD(); }
+  FT.on=true; AS.on=true; FT.ph='wtr'; FT.wm=S.map; FT.npc=''; FT.path=null; FT.stuck=0; FT.fail=0; FT.wait=0; FT.chk=0; FT.back=null; FT.resume=null; FT.lm=S.map; FT.lf=true;
+  fToast('🚶 เดินไปหาน้ำที่ใกล้ที่สุด แล้วตกปลาต่อให้เอง',2200); return true; }
 function lgFollow(L){
   if(!(S.fb&&S.fb.leg)||!LF.on||!playing||FT.on||S.auto||S.farm||restT>0||shopOpen||bagOpen||!S.rod) return;
   if(bagIsFull()&&(S.fb.npc==='none'||!fbFind(S.fb.npc))){ LF.on=false; return; }
@@ -2485,14 +2507,24 @@ function pondCollect(){ const P=S.pond; if(!P.rd.length) return false;
   fToast(got.length===1?'🐟 เก็บลูกปลา '+VG[top[1]]+d.n+' ('+sexTxt(top[3])+') ขนาด '+top[2]+(top[1]?' '+TN[top[1]]:'')+spTag(top[7])+' · ราคา 🪙'+fmt(fishPrice(top[0],top[1],top[2],top[4],top[5],top[6],top[7])):'🐟 เก็บลูกปลา '+got.length+' ตัวเข้ากระเป๋า · ตัวดีสุด '+VG[top[1]]+d.n+spTag(top[7])+' ขนาด '+top[2]+' 🪙'+fmt(fishPrice(top[0],top[1],top[2],top[4],top[5],top[6],top[7])),3000,[top[0]]);
   try{ sfx('open',top[1]?4:1,1); }catch(e){} updateHUD(); save(); return true; }
 function pondFishRow(f,btn){ const d=FISH[f[0]]; return `<div class="row"><span class="ic">${VG[f[1]]}${fIc(f[0])}</span><div class="nm">${d.n} ${sexTag(f[3])}${f[1]?' '+TN[f[1]]:''}${legTag(f[4])}${shTag(f[5])}${hfTag(f[6])}${spTag(f[7])}<small>ขนาด ${f[2]} · ราคา 🪙${fmt(fishPrice(f[0],f[1],f[2],f[4],f[5],f[6],f[7]))}</small></div><div class="btns">${btn}</div></div>`; }
+let pondView=''; /* '' = หน้าเลือก · 'breed' = ผสมพันธุ์ · 'get' = เก็บลูกปลา */
 function renderPondShop(){ const P=S.pond, HOLD=pondHold(P.lv), rd=P.rd.length, full=rd>=HOLD, bagFull=bagTot()>=BAGCAP; $('shopTitle').textContent='🪨 บ่อปลา Lv.'+P.lv;
+  /* 0) หน้าแรก: เลือกก่อนว่าจะ 💞 ผสมพันธุ์ หรือ 🧺 เก็บลูกปลา */
+  if(!pondView){ const brTx=P.br&&pondOK()?'💞 กำลังผสมอยู่':P.f.length?'คู่ในบ่อ '+P.f.length+'/'+POND_SLOTS+' ตัว':'ยังไม่ได้ใส่ปลา';
+    $('shopBody').innerHTML='<div class="sec">🪨 จะทำอะไรกับบ่อปลา?</div><div class="pdPick">'
+      +'<button type="button" class="pdOpt" data-pview="breed"><span class="e">💞</span><b>ผสมพันธุ์</b><small>ใส่ปลา ♂ + ♀ แล้วรอลูกปลา</small><i>'+brTx+'</i></button>'
+      +'<button type="button" class="pdOpt'+(rd?' hot':'')+'" data-pview="get"><span class="e">🧺</span><b>เก็บลูกปลา</b><small>เอาลูกปลาเข้ากระเป๋า</small><i>'+(rd?'พร้อมเก็บ '+rd+'/'+HOLD+' ตัว':'ยังไม่มีลูกปลา')+'</i></button></div>';
+    $('shopCoins').textContent=S.coins; return; }
+  let h='<div class="pdNav"><button type="button" class="btn small ghost" data-pview="">◀ เลือกใหม่</button><b>'+(pondView==='get'?'🧺 เก็บลูกปลา':'💞 ผสมพันธุ์')+'</b></div>';
+  if(pondView==='get'){
   /* 1) สถานะ + ปุ่มเก็บลูกปลา (ใหญ่ เห็นชัด) */
-  let h='<div class="pdTop"><div class="pdRd"><span class="pdBig">🐟</span><div><b>'+rd+'</b><small>/'+HOLD+' ตัว</small><div class="pdL">ลูกปลาพร้อมเก็บ</div></div></div>'
+  h+='<div class="pdTop"><div class="pdRd"><span class="pdBig">🐟</span><div><b>'+rd+'</b><small>/'+HOLD+' ตัว</small><div class="pdL">ลูกปลาพร้อมเก็บ</div></div></div>'
     +'<button class="btn pdGet" data-pcollect="1" '+(rd?'':'disabled')+'>'+(rd?(bagFull?'🎒 กระเป๋าเต็ม':'🧺 เก็บทั้งหมด '+rd+' ตัว'):'ยังไม่มีลูกปลา')+'</button></div>';
   if(rd){ const C={}; for(const f of P.rd){ const ks=[]; if(f[1]) ks.push(TN[f[1]]); if(f[5]) ks.push('💠Shine'); if(f[6]) ks.push('🐣½'); if(FISH_SP[f[7]]) ks.push(FISH_SP[f[7]].e+FISH_SP[f[7]].n); if(!ks.length) ks.push('ปกติ'); for(const k of ks) C[k]=(C[k]|0)+1; }
     h+='<div class="pdSum"><b>🐟 ลูกปลาที่รอเก็บ:</b><span class="fch">'+Object.keys(C).map(k=>'<i'+(k==='ปกติ'?' class="n"':'')+'>'+k+' '+C[k]+'</i>').join('')+'</span></div>'; }
   if(full) h+='<div class="pdWarn">⚠️ บ่อเต็มแล้ว — หยุดผลิตจนกว่าจะเก็บลูกปลา</div>';
   if(rd&&bagFull) h+='<div class="pdWarn">🎒 กระเป๋าเต็ม ('+BAGCAP+') — ไปขายของก่อนแล้วค่อยมาเก็บ</div>';
+  } else {
   if(P.br&&pondOK()&&!full){ const left=Math.max(0,Math.ceil(POND_SEC-P.t)), pc=Math.min(100,P.t/POND_SEC*100);
     h+='<div class="pdBar"><div class="pdBarT"><span>💞 กำลังผสมพันธุ์ · ได้ '+pondPer(P.lv)+' ตัว/รอบ · 💠 '+(pondShCh()*100)+'%'+(pondShCh()>=POND_SH_P?' · ราคาลูก x0.5':'')+(pondSpCh()?' · ⚔️🎀 '+pondSpCh()*100+'%':'')+'</span><span>อีก <b id="pondCd">'+left+'</b> วิ</span></div><div class="bar"><i id="pondBarI" style="width:'+pc.toFixed(1)+'%"></i></div></div>'; }
   /* 2) คู่ปลาในบ่อ: ช่อง ♂ / ♀ */
@@ -2516,6 +2548,7 @@ function renderPondShop(){ const P=S.pond, HOLD=pondHold(P.lv), rd=P.rd.length, 
       h+=`<div class="pdItem${hint?' hint':''}" style="--sc:${SEXC[sx]}"><span class="pdSx2">${SEXS[sx]}</span><span class="pdIc">${VG[f[1]]}${fIc(f[0])}</span><span class="pdTx">${d.n}${fChips(f)}<small>📏 ${f[2]} · 🪙${fmt(x.v)}</small></span><button class="btn small" data-pin="${x.i}" ${fullP?'disabled':''}>ใส่</button></div>`; }
     h+='</div>'; }
   h+='<details class="shInfo"><summary>ℹ️ ลูกปลาได้อะไรบ้าง</summary>ขนาดสุ่มระหว่างพ่อ-แม่ · สถานะสุ่มจากพ่อ-แม่ และมีโอกาส '+Math.round(POND_UP*100)+'% ได้สถานะสูงขึ้น 1 ขั้น (✨ทอง → 🌈รุ้ง → 🕳️วอยด์) · 💠 Shine: พ่อหรือแม่เป็น Shine = โอกาส 1% แต่ลูกทุกตัวราคา x0.5 (🐣½) · ไม่มี Shine = 0.1% ราคาปกติ<br>⚔️ ฟันแบบสุคุนะ / 🎀 โบว์แรร์ (ราคา x'+FISH_SP_MUL+'): พ่อหรือแม่มีสถานะ = ลูกมีโอกาส '+POND_SP_1*100+'% · มีทั้งคู่ = '+POND_SP_2*100+'% (ถ้าคนละสถานะ สุ่มได้อย่างใดอย่างหนึ่ง) · ราคาลูกเต็ม ไม่ลดครึ่ง<br>บ่อเก็บรอได้ '+HOLD+' ตัว · อัพเกรดบ่อได้ที่นายหน้าที่ดิน</details>';
+    }
   $('shopBody').innerHTML=h; $('shopCoins').textContent=S.coins; }
 let epTok=0;
 function estPondLoop(){ const tok=++epTok, t0=performance.now(); const ids=(S.pond&&S.pond.f&&S.pond.f.length?S.pond.f.map(f=>f[0]):[]).concat(Object.keys(FISH).filter(k=>!FISH[k].lgd).slice(0,3)).slice(0,3);
@@ -2619,7 +2652,7 @@ const avgP=(k,g)=>Math.round(price(k,g)*avgM(g,k)), invVal=(g,k)=>Math.round(pri
 function takeStack(q,n,mul){ const st=S.fs[q]; if(!st) return 0; const [k,g]=q.split(':'); n=Math.min(n,st.n); if(n<=0) return 0; const per=st.m/st.n, v=Math.round(price(k,+g)*per*n*(mul||1));
   st.n-=n; st.m=st.n>0?st.m-per*n:0; if(st.n<=0) delete S.fs[q]; const arr=S[INV[g]], mv=S.mv[INV[g]]; arr[k]-=n; mv[k]=arr[k]>0?Math.max(0,mv[k]-per*n):0; if((mul||1)>1) addJobXp('trader',n); return v; }
 function takeVal(g,k,n,mul){ let v=0, left=Math.min(n,S[INV[g]][k]|0); for(const q of stackKeys()){ if(left<=0) break; const a=q.split(':'); if(a[0]!==k||+a[1]!==g||isLocked('c:'+q)) continue; const t=Math.min(left,S.fs[q].n); v+=takeStack(q,t,mul); left-=t; } return v; }
-function gainXp(n){ S.xp+=n; let up=0,bonus=0; while(S.xp>=xpNeed(S.lv)){ S.xp-=xpNeed(S.lv); S.lv++; up++; bonus+=S.lv*10; }
+function gainXp(n){ S.xp+=n; let up=0,bonus=0; while(S.xp>=xpNeed(S.lv)){ S.xp-=xpNeed(S.lv); S.lv++; up++; bonus+=S.lv*10; if(S.lv===RAID_LV) setTimeout(()=>{ toast('🔓 Lv.'+RAID_LV+' ปลดล็อกแล้ว: 🦹 ระบบโจรปล้น + 🍌 นางตานี — ระวังโจรมาฟาร์มนะ! (ซื้อโล่กันโจรที่โจรสวมดำ)',5000); S.rnT=Date.now()+RAID_MS; },2600); }
   if(up){ S.coins+=bonus; sfx('level'); toast('⭐ เลเวลอัพ! Lv.'+S.lv+' · โบนัส 🪙'+bonus,2400); } }
 let hasSave = false, netState='wait';
 function load(){
@@ -2633,7 +2666,7 @@ function load(){
       S.gold = Object.assign(defaultState().gold, d.gold);
       S.auto = !!d.auto; S.autoSell = !!d.autoSell;
       S.ai = Object.assign({plant:true,harvest:true,sell:true,fry:true,gold:false,shield:false}, d.ai); if(S.ai.gold) S.ai.sell=true; if(S.ai.fisher){ S.ai.sell=true; S.ai.gold=false; } S.st = Object.assign({gold:0,grow:0,fish:0}, d.st); delete S.st.spd; S.xp = S.xp|0; S.lv = Math.max(1, S.lv|0);
-      if(!S.ai.plant&&!S.ai.harvest&&!S.ai.sell&&!S.ai.fry&&!S.ai.shield) S.ai={plant:true,harvest:true,sell:true,fry:true,gold:false,shield:false};
+      S.ai.crow=false; if(!S.ai.plant&&!S.ai.harvest&&!S.ai.sell&&!S.ai.fry&&!S.ai.shield) S.ai={plant:true,harvest:true,sell:true,fry:true,gold:false,shield:false};
       S.fb = Object.assign({npc:'gold',back:true}, d.fb); if(!FB_NPC[S.fb.npc]) S.fb.npc='gold'; S.fb.back = S.fb.back!==false; S.fb.leg = !!S.fb.leg;
       if(!CROPS[S.sel]) S.sel = 'corn';
       if(!S.crops || typeof S.crops !== 'object') S.crops = {};
@@ -2876,7 +2909,8 @@ function update(dt){
   if(sroom&&playing){ prT+=dt; if(prT>.12){ prT=0; sendPres(); } }
   for(let i=floats.length-1;i>=0;i--) if(floats[i].t>=1.1) floats.splice(i,1);
   if(fade > 0) fade = Math.max(0, fade - dt*2.2);
-  if(!playing || shopOpen || bagOpen){ moving=false; if(FI.on) stopFish('🎣 เก็บเบ็ดแล้ว — เปิดหน้าต่างร้าน/กระเป๋า'); return; }
+  if(!playing || shopOpen || bagOpen){ moving=false; return; } /* เปิดเมนู = หยุดชั่วคราว (เบ็ดยังอยู่ ปิดเมนูแล้วตกต่อ) */
+  if(FI.pend&&!FI.on&&!FT.on&&!S.auto) fishResume();
   cflyStep(dt); gempStep(dt);
   const m = maps[S.map], px=S.x, py=S.y;
   if(restT>0){ restT-=dt; if(restT<=0){ restT=0; STAM=stMax(); toast('⚡ สตามิน่าเต็มแล้ว',1600); } }
@@ -2930,8 +2964,8 @@ function normFC(o){ const r={}; for(const k in (o||{})){ const c=o[k]; if(c&&CRO
 function watchFarm(){ if(unF) unF(); unF=null; if(S.farm&&String(S.farm).startsWith('npc:')){ const f=simFarm(S.farm); FID=S.farm; FC=f.crops; applyRows(f.rows); maps.farm.name='ฟาร์มของ '+f.name; updateHUD(); return; }
   if(!DB){ FC=S.crops; applyRows(S.rows); return; } const own=!S.farm; FID=S.farm||myId; FC=own?S.crops:{};
   unF=DB.doc('farms/'+FID).onSnapshot(sn=>{ if(sn.metadata&&sn.metadata.hasPendingWrites) return; const d=sn.exists?sn.data():null;
-    if(!d){ if(own) DB.doc('farms/'+FID).set({name:S.char?S.char.name:'',code:S.code,members:[myId],crops:S.crops||{},rows:S.rows|0,nr:S.noRaid?1:0}).catch(()=>{}); return; }
-    if(own){ let robbed=false, smashed=false; if((d.nr|0)!==(S.noRaid?1:0)) DB.doc('farms/'+FID).update({nr:S.noRaid?1:0}).catch(()=>{});
+    if(!d){ if(own) DB.doc('farms/'+FID).set({name:S.char?S.char.name:'',code:S.code,members:[myId],crops:S.crops||{},rows:S.rows|0,nr:nrFlag()}).catch(()=>{}); return; }
+    if(own){ let robbed=false, smashed=false; if((d.nr|0)!==nrFlag()) DB.doc('farms/'+FID).update({nr:nrFlag()}).catch(()=>{});
       if(d.rs===undefined){ if((S.rshield|0)>0) DB.doc('farms/'+FID).update({rs:S.rshield|0}).catch(()=>{}); }
       else { const n=Math.max(0,d.rs|0); if(n<(S.rshield|0)){ smashed=robbed=true; S.rlLost=(S.rshield|0)-n; raidCard({t:'โล่กันโจรโดนทุบแตก!',k:'bad',tap:'mail',rows:[['🛡️','โล่เหลือ',n+' อัน']]}); } const nn=Math.min(RS_MAX,n); if(nn!==(S.rshield|0)){ S.rshield=nn; save(); } }
       const rt=+d.rt||0; if(rt>(S.rtSeen|0)){ S.rtSeen=rt; robbed=true; save(); if(!smashed) raidCard({t:'ฟาร์มของคุณถูกบุก!',k:'bad',tap:'mail'}); }
@@ -2949,11 +2983,12 @@ async function initNet(){ try{
     const O=[]; sn.docs.forEach(x=>{ const v=x.data()||{}, s=L[v.srv]; if(!s) return; s.h+=v.h|0; if(now-v.hb<40000){ s.on++; O.push({id:v.uid||x.id||v.name,n:v.name||'?',c:v.c||null,srv:v.srv,hb:v.hb,me:(v.uid||x.id)===myId}); } }); ONL=O; SRV=L; updateSrv(); renderServers(); },()=>{});
   room=await claude.use('room'); netState=room?'ok':'off'; }catch(e){ netState='off'; } finally{ updateSrv(); renderServers(); } }
 function updateSrv(){ const s=SRV[curSrv], t=curSrv&&DB&&s?s.h:(S.hv|0), lv=Math.min(20,Math.floor(t/100));
-  $('srvT').textContent=(curSrv?'🌐 เซิร์ฟเวอร์ '+curSrv:'📴 เล่นคนเดียว'); $('srvF').style.width=(curSrv&&s?Math.min(100,s.on/CAP*100):0)+'%';
+  $('srvT').textContent=(curSrv?'🌐 '+srvNm(curSrv):'📴 เล่นคนเดียว'); $('srvF').style.width=(curSrv&&s?Math.min(100,s.on/CAP*100):0)+'%';
   $('srvS').textContent=curSrv?'👥 ออนไลน์ '+Math.max(1,s?s.on:1)+'/'+CAP+' คน':'เล่นคนเดียว (ออฟไลน์)'; try{ onlineUI(); }catch(e){} }
 /* ---- หน้าต่างเซิร์ฟเวอร์ ---- */
+const SRVN=['','🥕 แครอทเทสดี','🍉 แตงโมหนึ่งเดียวกับความมืด','🌽 ข้าวโพดผู้ถูกสาปแห่งราตรีนิรันดร์','🎃 ฟักทองทมิฬผู้ไม่เคยพ่ายแพ้','🍅 มะเขือเทศเลือดอสูรกลืนจักรวาล'], srvNm=i=>'เซิร์ฟ '+i+(SRVN[i]?' · '+SRVN[i]:'');
 function renderServers(){ let h='',tot=0; for(let i=1;i<=SN;i++){ const s=SRV[i]||{on:0,h:0}, lv=Math.min(20,Math.floor(s.h/100)), full=s.on>=CAP&&curSrv!==i; tot+=s.on;
-    h+=`<div class="row"><span class="ic">🌐</span><div class="nm">เซิร์ฟเวอร์ ${i}<small>👥 ${s.on}/${CAP} คน</small><div class="bar"><i style="width:${s.on/CAP*100}%"></i></div></div><button class="btn small" data-srv="${i}" ${!DB||!room||full?'disabled':''}>${full?'เต็ม':'เข้า'}</button></div>`; }
+    h+=`<div class="row"><span class="ic">🌐</span><div class="nm">${srvNm(i)}<small>👥 ${s.on}/${CAP} คน</small><div class="bar"><i style="width:${s.on/CAP*100}%"></i></div></div><button class="btn small" data-srv="${i}" ${!DB||!room||full?'disabled':''}>${full?'เต็ม':'เข้า'}</button></div>`; }
   $('srvList').innerHTML=h; $('srvAll').textContent=DB&&room?'👥 ออนไลน์ทั้งหมด '+tot+' คน — เลือกเซิร์ฟเวอร์เพื่อเล่นกับเพื่อน':(netState==='wait'?'⏳ กำลังเชื่อมต่อออนไลน์...':'📴 ออนไลน์ใช้ได้เมื่อเปิดผ่านลิงก์ Artifact และล็อกอินแล้ว (เล่นคนเดียวได้)'); }
 function openServers(){ $('title').classList.remove('on'); $('create').classList.remove('on'); $('servers').classList.add('on'); renderServers(); }
 $('srvList').addEventListener('click',e=>{ const b=e.target.closest('[data-srv]'); if(b&&!b.disabled) joinServer(+b.dataset.srv); });
@@ -2963,7 +2998,7 @@ async function joinServer(n){ if(sroom){ sroom.leave().catch(()=>{}); sroom=null
   if(n&&room){ try{ sroom=await room.join('farm-s'+n); curSrv=n;
       sroom.on('invite',onInvite); sroom.on('chat',onChatS); sroom.on('whisper',onWhisper); sroom.on('tOffer',onTOffer); sroom.on('tAcc',onTAcc); sroom.on('tOk',onTOk); sroom.on('tNo',onTNo); ['txReq','txAcc','txNo','txCancel','txUpd','txLock','txConf','txOk'].forEach(ev=>sroom.on(ev,m=>txOn(ev,m))); sroom.on('reply',m=>{ const d=m.data||{}; if(!m.isMe&&d.to===myPeer()&&d.ok) toast('🤝 '+cl(d.name)+' วาปมาที่ฟาร์มแล้ว',2600); });
       sroom.onPeers(()=>{ if($('plist').classList.contains('on')) renderPl(); try{ chatPeers(); }catch(e){} }); }catch(e){ toast('เข้าห้องเซิร์ฟเวอร์ไม่สำเร็จ ลองใหม่อีกครั้ง'); return; } }
-  joined=true; try{ chatSrvJoined(); }catch(e){} beat(); $('servers').classList.remove('on'); startPlay(); sendPres(); toast(curSrv?'🌐 เข้าเซิร์ฟเวอร์ '+curSrv+' แล้ว — ไปเจอเพื่อนที่เมืองกลาง':'📴 เล่นคนเดียว',2800); }
+  joined=true; try{ chatSrvJoined(); }catch(e){} beat(); $('servers').classList.remove('on'); startPlay(); sendPres(); toast(curSrv?'🌐 เข้า'+srvNm(curSrv)+' แล้ว — ไปเจอเพื่อนที่เมืองกลาง':'📴 เล่นคนเดียว',2800); }
 /* ---- เพื่อนในเซิร์ฟเวอร์ ---- */
 const myPeer=()=>{ const p=sroom&&sroom.peers().find(q=>q.isMe&&q.sameTab); return p?p.peer:''; };
 function sendPres(){ if(!sroom||!S.char) return; const c=S.char, k=[S.x.toFixed(1),S.y.toFixed(1),S.fx,S.fy,moving?1:0,S.map,FID,S.crown?1:0].join(); if(k===lastPres) return; lastPres=k;
@@ -3215,7 +3250,7 @@ function chatPeers(){ const sel=$('chatTo'); if(!sel) return; const L=sroom?sroo
   L.forEach(p=>{ chatPN[p.peer]=cl(p.presence.n); add(p.peer,'👤 '+cl(p.presence.n)); });
   if(chatTo&&!L.some(p=>p.peer===chatTo)) add(chatTo,'👤 '+(chatPN[chatTo]||'เพื่อน')+' (ออฟไลน์)');
   sel.value=chatTo; }
-function chatSrvJoined(){ CHT.s=[{sys:1,x:curSrv?'🌐 เข้าเซิร์ฟเวอร์ '+curSrv+' แล้ว':'📴 เล่นคนเดียว'}]; chatTo=''; chatPeers(); if(chatOpen) chatRender(); }
+function chatSrvJoined(){ CHT.s=[{sys:1,x:curSrv?'🌐 เข้า'+srvNm(curSrv)+' แล้ว':'📴 เล่นคนเดียว'}]; chatTo=''; chatPeers(); if(chatOpen) chatRender(); }
 function onChatS(m){ const d=m.data||{}; if(m.isMe||typeof d.x!=='string') return; const x=cleanTxt(d.x); if(!x) return; chatAdd('s',{n:cl(d.n)||'ผู้เล่น',x,t:Date.now()}); }
 function onWhisper(m){ const d=m.data||{}; if(m.isMe||d.to!==myPeer()||typeof d.x!=='string') return; const x=cleanTxt(d.x); if(!x) return; const n=cl(d.n)||'ผู้เล่น'; chatPN[m.peer]=n;
   if(!chatTo) chatTo=m.peer; chatAdd('p',{n,x,wh:1,t:Date.now()},m.peer); chatPeers();
@@ -3267,7 +3302,7 @@ function listFarms(col){ col=col||'farms'; return new Promise(res=>{ let done=0,
 const ON_MS=40000; /* ออนไลน์ = หัวใจเต้น (hb) ภายใน 40 วินาที เท่ากับตัวนับผู้เล่นออนไลน์ของเซิร์ฟเวอร์ */
 const rsOf=d=>Math.max(0,(d&&d.rs)|0);
 /* mode: 'on' = ปล้นฟาร์มผู้เล่นที่ออนไลน์อยู่ · 'off' = ปล้นฟาร์มผู้เล่นที่ออฟไลน์ (ไม่มี → ฟาร์มจำลอง NPC) */
-async function raid(mode){ if(raiding) return; mode=mode==='on'?'on':'off';
+async function raid(mode){ if(raiding) return; if(rdLocked()){ toast('🔒 ระบบปล้นปลดล็อกที่ Lv.'+RAID_LV+' (ตอนนี้ Lv.'+S.lv+')',2600); return; } mode=mode==='on'?'on':'off';
   if((S.rl||[]).length>=RAID_SLOTS){ const e=Math.min(...S.rl.map(r=>r.e)); toast('🦹 ปล้นครบ '+RAID_SLOTS+' ฟาร์มแล้ว — รอให้อันแรกหมดเวลาก่อน (อีก '+rdFmt(e-Date.now())+')',3400); return; }
   if((S.hammers|0)<1){ toast('🔨 ต้องมีค้อนอย่างน้อย 1 อัน ถึงจะปล้นได้ (ซื้อได้ที่โจร 🪙'+fmt(HAMMER_PRICE)+')',3200); return; }
   raiding=true; toast('🦹 โจร: รอแป๊บ... กำลังสอดแนมหาฟาร์มเหยื่อ ('+(mode==='on'?'ออนไลน์':'ออฟไลน์')+') 🔎',2500);
@@ -3324,7 +3359,7 @@ function renderRobber(){ $('shopTitle').textContent='🦹 โจรสวมด�
 /* ---------- 🍌 นางตานี: สวิตช์ เปิด/ปิดปล้น ----------
    ปิดปล้น = โจร NPC ไม่มาบุก + ผู้เล่นคนอื่นหาฟาร์มเราไม่เจอ (ทั้งออนไลน์/ออฟไลน์) + ซ่อน UI โจร · ไม่ได้โบนัสผักโต
    เปิดปล้น = โจร NPC/ผู้เล่นอื่นหาเราเจอตามปกติ · นางตานีอวยพรให้ผักในฟาร์มตัวเองโตไวขึ้น +TANI_GROW */
-function taniTalk(){ if(S.farm){ toast('🍌 นางตานี: ฉันดูแลเฉพาะฟาร์มของเจ้าของเองจ้ะ — กดปุ่ม 🏠 กลับฟาร์มตัวเองก่อนนะ',3000); return; } openShop('tani'); }
+function taniTalk(){ if(rdLocked()){ toast('🍌 นางตานี: ฉันจะช่วยเธอได้ตอน Lv.'+RAID_LV+' จ้ะ (ตอนนี้ Lv.'+S.lv+')',3000); return; } if(S.farm){ toast('🍌 นางตานี: ฉันดูแลเฉพาะฟาร์มของเจ้าของเองจ้ะ — กดปุ่ม 🏠 กลับฟาร์มตัวเองก่อนนะ',3000); return; } openShop('tani'); }
 function renderTani(){ $('shopTitle').textContent='🍌 นางตานี';
   const off=!!S.noRaid, pc=Math.round(TANI_GROW*100);
   $('shopBody').innerHTML='<div class="sec">🍌 ขอพรจากนางตานี</div>'
@@ -3336,7 +3371,7 @@ function renderTani(){ $('shopTitle').textContent='🍌 นางตานี';
 function taniToggle(){ S.noRaid=S.noRaid?0:1; const off=!!S.noRaid;
   S.rnT=Date.now()+RAID_MS; /* รีเซ็ตนาฬิกาโจร ไม่ให้มีรอบค้างสะสมจากช่วงที่ปิด */
   if(off&&rdThief&&rdThief.ph!=='out'){ try{ rdLeave(rdThief); }catch(e){ rdThief=null; } } /* โจรที่เดินอยู่ในฟาร์ม → วิ่งหนีออกไป */
-  if(DB&&myId) DB.doc('farms/'+myId).update({nr:off?1:0}).catch(()=>{}); /* nr=1 → ซ่อนฟาร์มจากระบบหาเหยื่อของผู้เล่นอื่น */
+  if(DB&&myId) DB.doc('farms/'+myId).update({nr:nrFlag()}).catch(()=>{}); /* nr=1 → ซ่อนฟาร์มจากระบบหาเหยื่อของผู้เล่นอื่น */
   try{ sfx('open',1,1); }catch(e){}
   toast(off?'🔒 นางตานี: ปิดปล้นแล้วจ้ะ โจรกับผู้เล่นอื่นหาฟาร์มเธอไม่เจอ · แต่ผักจะไม่โตไวพิเศษนะ':'🔓 นางตานี: เปิดปล้นแล้ว! ฉันจะอวยพรให้ผักโตไวขึ้น +'+Math.round(TANI_GROW*100)+'% · แต่โจรจะหาฟาร์มเธอเจอนะ',3600);
   updateHUD(); save(); renderShop(); }
@@ -3384,9 +3419,18 @@ function autoFisher(){ const n=fbFind('fisher');
   const r=sellWholeBag(1,FISHER_MUL); /* ผลผลิตราคาปกติ · ปลา +30% */
   if(r.g) floatText(n.x,n.y-.8,'+🪙'+fmt(r.g));
   toast('🎣 ขายกับลุงตกปลา (ปลา +'+Math.round((FISHER_MUL-1)*100)+'%) ผลผลิต '+r.c+' · ปลา '+r.n+' ตัว ได้ 🪙'+fmt(r.g),2600); }
-/* 🛡️ ออโต้ซื้อโล่กันอีกา: ซื้อพอสำหรับทุกแปลงในฟาร์มที่ยังไม่มีโล่ (เท่าที่เหรียญพอ) */
-function crowBuyN(){ let need=0; for(const k in FC){ const c=FC[k]; if(c&&!c.s&&CROPS[c.type]&&!CROPS[c.type].gemp&&!CROPS[c.type].gch) need++; } need+=farmStats().empty.length; need=Math.max(1,need-(S.shields|0)); return Math.max(0,Math.min(need,Math.floor(S.coins/SHIELD_PRICE))); }
-function autoBuyCrow(){ const n=crowBuyN(); if(n<1) return; S.coins-=n*SHIELD_PRICE; S.shields=(S.shields|0)+n; const sh=maps.land.npcs.find(q=>q.kind==='shop'); if(sh) floatText(sh.x,sh.y-.8,'🛡️ +'+n); toast('🛡️ ออโต้ซื้อโล่กันอีกาจากร้านพรีเมียม '+n+' อัน (🪙'+fmt(n*SHIELD_PRICE)+')',2200); try{ sfx('open',1,1); }catch(e){} updateHUD(); save(); }
+/* 🛡️ ใส่โล่กันอีกาให้ทุกต้นที่ยังไม่โต ในครั้งเดียว (ปุ่มลอยเหนือปุ่ม ทำ) */
+function crowTargets(){ if(S.map!=='farm'||S.farm||!playing) return []; return farmStats().grow.filter(t=>!t.c.s&&!CROPS[t.c.type].gemp&&!CROPS[t.c.type].gch); }
+function shieldAll(){ const L=crowTargets(); if(!L.length){ toast('🛡️ ทุกต้นมีโล่แล้ว (ใส่ได้เฉพาะต้นที่ยังไม่โต)',1800); return; }
+  if((S.shields|0)<1){ toast('🛡️ ไม่มีโล่กันอีกา — ซื้อได้ที่ 👑 ร้านพรีเมียม (🪙'+fmt(SHIELD_PRICE)+'/อัน)',2600); return; }
+  let n=0; for(const t of L){ if((S.shields|0)<1) break; S.shields--; t.c.s=1; n++; floatText(t.tx+.5,t.ty+.3,'🛡️'); pushFarm(t.tx+','+t.ty); }
+  try{ sfx('plant'); }catch(e){} toast('🛡️ ใส่โล่กันอีกาแล้ว '+n+' ต้น'+(L.length>n?' · ยังขาดอีก '+(L.length-n)+' ต้น (โล่หมด)':'')+' · เหลือโล่ '+(S.shields|0),2200); updateHUD(); save(); shAllUI(); }
+let shSig='';
+function shAllUI(){ const el=$('shAll'); if(!el) return; const n=(shopOpen||bagOpen||setOpen)?0:crowTargets().length, sh=S.shields|0, sig=n+':'+sh;
+  if(sig===shSig) return; shSig=sig; el.style.display=n?'flex':'none'; if(!n) return;
+  el.querySelector('.e').innerHTML=pxI('shield'); el.querySelector('small').textContent=sh?n+' ต้น · มี '+sh:'ไม่มีโล่'; }
+setInterval(()=>{ try{ shAllUI(); }catch(e){} },600);
+$('shAll').addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); shieldAll(); });
 function doAct(a){
   if(a.k==='wait') return;
   const t=a.t,dx=t.tx+.5-S.x,dy=t.ty+.5-S.y;
@@ -3395,8 +3439,6 @@ function doAct(a){
   else if(a.k==='harvest'){ const c=FC[t.tx+','+t.ty]; if(c&&cropProgress(c)>=1&&bagTot()<BAGCAP){ harvestAt(t.tx,t.ty,c); B.done.add(t.tx+','+t.ty); } B.wait=.17; }
   else if(a.k==='hit'){ raidHit(t); B.wait=.5; }
   else if(a.k==='fry'){ if(pondOn()&&S.pond.rd.length) pondCollect(); B.wait=.3; }
-  else if(a.k==='crow'){ const key=t.tx+','+t.ty, c=FC[key]; if(c&&!c.s&&(S.shields|0)>0&&cropProgress(c)<1){ S.shields--; c.s=1; floatText(t.tx+.5,t.ty+.3,'🛡️'); try{ sfx('plant'); }catch(e){} updateHUD(); save(); pushFarm(key); } B.wait=.2; }
-  else if(a.k==='crowbuy'){ autoBuyCrow(); B.wait=.9; }
   else if(a.k==='shop'){ autoShop(); B.wait=.9; }
   else if(a.k==='shield'){ autoBuyShield(); B.wait=.9; }
   else if(a.k==='gold'){ autoGold(); B.wait=.9; }
@@ -3421,7 +3463,6 @@ function decide(){
   for(const q of [...B.done]) if(!FC[q]) B.done.delete(q);
   const ripeP=f.ripe.filter(t=>!B.done.has(key(t))), growP=f.grow.filter(t=>!B.done.has(key(t))), soon=growP.length?Math.min(...growP.map(t=>cd(t.c)-(Date.now()-t.c.t))):0;
   let k;
-  const crowT=f.grow.filter(t=>t.c&&!t.c.s&&!CROPS[t.c.type].gemp&&!CROPS[t.c.type].gch&&!rdLk(t.c));
   const full=bagTot()>=BAGCAP;
   if(S.pDrain&&!(ai.fry&&pondOn()&&S.pond.rd.length)){ S.pDrain=0; if(ai.fry&&pondOn()){ if(ai.sell&&S.fish.length&&prod>0){ S.pSell=1; task('✅ เก็บลูกปลาหมดบ่อแล้ว → เอาปลาไปขายให้หมดก่อน'); } else task('✅ เก็บลูกปลาหมดบ่อแล้ว กลับไปทำงานเดิม'); } }
   if(S.pSell&&!(ai.sell&&prod>0&&S.fish.length)){ S.pSell=0; task('✅ ขายปลาหมดแล้ว กลับไปทำงานเดิม'); }   // 🐟 ขายปลาจากบ่อหมดแล้ว → กลับไปทำงานเดิม
@@ -3430,8 +3471,6 @@ function decide(){
   else if(ai.fry&&pondOn()&&S.pond.rd.length&&(S.pDrain||S.pond.rd.length>=pondHold(S.pond.lv))&&bagTot()<BAGCAP){ k='fry'; S.pDrain=1; }   // ลูกปลาในบ่อเต็ม → ไปเก็บ · กระเป๋าเต็มกลางทาง → ไปขายแล้วกลับมาเก็บต่อจนบ่อว่าง (S.pDrain) แล้วค่อยทำงานเดิม
   else if(shieldNeed()) k='shield';                       // โล่ยังไม่เต็มและเหรียญพอ → เดินไปซื้อโล่กันโจร
   else if(ai.plant&&f.empty.length&&seeds>0) k='plant';
-  else if(ai.crow&&!S.farm&&crowT.length&&(S.shields|0)>0) k='crow';            // 🛡️ มีต้นที่ยังไม่มีโล่กันอีกา → เดินไปใส่ให้ทุกต้น
-  else if(ai.crow&&!S.farm&&crowT.length&&S.coins>=SHIELD_PRICE&&!full){ autoBuyCrow(); k=(S.shields|0)>0?'crow':null; if(!k) return; }   // โล่หมด → ซื้อจากร้านพรีเมียมทันที (ไม่ต้องเดิน)
   else if(ai.harvest&&!full&&ripeP.length) k='harvest';           // เดินเก็บต้นที่ยังไม่ได้เก็บในรอบนี้
   else if(ai.harvest&&!full&&f.ripe.length) k='harvest';          // มีต้นสุกพร้อมเก็บอยู่ (แม้เก็บไปแล้วในรอบนี้และโตใหม่) → เก็บก่อน ไม่ยืนรอต้นอื่น
   else if(ai.sell&&prod>0&&growP.length&&soon>8000) k='shop';  // ต้องรอนาน → เอาผลที่มีไปขายก่อน
@@ -3442,17 +3481,15 @@ function decide(){
   else { task(ai.sell&&!ai.plant&&!ai.harvest?'💰 ไม่มีผลผลิตให้ขาย':ai.plant&&f.empty.length?'🪙 เหรียญไม่พอซื้อเมล็ด':ai.plant&&!ai.harvest?'✅ ปลูกเต็มแล้ว':'😴 ไม่มีงานให้ทำ'); return; }
   if(k==='shop'&&ai.gold&&ai.sell&&prod>0&&goldTr()) k='gold'; /* ติ๊กไปขายกับพ่อค้าทอง → ไปเมืองการค้า */
   else if(k==='shop'&&ai.fisher&&ai.sell&&prod>0&&fbFind('fisher')) k='fisher'; /* 🎣 ติ๊กไปขายกับลุงตกปลา → เดินไปหาดทะเล (ปลา +30%) */
-  const r=bfs(m,Math.floor(S.x),Math.floor(S.y)), need=k==='gold'?'town':k==='fisher'?'beach':(k==='shop'||k==='shield'||k==='crowbuy')?'land':'farm';
+  const r=bfs(m,Math.floor(S.x),Math.floor(S.y)), need=k==='gold'?'town':k==='fisher'?'beach':(k==='shop'||k==='shield')?'land':'farm';
   if(S.map!==need){
     let bn=-1; for(let i=0;i<m.t.length;i++) if(m.t[i]===PORT&&r.d[i]>=0&&portDest(m,i)===(S.map==='land'?need:'land')&&(bn<0||r.d[i]<r.d[bn])) bn=i;
-    if(bn<0) return; B.path=pathTo(m,r,bn); task(k==='shield'?'🚶 เดินไปซื้อโล่กันโจร':k==='crowbuy'?'🛡️ ซื้อโล่กันอีกา':need==='land'?'🚶 เดินไปร้านค้า':need==='town'?'🚶 เดินไปเมืองการค้า (พ่อค้าทอง)':need==='beach'?'🚶 เดินไปหาดทะเล (ลุงตกปลา)':'🚶 เดินกลับฟาร์ม'); return; }
+    if(bn<0) return; B.path=pathTo(m,r,bn); task(k==='shield'?'🚶 เดินไปซื้อโล่กันโจร':need==='land'?'🚶 เดินไปร้านค้า':need==='town'?'🚶 เดินไปเมืองการค้า (พ่อค้าทอง)':need==='beach'?'🚶 เดินไปหาดทะเล (ลุงตกปลา)':'🚶 เดินกลับฟาร์ม'); return; }
   let list;
   if(k==='shop'){ const n=m.npcs.find(q=>q.kind==='shop'); list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task(prod>0&&ai.sell?'🏪 เดินไปขายของทั้งหมดที่ลุงพ่อค้า':'🏪 เดินไปซื้อเมล็ด'); }
   else if(k==='shield'){ const n=m.npcs.find(q=>q.kind==='robber'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🛡️ เดินไปซื้อโล่ '+shBatch()+' อัน ที่โจรสวมดำ'); }
   else if(k==='fisher'){ const n=fbFind('fisher'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🎣 เดินไปขายกับลุงตกปลา (ปลา +'+Math.round((FISHER_MUL-1)*100)+'%)'); }
   else if(k==='gold'){ const tr=goldTr(); list=[{tx:Math.floor(tr.x),ty:Math.floor(tr.y)}]; task('🤑 เดินไปขายกับพ่อค้าทอง (+'+Math.round((GOLD_MUL-1)*100)+'%)'); }
-  else if(k==='crowbuy'){ const n=m.npcs.find(q=>q.kind==='shop'); list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🛡️ ซื้อโล่กันอีกา'); }
-  else if(k==='crow'){ list=crowT; task('🛡️ ใส่โล่กันอีกา (เหลือ '+crowT.length+' ต้น · มีโล่ '+(S.shields|0)+')'); }
   else if(k==='plant'){ list=f.empty; task('🌱 กำลังปลูก '+(total-f.empty.length)+'/'+total); }
   else if(k==='harvest'){ list=ripeP.length?ripeP:f.ripe; task('🧺 กำลังเก็บเกี่ยว (เหลือ '+list.length+')'); }
   else if(k==='fry'){ const pr=maps.farm.pond; list=[]; for(let x=Math.floor(pr.x);x<Math.ceil(pr.x+pr.w);x++) for(let y=Math.floor(pr.y);y<Math.ceil(pr.y+pr.h);y++) list.push({tx:x,ty:y}); task('🐟 เดินไปเก็บลูกปลา ('+S.pond.rd.length+'/'+pondHold(S.pond.lv)+')'); }
@@ -3563,7 +3600,8 @@ function drawCrow(c,time){
   ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x+f*T*.22,hy-T*.02,Math.max(1.5,k*1.4),0,6.3); ctx.fill();
 }
 function goMap(id){
-  const from=S.map; if(FI.on) stopFish();
+  const from=S.map, wasF=(FI.on||!!FI.pend)&&LF.on&&!FT.on; if(FI.on) stopFish(); FI.pend=null;
+  if(wasF) setTimeout(()=>{ if(S.map===id&&!FI.on&&!FT.on&&!S.auto&&LF.on) waterTrip(); },700); /* ออโต้ตกปลาอยู่แล้ววาร์ป → เดินไปหาน้ำในแมพใหม่แล้วตกต่อ */
   if(id==='land'&&S.farm){ S.farm=''; maps.farm.name='ฟาร์มของเรา'; watchFarm(); }
   S.map = id;
   B.path=B.act=null; B.wait=0; B.think=0; crow=null; crowT=0; FT.path=null;
@@ -3615,7 +3653,7 @@ function action(){
     n.fx = Math.sign(S.x-n.x) || n.fx; n.fy = 0;
     if(n.walk) n.talk=3;
     if(n.kind==='shop') openShop(); else if(n.kind==='estate') openShop('estate'); else if(n.kind==='fashion') openFashion(); else if(n.kind==='vehicle') openShop('vehicle'); else if(n.kind==='trial'){ trialReset(); openShop('trial'); } else if(n.kind==='gem') openShop('gem'); else if(n.kind==='gold') openShop('gold'); else if(n.kind==='helper') openShop('helper');
-    else if(n.kind==='robber') openShop('robber');
+    else if(n.kind==='robber'){ if(rdLocked()) toast('🦹 โจรสวมดำ: กลับมาหาข้าตอน Lv.'+RAID_LV+' นะ เจ้าหนู (ตอนนี้ Lv.'+S.lv+') — ก่อนถึงตอนนั้นโจรจะไม่มาฟาร์มเจ้า',3200); else openShop('robber'); }
     else if(n.kind==='fox'){ foxMsg=FOX_HI[Math.floor(Math.random()*FOX_HI.length)]; openShop('fox'); }
     else if(n.kind==='fish') openShop('fish');
     else if(n.kind==='job'){ jobPick=''; openShop('job'); }
@@ -3919,6 +3957,7 @@ $('shopBody').addEventListener('click', e => {
   if(b.dataset.pond==='buy'){ if(!S.pond.own&&S.coins>=POND_PRICE){ S.coins-=POND_PRICE; S.pond.own=1; S.pond.lv=1; PLV=1; maps.farm.pond=pondRect(1); try{ sfx('open',3,1); }catch(e){} toast('🪨 ซื้อบ่อปลาแล้ว! อยู่มุมตะวันออกของฟาร์ม เดินไปใกล้ ๆ แล้วกด ทำ/E',3600); updateHUD(); save(); } return; }
   if(b.dataset.pin!==undefined){ const P=S.pond, i=+b.dataset.pin; if(S.fish[i]&&FISH[S.fish[i][0]].lgd){ toast('🏆 ปลาในตำนานประจำพื้นที่ ใส่บ่อผสมพันธุ์ไม่ได้',2200); return; } if(P.f.length<POND_SLOTS&&S.fish[i]){ P.f.push(S.fish.splice(i,1)[0]); P.br=0; P.t=0; updateHUD(); save(); } return; }
   if(b.dataset.pout!==undefined){ const P=S.pond, i=+b.dataset.pout; if(P.f[i]){ if(fishRoom(P.f[i])<=0){ toast('🎒 กระเป๋าเต็ม นำปลาออกไม่ได้ ไปขายก่อนนะ',2200); return; } S.fish.push(P.f.splice(i,1)[0]); P.br=0; P.t=0; updateHUD(); save(); } return; }
+  if(b.dataset.pview!==undefined){ pondView=b.dataset.pview; renderShop(); return; }
   if(b.dataset.pcollect!==undefined){ pondCollect(); renderShop(); return; }
   if(b.dataset.pbreed!==undefined){ const P=S.pond; if(b.dataset.pbreed==='1'){ if(pondOK()){ P.br=1; P.t=0; toast('💞 เริ่มผสมพันธุ์! ลูกปลาออกทุก '+POND_SEC+' วินาที',2400); } } else { P.br=0; P.t=0; } updateHUD(); save(); return; }
   if((b.dataset.bag||b.dataset.vbag||b.dataset.buy||b.dataset.vbuy!==undefined||b.dataset.shield||(b.dataset.gacha&&b.dataset.gacha!=='exit'))&&bagBlock()) return;
@@ -4136,21 +4175,25 @@ let botMode='farm';
 const botRun=()=>S.auto?'farm':(FI.on||FT.on||LF.on)?'fish':'';
 function botHTML(){ const run=botRun(), m=botMode, ai=S.ai, fb=S.fb||{}, pc=x=>Math.round((x-1)*100);
   const row=(attr,on,ic,t,sub,rd)=>`<button type="button" class="arow${rd?' rad':''}${on?' on':''}" ${attr}><span class="ck">${on&&!rd?'✓':''}</span><span class="ai">${ic}</span><span class="at">${t}${sub?`<small>${sub}</small>`:''}</span></button>`;
-  const st=run==='farm'?'🌾 ออโต้ฟาร์มกำลังทำงาน':run==='fish'?(FT.on?'🚶 กำลังเดินไปขายของ':'🎣 กำลังตกปลาอัตโนมัติ'):'💤 ตอนนี้ยังไม่ได้เปิดออโต้';
+  const flow=a=>'<div class="aflow">'+a.map(x=>'<span>'+x+'</span>').join('<i>→</i>')+'</div>';
+  const st=run==='farm'?'🌾 ออโต้ฟาร์มกำลังทำงาน':run==='fish'?(FT.on?'🚶 กำลังเดิน (ไปขาย / ไปหาน้ำ)':'🎣 กำลังตกปลาอัตโนมัติ'):'💤 ยังไม่ได้เปิดออโต้';
   let h=`<div class="astat${run?' on':''}"><span class="dot"></span><b>${st}</b>${run?'<button type="button" class="btn small" data-bstop="1">⏹ หยุด</button>':''}</div>`;
-  const stp=(n,t)=>`<div class="aStep"><b>${n}</b>${t}</div>`;
-  h+=stp(1,'เลือกโหมด')+'<div class="amodes">'+[['farm','🌾','ออโต้ฟาร์ม','ปลูก · เก็บ · ขาย วนให้เอง'],['fish','🎣','ออโต้ตกปลา','กระเป๋าเต็มเดินไปขายเอง']].map(x=>`<button type="button" class="amode${m===x[0]?' on':''}" data-bmode="${x[0]}"><span class="ae">${x[1]}</span><b>${x[2]}</b><small>${x[3]}</small>${run===x[0]?'<i>● ทำงานอยู่</i>':''}</button>`).join('')+'</div>';
-  if(m==='farm'){ const sell=!ai.sell?'none':ai.gold?'gold':ai.fisher?'fisher':'shop';
-    h+=stp(2,'ติ๊กงานที่ให้ออโต้ทำ')+'<div class="scard"><div class="agrid">'+row('data-ai="plant"',ai.plant,'🌱','ปลูก')+row('data-ai="harvest"',ai.harvest,'🧺','เก็บเกี่ยว')+row('data-ai="fry"',ai.fry,'🐟','เก็บลูกปลา','เมื่อบ่อเต็ม')+row('data-ai="crow"',ai.crow,'🐦','ใส่โล่กันอีกา','ทุกต้น · หมดซื้อเอง')+row('data-ai="shield"',ai.shield,'🛡️','ซื้อโล่กันโจร','เมื่อโดนปล้น')+'</div>'+(ai.shield?rsuBtn()+shBuyUI():'')+'</div>';
-    h+=stp(3,'เก็บแล้วเอาไปขายที่ไหน')+'<div class="scard">'+row('data-bsell="shop"',sell==='shop','🏪','ร้านค้าปกติ','',1)+row('data-bsell="gold"',sell==='gold','🤑','พ่อค้าทอง','เมืองการค้า · +'+pc(GOLD_MUL)+'%',1)+row('data-bsell="fisher"',sell==='fisher','🎣','ลุงตกปลา','ทะเล · ปลา +'+pc(FISHER_MUL)+'%',1)+row('data-bsell="none"',sell==='none','🚫','ไม่ต้องขาย','เก็บไว้ในกระเป๋า',1)+'</div>';
-  } else { const fbn=FB_NPC[fb.npc]?fb.npc:'gold';
-    h+=stp(2,'กระเป๋าเต็มแล้วไปขายที่ไหน')+'<div class="scard">'+Object.keys(FB_NPC).map(k=>{ const q=FB_NPC[k], nm=q.n.replace(/\s*\(.*\)$/,''), sub=(q.n.match(/\((.*)\)$/)||[])[1]||''; return row(`data-fbn="${k}"`,fbn===k,q.e,k==='none'?'หยุดตกปลา':'ไปขายที่ '+nm,(sub&&k!=='none'?sub:'')+(k==='gold'?' · +'+pc(GOLD_MUL)+'%':k==='fisher'?' · ปลา +'+pc(FISHER_MUL)+'%':''),1); }).join('')+'</div>';
-    h+=stp(3,'ตัวเลือกเพิ่มเติม')+'<div class="scard">'+row('data-fbback="1"',fb.back!==false,'🔁','ขายเสร็จกลับมาตกต่อ','เดินกลับไปที่จุดเดิม')+row('data-fbleg="1"',!!fb.leg,'🏆','ตามล่าปลาในตำนาน','เดินไปแมพที่ปลาเกิด · ตามทุกครั้งที่ย้าย (10 นาที)')+'</div>'; }
-  const go=run===m; h+=stp(4,go?'กำลังทำงาน — กดหยุดได้':(m==='fish'?'ไปยืนใกล้น้ำ แล้วกดเริ่ม':'กดเริ่ม'))+`<button type="button" class="agoBtn${go?' stop':''}" ${go?'data-bstop="1"':`data-bgo="${m}"`}>${go?'⏹ หยุด'+(m==='farm'?'ออโต้ฟาร์ม':'ตกปลา'):'▶ เริ่ม'+(m==='farm'?'ออโต้ฟาร์ม':'ออโต้ตกปลา')}</button>`;
-  h+=`<p class="anote">${m==='farm'?'ติ๊กอย่างเดียว = ทำอย่างเดียว · ติ๊กครบ = ปลูก → เก็บ → ขาย วนเอง · เดินข้ามแมพผ่านประตูเมือง (ไม่วาป)':'ยืนใกล้น้ำแล้วกดเริ่ม (หรือแตะที่น้ำเพื่อเลือกจุด) · ระหว่างเดินไปขาย ถ้าขยับเองหรือกด 🎣 = ยกเลิกการเดิน'}</p>`;
+  h+='<div class="amodes">'+[['farm','🌾','ออโต้ฟาร์ม'],['fish','🎣','ออโต้ตกปลา']].map(x=>`<button type="button" class="amode${m===x[0]?' on':''}" data-bmode="${x[0]}"><span class="ae">${x[1]}</span><b>${x[2]}</b>${run===x[0]?'<i>● ทำงานอยู่</i>':''}</button>`).join('')+'</div>';
+  if(m==='farm'){ const sell=!ai.sell?'none':ai.gold?'gold':ai.fisher?'fisher':'shop', SN={shop:'🏪 ร้านค้า',gold:'🤑 พ่อค้าทอง',fisher:'🎣 ลุงตกปลา'};
+    const f=[]; if(ai.plant) f.push('🌱 ปลูก'); if(ai.harvest) f.push('🧺 เก็บ'); if(ai.fry) f.push('🐟 เก็บลูกปลา'); if(sell!=='none') f.push('💰 ขายที่'+SN[sell].slice(2)); f.push('🔁 วนใหม่');
+    h+='<div class="scard"><div class="sec">🔁 ออโต้จะทำแบบนี้</div>'+flow(f)+'</div>';
+    h+='<div class="scard"><div class="sec">✅ ให้ทำอะไรบ้าง <small>(แตะเพื่อเปิด/ปิด)</small></div><div class="agrid">'+row('data-ai="plant"',ai.plant,'🌱','ปลูก')+row('data-ai="harvest"',ai.harvest,'🧺','เก็บเกี่ยว')+row('data-ai="fry"',ai.fry,'🐟','เก็บลูกปลา','เมื่อบ่อเต็ม')+row('data-ai="shield"',ai.shield,'🛡️','ซื้อโล่กันโจร','เมื่อโดนปล้น')+'</div></div>';
+    h+='<div class="scard"><div class="sec">💰 เก็บแล้วเอาไปขายที่ไหน</div><div class="agrid">'+row('data-bsell="shop"',sell==='shop','🏪','ร้านค้า','เมืองกลาง',1)+row('data-bsell="gold"',sell==='gold','🤑','พ่อค้าทอง','+'+pc(GOLD_MUL)+'%',1)+row('data-bsell="fisher"',sell==='fisher','🎣','ลุงตกปลา','ปลา +'+pc(FISHER_MUL)+'%',1)+row('data-bsell="none"',sell==='none','🚫','ไม่ขาย','เก็บไว้',1)+'</div></div>';
+  } else { const fbn=FB_NPC[fb.npc]?fb.npc:'gold', nm=k=>FB_NPC[k].n.replace(/\s*\(.*\)$/,'');
+    const f=['🎣 ตกปลา','🎒 กระเป๋าเต็ม',fbn==='none'?'⏹ หยุด':'💰 ไปขายที่'+nm(fbn)]; if(fbn!=='none') f.push(fb.back!==false?'🔁 กลับมาตกต่อ':'✅ จบ'); if(fb.leg) f.unshift('🏆 ตามปลาตำนาน');
+    h+='<div class="scard"><div class="sec">🔁 ออโต้จะทำแบบนี้</div>'+flow(f)+'</div>';
+    h+='<div class="scard"><div class="sec">🎒 กระเป๋าเต็มแล้วไปขายที่ไหน</div><div class="agrid">'+Object.keys(FB_NPC).map(k=>{ const q=FB_NPC[k], sub=(q.n.match(/\((.*)\)$/)||[])[1]||''; return row(`data-fbn="${k}"`,fbn===k,q.e,k==='none'?'ไม่ไปขาย':nm(k),k==='none'?'หยุดตกปลา':(k==='gold'?'+'+pc(GOLD_MUL)+'%':k==='fisher'?'ปลา +'+pc(FISHER_MUL)+'%':sub),1); }).join('')+'</div></div>';
+    h+='<div class="scard"><div class="sec">⚙️ ตัวเลือก</div><div class="agrid">'+row('data-fbback="1"',fb.back!==false,'🔁','ขายเสร็จกลับมาตกต่อ','จุดเดิม')+row('data-fbleg="1"',!!fb.leg,'🏆','ตามปลาในตำนาน','ย้ายแมพให้เอง')+'</div></div>'; }
+  const go=run===m; h+=`<button type="button" class="agoBtn${go?' stop':''}" ${go?'data-bstop="1"':`data-bgo="${m}"`}>${go?'⏹ หยุด'+(m==='farm'?'ออโต้ฟาร์ม':'ตกปลา'):'▶ เริ่ม'+(m==='farm'?'ออโต้ฟาร์ม':'ออโต้ตกปลา')}</button>`;
+  h+=`<p class="anote">${m==='farm'?'💡 ออโต้จะเดินเองทั้งหมด (ไม่วาป) · กดหยุดได้ตลอด':'💡 อยู่แมพที่มีน้ำ กดเริ่มได้เลย — ตัวละครจะเดินไปหาน้ำที่ใกล้ที่สุดเอง · เดินเอง = หยุดตก'}</p>`;
   return h; }
 function openBot(m){ if(!playing||shopOpen||bagOpen) return; botMode=m||botRun()||'farm'; openSet('bot'); $('settings').classList.add('botOnly'); }
-function botStop(){ if(S.auto){ S.auto=false; B.pause=0; B.path=B.act=null; } if(FT.on) tripCancel('⏹ ยกเลิกการเดินไปขาย'); if(FI.on) stopFish(1); LF.on=false; toast('⏹ หยุดออโต้แล้ว',1600); }
+function botStop(){ FI.pend=null; if(S.auto){ S.auto=false; B.pause=0; B.path=B.act=null; } if(FT.on) tripCancel('⏹ ยกเลิกการเดินไปขาย'); if(FI.on) stopFish(1); LF.on=false; toast('⏹ หยุดออโต้แล้ว',1600); }
 function renderSet(){
   const sec=x=>`<div class="sec">${x}</div>`; let h='';
   if(setTab==='bot'){ $('setTitle').textContent=STT.bot; document.querySelectorAll('#setTabs [data-st]').forEach(b=>b.classList.toggle('ghost',b.dataset.st!=='bot')); $('setBody').innerHTML=botHTML(); return;
@@ -4209,7 +4252,7 @@ $('setBody').addEventListener('click',e=>{
   else if(b.dataset.bsell){ const v=b.dataset.bsell, n={sell:v!=='none',gold:v==='gold',fisher:v==='fisher'}; if(!n.sell&&!['plant','harvest','fry','shield'].some(k=>S.ai[k])){ toast('ต้องให้ออโต้ทำอย่างน้อย 1 อย่างนะ',1600); return; } Object.assign(S.ai,n); B.path=B.act=null; B.think=0; }
   else if(b.dataset.bstop){ botStop(); }
   else if(b.dataset.bgo==='farm'){ if(FT.on) tripCancel('🤖 เปิดออโต้ฟาร์ม — ยกเลิกการเดินไปขาย'); if(FI.on) stopFish(1); LF.on=false; S.auto=true; B.pause=0; B.path=B.act=null; closeSet(); toast('🌾 ออโต้ฟาร์มเริ่มแล้ว — เดินปลูก เก็บ และไปขายให้เอง',2400); }
-  else if(b.dataset.bgo==='fish'){ closeSet(); resetInput(); if(!FI.on&&!FT.on) startFish(); }
+  else if(b.dataset.bgo==='fish'){ closeSet(); resetInput(); if(!FI.on&&!FT.on){ if(S.rod&&nearWater()) startFish(); else if(!(S.rod&&waterTrip())) startFish(); } }
   else if(b.dataset.hud){ const k=b.dataset.hud; if(!S.hide) S.hide={}; S.hide[k]=S.hide[k]?0:1; }
   else if(b.dataset.hudall!==undefined){ const v=+b.dataset.hudall; S.hide={bar:v,ready:v,time:v,money:v,shield:v,shine:v}; }
   else return;
@@ -4237,7 +4280,7 @@ function rateHide(){ $('rateBox').classList.remove('on'); }
 function rateBtnUI(){ const b=$('rateBtn'); if(b) b.classList.toggle('on',!!RATE[shopMode]); }
 try{ $('rateBtn').addEventListener('click',e=>{ e.stopPropagation(); rateShow(); }); $('rateClose').addEventListener('click',rateHide); $('rateOk').addEventListener('click',rateHide); $('rateBox').addEventListener('click',e=>{ if(e.target.id==='rateBox') rateHide(); }); }catch(e){}
 
-let shopMode='', shopTab='seed'; function openShop(md){ shopMode=md||''; shopOpen = true; resetInput(); $('shop').classList.toggle('prem',shopMode==='premium'); renderShop(); $('shop').classList.add('on'); }
+let shopMode='', shopTab='seed'; function openShop(md){ shopMode=md||''; if(shopMode==='pond') pondView=''; shopOpen = true; resetInput(); $('shop').classList.toggle('prem',shopMode==='premium'); renderShop(); $('shop').classList.add('on'); }
 function closeShop(){ shopOpen = false; try{ rateHide(); }catch(e){} $('shop').classList.remove('on'); if(edMode==='fashion') $('create').classList.remove('on'); save(); }
 $('shopClose').addEventListener('click', closeShop);
 
@@ -6434,6 +6477,7 @@ document.addEventListener('visibilitychange', () => { if(document.hidden) saveNo
 window.addEventListener('pagehide', ()=>{ saveNow(); if(DB&&curSrv) DB.doc('players/'+myId).update({hb:0}).catch(()=>{}); });
 
 /* ---------- 🦹 โจร NPC บุกฟาร์มเราทุก 1 นาที (ตอนออฟไลน์) ---------- */
+const RAID_LV=5, rdLocked=()=>(S.lv|0)<RAID_LV, nrFlag=()=>(S.noRaid||rdLocked())?1:0; /* 🔒 เลเวลต่ำกว่า 5: โจรไม่มาฟาร์ม · ปล้นคนอื่นไม่ได้ · นางตานีปิด */
 const RAID_MS=10*60*1000;    /* ทุกกี่มิลลิวินาที (1 นาที) */
 const RAID_CAP=60;          /* กลับมาเล่นแล้วนับย้อนหลังสูงสุดกี่ครั้ง (60 ครั้ง = 1 ชั่วโมง) */
 const RAID_STEAL=3;         /* โจร NPC ล็อกพืชได้สูงสุดกี่ต้นต่อรอบ (ต้องมีค้อนเหลือหลังหักล้างโล่ ต้นละ 1 อัน) */
@@ -6616,6 +6660,7 @@ function raidTick(){ if(!playing) return; try{ rlogUI(); }catch(e){} const now=D
   if(!S.rnT||S.rnT<1e12){ S.rnT=now+RAID_MS; save(); }
   const ready=DB?rdReady:netState!=='wait';
   const e=$('spThiefT'); if(e){ e.textContent=rdFmt(S.rnT-now); const c=$('spThiefC'); if(c) c.classList.toggle('warn',S.rnT-now<=10000); }
+  if(rdLocked()){ S.rnT=now+RAID_MS; if(e) e.textContent='🔒 Lv.'+RAID_LV; return; } /* ยังไม่ถึงเลเวล 5 → โจรยังไม่มา */
   if(!ready||now<S.rnT) return;
   const total=Math.floor((now-S.rnT)/RAID_MS)+1, t0=S.rnT; S.rnT+=total*RAID_MS;
   const away=rdBoot||gap>15000; rdBoot=false;
@@ -6641,14 +6686,14 @@ function onlineUI(){
   const meIn=L.some(p=>p.me), tot=DB?L.length+(meIn?0:1):1;
   el.textContent=netState==='wait'?'กำลังเชื่อมต่อ…':'ออนไลน์ '+tot+' คน';
   const tg=document.getElementById('spTog'); if(tg) tg.textContent='📋 ข้อมูล · 👥 '+tot;
-  const c0=document.getElementById('spOnC'); if(c0) c0.title=netState==='ok'?(curSrv?'🌐 เซิร์ฟเวอร์ '+curSrv+' · ในเซิร์ฟนี้ '+Math.max(1,(SRV[curSrv]||{}).on|0)+'/'+CAP+' คน':'📴 ยังไม่ได้เข้าเซิร์ฟเวอร์'):'📴 ออฟไลน์ — ยังไม่ได้เชื่อมต่อกับผู้เล่นอื่น';
+  const c0=document.getElementById('spOnC'); if(c0) c0.title=netState==='ok'?(curSrv?'🌐 '+srvNm(curSrv)+' · ในเซิร์ฟนี้ '+Math.max(1,(SRV[curSrv]||{}).on|0)+'/'+CAP+' คน':'📴 ยังไม่ได้เข้าเซิร์ฟเวอร์'):'📴 ออฟไลน์ — ยังไม่ได้เชื่อมต่อกับผู้เล่นอื่น';
   const me=S&&S.char?{id:'__me',n:S.char.name,c:S.char,srv:curSrv,me:1}:null;
   const rest=L.filter(p=>!p.me).sort((a,b)=>(a.srv-b.srv)||String(a.n).localeCompare(String(b.n)));
   const list=(me?[me]:[]).concat(rest), show=list.slice(0,5), more=list.length-show.length;
   const sig=show.map(p=>p.id+JSON.stringify(p.c)).join('|')+'|'+more;
   box.classList.toggle('on',list.length>(me?1:0));
   if(sig!==avSig){ avSig=sig; box.innerHTML=''; avData=[];
-    show.forEach(p=>{ const cv=document.createElement('canvas'); cv.width=150; cv.height=150; cv.title=cl(p.n)+(p.me?' (คุณ)':'')+(p.srv?' · เซิร์ฟ '+p.srv:''); if(p.me) cv.className='me'; box.appendChild(cv); avData.push([cv,p]); });
+    show.forEach(p=>{ const cv=document.createElement('canvas'); cv.width=150; cv.height=150; cv.title=cl(p.n)+(p.me?' (คุณ)':'')+(p.srv?' · '+srvNm(p.srv):''); if(p.me) cv.className='me'; box.appendChild(cv); avData.push([cv,p]); });
     if(more>0){ const m=document.createElement('em'); m.textContent='+'+more; box.appendChild(m); } }
   avData.forEach(a=>{ try{ avDraw(a[0],a[1].me&&S.char?S.char:a[1].c); }catch(e){} }); }
 setInterval(()=>{ try{ onlineUI(); }catch(e){} },2500);

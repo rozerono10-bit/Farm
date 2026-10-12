@@ -647,6 +647,12 @@ body.touch{--chB:calc(env(safe-area-inset-bottom,0px) + 168px);--chH:min(24vh,17
 #shop .rodCard{margin:0 0 8px}
 .rodCard canvas.triPv[data-rm=sw]{background:radial-gradient(circle,#3a0a14,#0c0306)!important;box-shadow:0 0 0 1px var(--rc),0 0 12px rgba(226,51,74,.6)!important}
 .rodCard canvas.triPv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)!important;box-shadow:0 0 0 1px var(--rc),0 0 12px rgba(255,111,181,.6)!important}
+.isl .ii.rpv{position:absolute;inset:4px;filter:none}
+canvas.triPv.inv{display:block;width:100%;height:100%;border-radius:5px;background:radial-gradient(circle,#0f3a48,#120a08)}
+canvas.triPv.inv[data-rm=sw]{background:radial-gradient(circle,#3a0a14,#0c0306)}
+canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)}
+.rpvI{display:inline-block;width:30px;height:30px;vertical-align:middle}.rpvI canvas.triPv.inv{border-radius:6px}
+.spNote{display:block;margin-top:4px;padding:4px 6px;border-radius:6px;background:rgba(0,0,0,.25);border-left:3px solid var(--spc,#ff6fb5)}
 .rodCard canvas.triPv{width:56px;height:56px;flex:0 0 56px;margin-right:8px;border-radius:12px;background:radial-gradient(circle,#0f3a48,#120a08);box-shadow:0 0 0 1px var(--rc),0 0 10px rgba(46,196,214,.45)}
 #shop .rodCard .row{border-color:var(--rc);box-shadow:inset 0 0 0 2px #1b100c,0 0 0 1px var(--rc)}
 #shop .tierT{font-size:.75em;color:var(--rc);border:1px solid var(--rc);border-radius:6px;padding:0 4px}
@@ -1933,7 +1939,10 @@ function wStep(dt,m){ m=m||maps.land; if(!m.walkers) return;
 /* ---------- 🎣 ระบบตกปลา (ปรับราคา/โอกาส/เวลา แก้ได้ตรงนี้) ---------- */
 const RODS=[{n:'เบ็ดธรรมดา',tier:'Common',color:'#9aa0a6',price:1000,wmin:5,wmax:10},{n:'🔱 เบ็ดตรีศูลโพไซดอน (Trident)',tier:'Mythic',color:'#2ec4d6',price:0,gem:10,wmin:5,wmax:5,multi:3},{n:'เบ็ดดาบ (Sword)',ic:'⚔️',tier:'Epic',color:'#e2334a',price:0,gem:1,wmin:5,wmax:10,sp:1,rm:'sw'},{n:'เบ็ดโบว์ (Bow)',ic:'🎀',tier:'Epic',color:'#ff6fb5',price:0,gem:1,wmin:5,wmax:10,sp:2,rm:'bow'}]; /* wmin-wmax = วินาทีรอปลากินเบ็ด · เพิ่มเบ็ดระดับอื่นต่อท้ายได้ */
 /* ⚔️🎀 เบ็ด Epic: ตกปลาแล้วมีโอกาส FISH_SP_CH ติดสถานะพิเศษ ราคา x FISH_SP_MUL (เก็บใน f[7]: 1 = ฟันแบบสุคุนะ · 2 = โบว์แรร์) */
-const FISH_SP_CH=.1, FISH_SP_MUL=20, FISH_SP={1:{e:'⚔️',n:'ฟันแบบสุคุนะ',c:'#e2334a'},2:{e:'🎀',n:'โบว์แรร์',c:'#ff6fb5'}};
+const FISH_SP_CH=.1, FISH_SP_MUL=20, FISH_SP={1:{e:'⚔️',n:'ฟันแบบสุคุนะ',c:'#e2334a',r:'⚔️ เบ็ดดาบ'},2:{e:'🎀',n:'โบว์แรร์',c:'#ff6fb5',r:'🎀 เบ็ดโบว์'}};
+const POND_SP_1=.05, POND_SP_2=.1; /* 💞 ลูกปลาติดสถานะ ⚔️/🎀: พ่อหรือแม่มีสถานะ = 5% · มีทั้งคู่ = 10% (ถ้าคนละสถานะ สุ่มเอาของพ่อหรือแม่) */
+const spDesc=p=>FISH_SP[p]?FISH_SP[p].e+' <b>'+FISH_SP[p].n+'</b>: ได้จาก '+FISH_SP[p].r+' (โอกาส '+FISH_SP_CH*100+'% ทุกครั้งที่ตกได้) · ราคาปลา <b>x'+FISH_SP_MUL+'</b> ซ้อนกับ ทอง/รุ้ง/วอยด์/Shine/ตำนาน ได้ · ใส่บ่อผสมพันธุ์ได้: พ่อหรือแม่มีสถานะ ลูกมีโอกาส '+POND_SP_1*100+'% · มีทั้งคู่ '+POND_SP_2*100+'%':'';
+const rodPv=r=>r.multi||r.rm?'<canvas class="triPv inv" data-rm="'+(r.rm||'tri')+'" width="112" height="112"></canvas>':rodIc(r); /* 🎣 รูปเบ็ดในกระเป๋า = โมเดลเดียวกับในร้านลุงตกปลา */
 const spTag=p=>FISH_SP[p]?' '+FISH_SP[p].e+FISH_SP[p].n:'', rodIc=r=>r.ic||(r.multi?'🔱':'🎣');
 const FISH_CAP=1400, /* ปลาสูงสุดในกระเป๋า = ช่องสูงสุด 350 x ช่องละ 4 */ FISH_ST=[.05,.01,.01]; /* โอกาสสถานะ ทอง/รุ้ง/วอยด์ รวม 10% */
 const FISH={
@@ -2211,7 +2220,7 @@ function fishSellHTML(noAll){ const G=fishGroups(); const fm=fishMul(); let h=(s
   const all=(bagTot()&&!noAll)?'<div class="btns" style="margin:4px 0"><button class="btn small" data-sellevery="1">💰 ขายของทั้งหมดในกระเป๋า (ผลผลิต '+bagCnt()+' + ปลา '+S.fish.length+' ตัว) 🪙'+fmt(pt+Math.round(fishVal()*fm))+'</button></div>':'';
   if(!G.length) return h+all+'<p class="shSub">ยังไม่มีปลา — กดปุ่ม 🎣 ตกปลา ตอนยืนใกล้น้ำ (ต้องมีเบ็ดก่อน)</p>';
   h+=all+'<div class="btns" style="margin:4px 0"><button class="btn small ghost" data-fsell="all">🐟 ขายเฉพาะปลาทั้งหมด 🪙'+fmt(Math.round(fishVal()*fm))+'</button></div>';
-  for(const x of G){ const d=FISH[x.id]; h+=`<div class="row shRow${d.lgd||x.l?' lgdRow':''}"><span class="ic">${VG[x.g]}${fIc(x.id)}</span><div class="nm">${d.lgd?'<span class="lgTag">🏆 ตำนาน</span>':''}${d.n}${x.g?' '+TN[x.g]:''}${legTag(x.l)}${shTag(x.s)}${spTag(x.p)}<small><span>🎒 ${x.n} ตัว</span><span>รวม 🪙${fmt(Math.round(x.v*fm))}</span></small></div><div class="btns"><button class="btn small" data-fsell="${x.id}:${x.g}:${x.l}${x.s?':s':''}${x.p?':p'+x.p:''}">ขายทั้งหมด</button></div></div>`; }
+  for(const x of G){ const d=FISH[x.id]; h+=`<div class="row shRow${d.lgd||x.l?' lgdRow':''}"><span class="ic">${VG[x.g]}${fIc(x.id)}</span><div class="nm">${d.lgd?'<span class="lgTag">🏆 ตำนาน</span>':''}${d.n}${x.g?' '+TN[x.g]:''}${legTag(x.l)}${shTag(x.s)}${spTag(x.p)}<small><span>🎒 ${x.n} ตัว</span>${x.p?'<span>'+FISH_SP[x.p].e+' ราคา x'+FISH_SP_MUL+'</span>':''}<span>รวม 🪙${fmt(Math.round(x.v*fm))}</span></small></div><div class="btns"><button class="btn small" data-fsell="${x.id}:${x.g}:${x.l}${x.s?':s':''}${x.p?':p'+x.p:''}">ขายทั้งหมด</button></div></div>`; }
   return h; }
 function bagFishHTML(){ let h='<div class="sec">🐟 ปลาที่ตกได้ · 🎒 กระเป๋า '+bagTot()+'/'+BAGCAP+' · ปลา '+S.fish.length+'</div>';
   if(!S.fish.length) return h+'<p>ยังไม่มีปลา</p>';
@@ -2223,7 +2232,7 @@ let fishTab='lgd';
 /* 🔱 รูปตรีศูลในร้าน = โมเดลเดียวกับในเกม (ประกายวิบวับ) */
 let triTok=0;
 function triPvLoop(){ const tok=++triTok;
-  const fr=()=>{ if(tok!==triTok||!shopOpen||shopMode!=='fish') return; const L=document.querySelectorAll('canvas.triPv'); if(!L.length) return;
+  const fr=()=>{ if(tok!==triTok||!((shopOpen&&shopMode==='fish')||bagOpen)) return; const L=document.querySelectorAll('canvas.triPv'); if(!L.length) return;
     const time=performance.now()/1000;
     L.forEach(cn=>{ const c=cn.getContext('2d'), W=cn.width, H=cn.height; c.setTransform(1,0,0,1,0,0); c.clearRect(0,0,W,H);
       const rm=cn.dataset.rm||'tri', AC={tri:['255,225,120','70,215,245','46,196,214'],sw:['255,90,90','200,20,50','120,0,30'],bow:['255,240,250','255,120,200','200,140,255']}[rm]||[];
@@ -2251,13 +2260,14 @@ function renderFishShop(){ $('shopTitle').textContent='🎣 ร้านลุ�
   } else if(fishTab==='rod'){
     RODS.forEach((r,i)=>{ const own=S.rods.includes(i+1), use=S.rod===i+1;
       h+=`<div class="rodCard" style="--rc:${r.color}"><div class="row shRow">${r.multi||r.rm?'<canvas class="triPv" data-rm="'+(r.rm||'tri')+'" width="112" height="112"></canvas>':'<span class="ic">🎣</span>'}<div class="nm"><span class="tierT">${r.tier}</span> ${r.n}<small><span>⏱ รอ ${r.wmin===r.wmax?r.wmin:r.wmin+'–'+r.wmax} วิ</span>${r.multi?'<span>🐟 ทีละ '+r.multi+' ตัว</span>':''}${r.sp?'<span>'+FISH_SP[r.sp].e+' '+FISH_SP_CH*100+'% '+FISH_SP[r.sp].n+' x'+FISH_SP_MUL+'</span>':''}${use?'<span>✅ ใช้อยู่</span>':''}</small></div><div class="btns"><button class="btn small ${!own&&!rodCan(r)?'ghost':''}" data-frod="${i}">${'ซื้อ '+rodCostTx(r)}${own?'<br><small>มี '+((S.rodN&&S.rodN[i+1])||1)+' อัน</small>':''}</button></div></div></div>`; });
+    h+='<details class="shInfo" open><summary>ℹ️ สถานะพิเศษจากเบ็ด Epic</summary>'+spDesc(1)+'<br><br>'+spDesc(2)+'</details>';
     h+='<div class="shNote">วิธีตก: ยืนใกล้น้ำ แล้วกด <b>🎣 ตกปลา</b> (หรือ ทำ/E) · เลือกเบ็ดที่จะใช้ได้ใน 🎒 กระเป๋า</div>';
   } else if(fishTab==='book'){
     const ZN={sea:['🌊','ปลาทะเล','🏖️ ทะเล'],riv:['🏞️','ปลาแม่น้ำ','🌾 ฟาร์ม / 🏘️ เมือง'],town:['💼','ปลานักธุรกิจ','🏬 เมืองการค้า'],mnt:['⛩️','ปลาศักดิ์สิทธิ์','⛰️ ภูเขาซากุระ']};
     for(const z of ['sea','riv','town','mnt']){ const Z=ZN[z]; h+='<div class="sec">'+Z[0]+' '+Z[1]+' <small style="opacity:.85;font-size:.8em">· ตกที่ '+Z[2]+'</small></div><div class="fbG">';
       for(const k of FISHK[z]){ const d=FISH[k]; h+=`<div class="fb"><span class="fi">${fIc(k)}</span><span class="fn">${d.n}<small>🪙${fmt(d.sell)} · เจอ ${Math.round(d.w)}%</small></span></div>`; }
       h+='</div>'; }
-    h+='<details class="shInfo"><summary>ℹ️ ขนาด & สถานะพิเศษ</summary>ขนาดสุ่ม 1–200 ยิ่งใหญ่ยิ่งหายาก (≥10 = '+pct(Math.pow(10,-FISH_SIZE_A))+' · ≥50 = '+pct(Math.pow(50,-FISH_SIZE_A))+' · ≥100 = '+pct(Math.pow(100,-FISH_SIZE_A))+') · ราคา = ราคาพื้นฐาน × ขนาด (x1–x'+fishSizeMult(200).toFixed(2)+') × สถานะ<br>✨ทอง '+FISH_ST[0]*100+'% (x'+MUT[1]+') · 🌈รุ้ง '+FISH_ST[1]*100+'% (x'+MUT[2]+') · 🕳️วอยด์ '+FISH_ST[2]*100+'% (x'+MUT[3]+')<br>🌟ตำนาน x'+LEG_MUL+' เฉพาะอาชีพ 🎣 นักตกปลา โอกาส '+FISH_LEG*100+'% (ซ้อนกับสถานะอื่นได้)<br>⚔️ฟันแบบสุคุนะ (เบ็ดดาบ) / 🎀โบว์แรร์ (เบ็ดโบว์) โอกาส '+FISH_SP_CH*100+'% (x'+FISH_SP_MUL+' ซ้อนกับสถานะอื่นได้)</details>';
+    h+='<details class="shInfo"><summary>ℹ️ ขนาด & สถานะพิเศษ</summary>ขนาดสุ่ม 1–200 ยิ่งใหญ่ยิ่งหายาก (≥10 = '+pct(Math.pow(10,-FISH_SIZE_A))+' · ≥50 = '+pct(Math.pow(50,-FISH_SIZE_A))+' · ≥100 = '+pct(Math.pow(100,-FISH_SIZE_A))+') · ราคา = ราคาพื้นฐาน × ขนาด (x1–x'+fishSizeMult(200).toFixed(2)+') × สถานะ<br>✨ทอง '+FISH_ST[0]*100+'% (x'+MUT[1]+') · 🌈รุ้ง '+FISH_ST[1]*100+'% (x'+MUT[2]+') · 🕳️วอยด์ '+FISH_ST[2]*100+'% (x'+MUT[3]+')<br>🌟ตำนาน x'+LEG_MUL+' เฉพาะอาชีพ 🎣 นักตกปลา โอกาส '+FISH_LEG*100+'% (ซ้อนกับสถานะอื่นได้)<br>'+spDesc(1)+'<br>'+spDesc(2)+'</details>';
   } else {
     h+='<div class="shNote">🎣 ลุงรับซื้อปลาแพงกว่า <b>+'+Math.round((FISHER_MUL-1)*100)+'%</b> (ราคาด้านล่างรวมโบนัสแล้ว) · 🎒 '+bagTot()+'/'+BAGCAP+'</div>';
     if(bagTot()){ let pt=0; for(let g=0;g<4;g++) for(const k in CROPS) pt+=invVal(g,k); h+='<div class="shBtns one"><button class="btn small" data-sellevery="1">💰 ขายทั้งหมด (ผลผลิต '+bagCnt()+' + ปลา '+S.fish.length+') · 🪙'+fmt(pt+Math.round(fishVal()*fishMul()))+'</button></div>'; }
@@ -2416,7 +2426,10 @@ function nearPond(){ if(S.map!=='farm'||!pondOn()) return false; const r=maps.fa
 const pondOK=()=>{ const f=S.pond.f; return f.length===2&&f[0][3]!==f[1][3]; };
 function pondBaby(){ const [a,b]=S.pond.f, lo=Math.min(a[2],b[2]), hi=Math.max(a[2],b[2]); let g=Math.random()<.5?a[1]:b[1], up=false;
   if(g<3&&Math.random()<POND_UP){ g++; up=true; }
-  const nf=[Math.random()<.5?a[0]:b[0],g,lo+Math.floor(Math.random()*(hi-lo+1)),Math.random()<.5?0:1,0]; const shp=!!(a[5]||b[5]); if(Math.random()<(shp?POND_SH_P:POND_SH_N)) nf[5]=1; if(shp) nf[6]=1; return {f:nf,up}; }
+  const nf=[Math.random()<.5?a[0]:b[0],g,lo+Math.floor(Math.random()*(hi-lo+1)),Math.random()<.5?0:1,0]; const shp=!!(a[5]||b[5]); if(Math.random()<(shp?POND_SH_P:POND_SH_N)) nf[5]=1; if(shp) nf[6]=1;
+  { const sps=[a,b].filter(x=>FISH_SP[x[7]]).map(x=>x[7]); if(sps.length&&Math.random()<(sps.length>1?POND_SP_2:POND_SP_1)){ nf[5]=nf[5]|0; nf[6]=nf[6]|0; nf[7]=sps[Math.random()*sps.length|0]; } } /* ⚔️🎀 สืบทอดสถานะพิเศษ */
+  return {f:nf,up}; }
+const pondSpCh=()=>{ const n=(S.pond&&S.pond.f||[]).filter(x=>x&&FISH_SP[x[7]]).length; return n>1?POND_SP_2:n?POND_SP_1:0; };
 function pondStep(dt){ const P=S.pond; if(!P||!P.own||!P.br||!playing) return; if(!pondOK()){ P.br=0; return; }
   const HOLD=pondHold(P.lv); if(P.rd.length>=HOLD) return; /* บ่อเต็มรอเก็บ */
   P.t+=dt; const e=document.getElementById('pondCd'); if(e) e.textContent=Math.max(0,Math.ceil(POND_SEC-P.t)); const bi=document.getElementById('pondBarI'); if(bi) bi.style.width=Math.min(100,P.t/POND_SEC*100).toFixed(1)+'%';
@@ -2428,7 +2441,7 @@ function pondCollect(){ const P=S.pond; if(!P.rd.length) return false;
   const got=[]; while(P.rd.length&&fishRoom(P.rd[0])>0){ const f=P.rd.shift(); S.fish.push(f); got.push(f); if(greedX()===2&&fishRoom(f)>0){ const f2=f.slice(); S.fish.push(f2); got.push(f2); } }
   addJobXp('fisher',got.length); addJobXp('porter',got.length);
   const top=got.reduce((a,f)=>fishPrice(f[0],f[1],f[2],f[4],f[5],f[6],f[7])>fishPrice(a[0],a[1],a[2],a[4],a[5],a[6],a[7])?f:a,got[0]), d=FISH[top[0]];
-  fToast(got.length===1?'🐟 เก็บลูกปลา '+VG[top[1]]+d.n+' ('+sexTxt(top[3])+') ขนาด '+top[2]+(top[1]?' '+TN[top[1]]:'')+' · ราคา 🪙'+fmt(fishPrice(top[0],top[1],top[2],top[4],top[5],top[6],top[7])):'🐟 เก็บลูกปลา '+got.length+' ตัวเข้ากระเป๋า · ตัวดีสุด '+VG[top[1]]+d.n+' ขนาด '+top[2]+' 🪙'+fmt(fishPrice(top[0],top[1],top[2],top[4],top[5],top[6],top[7])),3000,[top[0]]);
+  fToast(got.length===1?'🐟 เก็บลูกปลา '+VG[top[1]]+d.n+' ('+sexTxt(top[3])+') ขนาด '+top[2]+(top[1]?' '+TN[top[1]]:'')+spTag(top[7])+' · ราคา 🪙'+fmt(fishPrice(top[0],top[1],top[2],top[4],top[5],top[6],top[7])):'🐟 เก็บลูกปลา '+got.length+' ตัวเข้ากระเป๋า · ตัวดีสุด '+VG[top[1]]+d.n+spTag(top[7])+' ขนาด '+top[2]+' 🪙'+fmt(fishPrice(top[0],top[1],top[2],top[4],top[5],top[6],top[7])),3000,[top[0]]);
   try{ sfx('open',top[1]?4:1,1); }catch(e){} updateHUD(); save(); return true; }
 function pondFishRow(f,btn){ const d=FISH[f[0]]; return `<div class="row"><span class="ic">${VG[f[1]]}${fIc(f[0])}</span><div class="nm">${d.n} ${sexTag(f[3])}${f[1]?' '+TN[f[1]]:''}${legTag(f[4])}${shTag(f[5])}${hfTag(f[6])}${spTag(f[7])}<small>ขนาด ${f[2]} · ราคา 🪙${fmt(fishPrice(f[0],f[1],f[2],f[4],f[5],f[6],f[7]))}</small></div><div class="btns">${btn}</div></div>`; }
 function renderPondShop(){ const P=S.pond, HOLD=pondHold(P.lv), rd=P.rd.length, full=rd>=HOLD, bagFull=bagTot()>=BAGCAP; $('shopTitle').textContent='🪨 บ่อปลา Lv.'+P.lv;
@@ -2438,11 +2451,11 @@ function renderPondShop(){ const P=S.pond, HOLD=pondHold(P.lv), rd=P.rd.length, 
   if(full) h+='<div class="pdWarn">⚠️ บ่อเต็มแล้ว — หยุดผลิตจนกว่าจะเก็บลูกปลา</div>';
   if(rd&&bagFull) h+='<div class="pdWarn">🎒 กระเป๋าเต็ม ('+BAGCAP+') — ไปขายของก่อนแล้วค่อยมาเก็บ</div>';
   if(P.br&&pondOK()&&!full){ const left=Math.max(0,Math.ceil(POND_SEC-P.t)), pc=Math.min(100,P.t/POND_SEC*100);
-    h+='<div class="pdBar"><div class="pdBarT"><span>💞 กำลังผสมพันธุ์ · ได้ '+pondPer(P.lv)+' ตัว/รอบ · 💠 '+(pondShCh()*100)+'%'+(pondShCh()>=POND_SH_P?' · ราคาลูก x0.5':'')+'</span><span>อีก <b id="pondCd">'+left+'</b> วิ</span></div><div class="bar"><i id="pondBarI" style="width:'+pc.toFixed(1)+'%"></i></div></div>'; }
+    h+='<div class="pdBar"><div class="pdBarT"><span>💞 กำลังผสมพันธุ์ · ได้ '+pondPer(P.lv)+' ตัว/รอบ · 💠 '+(pondShCh()*100)+'%'+(pondShCh()>=POND_SH_P?' · ราคาลูก x0.5':'')+(pondSpCh()?' · ⚔️🎀 '+pondSpCh()*100+'%':'')+'</span><span>อีก <b id="pondCd">'+left+'</b> วิ</span></div><div class="bar"><i id="pondBarI" style="width:'+pc.toFixed(1)+'%"></i></div></div>'; }
   /* 2) คู่ปลาในบ่อ: ช่อง ♂ / ♀ */
   h+='<div class="sec">💞 คู่ผสมพันธุ์ ('+P.f.length+'/'+POND_SLOTS+')</div><div class="pdPair">';
   for(let i=0;i<POND_SLOTS;i++){ const f=P.f[i];
-    if(f){ const d=FISH[f[0]]; h+=`<div class="pdSlot" style="--sc:${SEXC[f[3]|0]}"><div class="pdSx">${SEXS[f[3]|0]} ${SEXN[f[3]|0]}</div><div class="pdImg">${VG[f[1]]}${fIc(f[0])}</div><div class="pdNm">${d.n}${f[1]?' '+TN[f[1]]:''}</div><small>📏 ${f[2]} · 🪙${fmt(fishPrice(f[0],f[1],f[2],f[4],f[5],f[6],f[7]))}</small><button class="btn small ghost" data-pout="${i}">นำออก</button></div>`; }
+    if(f){ const d=FISH[f[0]]; h+=`<div class="pdSlot" style="--sc:${SEXC[f[3]|0]}"><div class="pdSx">${SEXS[f[3]|0]} ${SEXN[f[3]|0]}</div><div class="pdImg">${VG[f[1]]}${fIc(f[0])}</div><div class="pdNm">${d.n}${f[1]?' '+TN[f[1]]:''}${spTag(f[7])}</div><small>📏 ${f[2]} · 🪙${fmt(fishPrice(f[0],f[1],f[2],f[4],f[5],f[6],f[7]))}</small><button class="btn small ghost" data-pout="${i}">นำออก</button></div>`; }
     else h+='<div class="pdSlot empty"><div class="pdSx">ช่องว่าง</div><div class="pdImg">➕</div><small>เลือกปลาจากรายการด้านล่าง</small></div>';
     if(i===0) h+='<div class="pdHeart">'+(pondOK()?'💞':'🤍')+'</div>'; }
   h+='</div>';
@@ -2457,9 +2470,9 @@ function renderPondShop(){ const P=S.pond, HOLD=pondHold(P.lv), rd=P.rd.length, 
   if(need>=0) h+='<div class="shNote">💡 ตอนนี้ต้องการปลา <b style="color:'+SEXC[need]+'">'+SEXS[need]+' '+SEXN[need]+'</b> อีก 1 ตัว</div>';
   if(!L.length) h+='<p class="shSub">ยังไม่มีปลาในกระเป๋า — ไปตกปลาก่อนนะ 🎣 (ปลาในตำนานใส่บ่อไม่ได้)</p>';
   else { h+='<div class="pdList">'; for(const x of L){ const f=x.f, d=FISH[f[0]], sx=f[3]|0, hint=need>=0&&sx===need;
-      h+=`<div class="pdItem${hint?' hint':''}" style="--sc:${SEXC[sx]}"><span class="pdSx2">${SEXS[sx]}</span><span class="pdIc">${VG[f[1]]}${fIc(f[0])}</span><span class="pdTx">${d.n}${f[1]?' '+TN[f[1]]:''}<small>📏 ${f[2]} · 🪙${fmt(x.v)}</small></span><button class="btn small" data-pin="${x.i}" ${fullP?'disabled':''}>ใส่</button></div>`; }
+      h+=`<div class="pdItem${hint?' hint':''}" style="--sc:${SEXC[sx]}"><span class="pdSx2">${SEXS[sx]}</span><span class="pdIc">${VG[f[1]]}${fIc(f[0])}</span><span class="pdTx">${d.n}${f[1]?' '+TN[f[1]]:''}${spTag(f[7])}<small>📏 ${f[2]} · 🪙${fmt(x.v)}</small></span><button class="btn small" data-pin="${x.i}" ${fullP?'disabled':''}>ใส่</button></div>`; }
     h+='</div>'; }
-  h+='<details class="shInfo"><summary>ℹ️ ลูกปลาได้อะไรบ้าง</summary>ขนาดสุ่มระหว่างพ่อ-แม่ · สถานะสุ่มจากพ่อ-แม่ และมีโอกาส '+Math.round(POND_UP*100)+'% ได้สถานะสูงขึ้น 1 ขั้น (✨ทอง → 🌈รุ้ง → 🕳️วอยด์) · 💠 Shine: พ่อหรือแม่เป็น Shine = โอกาส 1% แต่ลูกทุกตัวราคา x0.5 (🐣½) · ไม่มี Shine = 0.1% ราคาปกติ · บ่อเก็บรอได้ '+HOLD+' ตัว · อัพเกรดบ่อได้ที่นายหน้าที่ดิน</details>';
+  h+='<details class="shInfo"><summary>ℹ️ ลูกปลาได้อะไรบ้าง</summary>ขนาดสุ่มระหว่างพ่อ-แม่ · สถานะสุ่มจากพ่อ-แม่ และมีโอกาส '+Math.round(POND_UP*100)+'% ได้สถานะสูงขึ้น 1 ขั้น (✨ทอง → 🌈รุ้ง → 🕳️วอยด์) · 💠 Shine: พ่อหรือแม่เป็น Shine = โอกาส 1% แต่ลูกทุกตัวราคา x0.5 (🐣½) · ไม่มี Shine = 0.1% ราคาปกติ<br>⚔️ ฟันแบบสุคุนะ / 🎀 โบว์แรร์ (ราคา x'+FISH_SP_MUL+'): พ่อหรือแม่มีสถานะ = ลูกมีโอกาส '+POND_SP_1*100+'% · มีทั้งคู่ = '+POND_SP_2*100+'% (ถ้าคนละสถานะ สุ่มได้อย่างใดอย่างหนึ่ง) · ราคาลูกเต็ม ไม่ลดครึ่ง<br>บ่อเก็บรอได้ '+HOLD+' ตัว · อัพเกรดบ่อได้ที่นายหน้าที่ดิน</details>';
   $('shopBody').innerHTML=h; $('shopCoins').textContent=S.coins; }
 let epTok=0;
 function estPondLoop(){ const tok=++epTok, t0=performance.now(); const ids=(S.pond&&S.pond.f&&S.pond.f.length?S.pond.f.map(f=>f[0]):[]).concat(Object.keys(FISH).filter(k=>!FISH[k].lgd).slice(0,3)).slice(0,3);
@@ -3942,7 +3955,7 @@ const rodTag=r=>`<span style="color:${r.color};font-size:.8em;border:1px solid $
 function rodsBagHTML(){ let h='<div class="sec">🎣 เบ็ดตกปลา (กด "ใช้" เพื่อเลือกเบ็ด)</div>';
   if(!S.rods.length) return h+'<div class="row"><span class="ic">🎣</span><div class="nm">ยังไม่มีเบ็ด<small>ซื้อได้ที่ลุงตกปลา (หาดทะเล) · กดปุ่ม 🎣 จะวาปไปให้</small></div><b>—</b></div>';
   S.rods.forEach(id=>{ const r=RODS[id-1]; if(!r) return; const on=S.rod===id;
-    h+=`<div class="row"><span class="ic">${rodIc(r)}</span><div class="nm">${rodTag(r)}${r.n}<small>${rodInfo(r)}</small></div><div class="btns"><button class="btn small ${on?'':'ghost'}" data-urod="${id}" ${on?'disabled':''}>${on?'✅ ใช้อยู่':'ใช้'}</button></div></div>`; });
+    h+=`<div class="row"><span class="ic">${rodPv(r)}</span><div class="nm">${rodTag(r)}${r.n}<small>${rodInfo(r)}</small></div><div class="btns"><button class="btn small ${on?'':'ghost'}" data-urod="${id}" ${on?'disabled':''}>${on?'✅ ใช้อยู่':'ใช้'}</button></div></div>`; });
   return h+'<small>ยืนใกล้น้ำ แล้วกดปุ่ม 🎣 ตกปลา / ทำ</small>'; }
 function gemBagRow(){ return '<div class="row"><span class="ic">'+gIc()+'</span><div class="nm">เพชร<small>ผลผลิตจากต้นเพชร (Secret) · แลก/ขายได้ที่ 💎 พ่อค้าเพชรในเมืองกลาง (🪙'+fmt(GEM_RATE)+' ต่อ 1 เม็ด)</small></div><b>x'+fmt(S.gems|0)+'</b></div>'; }
 
@@ -3974,13 +3987,13 @@ function invSlotHTML(s){
   else if(s.t==='f') ic=fIc(s.fid);
   else if(s.t==='s'){ ic=seedBagIc(s.k); use=S.sel===s.k; }
   else if(s.t==='i'){ ic=s.w==='hammer'?'🔨':'🛡️'; mk=s.w==='shield'?'🐦‍⬛':s.w==='rshield'?'🦹':''; }
-  else if(s.t==='r'){ ic=rodIc(RODS[s.rid-1]); use=S.rod===s.rid; }
+  else if(s.t==='r'){ ic=rodPv(RODS[s.rid-1]); use=S.rod===s.rid; }
   else if(s.t==='v'){ const v=S.veh[s.vi]; ic=VEH[v.t].e; mk=VGI[v.g|0]; use=S.ride===s.vi; }
   else if(s.t==='n') ic='🧂';
   if(s.t==='c'&&s.g) mk=VG[s.g]; else if(s.t==='c'||s.t==='f'){ if(s.t==='f'&&s.g) mk=VG[s.g]; else if(s.t==='f'&&s.l) mk='🌟'; else if(s.t==='f'&&FISH_SP[s.sp]) mk=FISH_SP[s.sp].e; }
   const lck=isLocked(s.lk);
   let cls='isl'+((s.t==='c'||s.t==='f')&&s.g?' g'+s.g:'')+(s.t==='f'&&s.l?' lg':'')+(s.t==='f'&&s.sh?' shn':'')+(s.t==='f'&&s.sp?' sp'+s.sp:'')+(s.t==='s'?' sd':'')+(lck?' locked':'')+(invSel===s.id?' sel':'');
-  return '<button type="button" class="'+cls+'" data-islot="'+s.id+'"><span class="ii">'+ic+'</span>'+(mk?'<em class="m">'+mk+'</em>':'')+(use?'<em class="u">✅</em>':'')+(lck?'<em class="lk">🔒</em>':'')+(s.n>1?'<b class="q">'+s.n+'</b>':'')+'</button>';
+  return '<button type="button" class="'+cls+'" data-islot="'+s.id+'"><span class="ii'+(s.t==='r'&&/canvas/.test(ic)?' rpv':'')+'">'+ic+'</span>'+(mk?'<em class="m">'+mk+'</em>':'')+(use?'<em class="u">✅</em>':'')+(lck?'<em class="lk">🔒</em>':'')+(s.n>1?'<b class="q">'+s.n+'</b>':'')+'</button>';
 }
 function invInfoHTML(slots){
   const s=slots.find(x=>x.id===invSel);
@@ -3994,11 +4007,11 @@ function invInfoHTML(slots){
   if(s.t==='i'){ const d={shield:'ยืนหน้าต้นที่ยังไม่โต แล้วกด E/ทำ เพื่อติดโล่ (ซื้อที่ร้านลุงพ่อค้า)',hammer:'ใช้ตีพืชตอนปล้น หักล้างโล่ของเหยื่อ (ซื้อที่โจรสวมดำ)',rshield:'ติดที่ฟาร์มเราแล้ว กันโจรบุกฟาร์ม (ซื้อที่โจรสวมดำ)'}[s.w];
     return '<div class="invInfo"><b>'+(s.w==='hammer'?'🔨':'🛡️')+' '+s.nm+' x'+s.n+'</b><small>'+d+'</small>'+act()+'</div>'; }
   if(s.t==='r'){ const r=RODS[s.rid-1], on=S.rod===s.rid;
-    return '<div class="invInfo"><b>'+rodTag(r)+(rodIc(r))+' '+r.n+'</b><small>'+rodInfo(r)+'</small>'+act('<button type="button" class="btn small '+(on?'':'ghost')+'" data-urod="'+s.rid+'" '+(on?'disabled':'')+'>'+(on?'✅ ใช้อยู่':'ใช้')+'</button>')+'</div>'; }
+    return '<div class="invInfo"><b>'+rodTag(r)+'<span class="rpvI">'+rodPv(r)+'</span> '+r.n+'</b><small>'+rodInfo(r)+'</small>'+act('<button type="button" class="btn small '+(on?'':'ghost')+'" data-urod="'+s.rid+'" '+(on?'disabled':'')+'>'+(on?'✅ ใช้อยู่':'ใช้')+'</button>')+'</div>'; }
   if(s.t==='v'){ const v=S.veh[s.vi], d=VEH[v.t], g=v.g|0, on=S.ride===s.vi;
     return '<div class="invInfo"><b>'+tgT(d.tier)+VGI[g]+d.e+' '+d.n+(g?' '+VTN[g]:'')+'</b><small>ความเร็ว x'+vehSpd(v.t,g).toFixed(2)+' · 🔋 ลด '+d.st[g]+'/ก้าว</small>'+act('<button type="button" class="btn small '+(on?'':'ghost')+'" data-ride="'+(on?-1:s.vi)+'">'+(on?'ลงจากยาน':'ขี่')+'</button>')+'</div>'; }
   if(s.t==='n') return '<div class="invInfo"><b>🧂 เกลือ x'+fmt(s.n)+'</b><small>ขายได้ 🪙0 ต่อชิ้น (ขายที่ร้านลุงพ่อค้า)</small>'+act()+'</div>';
-  const d=FISH[s.fid]; let h='<div class="invInfo"><b>'+(s.g?VG[s.g]+' ':'')+fIc(s.fid)+' '+d.n+(s.g?' '+TN[s.g]:'')+legTag(s.l)+shTag(s.sh)+spTag(s.sp)+'</b><small>ช่องนี้ x'+s.n+' · รวม 🪙'+fmt(s.v)+' · มีทั้งหมด '+s.tot+' ตัว</small>';
+  const d=FISH[s.fid]; let h='<div class="invInfo"><b>'+(s.g?VG[s.g]+' ':'')+fIc(s.fid)+' '+d.n+(s.g?' '+TN[s.g]:'')+legTag(s.l)+shTag(s.sh)+spTag(s.sp)+'</b><small>ช่องนี้ x'+s.n+' · รวม 🪙'+fmt(s.v)+' · มีทั้งหมด '+s.tot+' ตัว</small>'+(FISH_SP[s.sp]?'<small class="spNote" style="--spc:'+FISH_SP[s.sp].c+'">'+spDesc(s.sp)+'</small>':'');
   for(const x of s.list.slice(0,20)) h+='<small>'+sexTag(x.f[3])+' ขนาด '+x.f[2]+' · 🪙'+fmt(x.v)+'</small>'; if(s.list.length>20) h+='<small>… และอีก '+(s.list.length-20)+' ตัว</small>';
   return h+act()+'</div>';
 }
@@ -4043,7 +4056,7 @@ function renderBag(){
   $('bagTitle').textContent=TABT[bagTab];
   document.querySelectorAll('#bagTabs [data-tab]').forEach(b=>{ const on=b.dataset.tab===bagTab; b.classList.toggle('ghost',!on); });
   $('socBox').style.display=bagTab==='bag'?'':'none';
-  const gw0=$('bagBody').querySelector('.invGridWrap'), gs0=gw0?gw0.scrollTop:0; $('bag').querySelector('.panel').classList.toggle('inv',bagTab==='bag'); $('bagBody').innerHTML=h; { const gw1=$('bagBody').querySelector('.invGridWrap'); if(gw1&&gs0) gw1.scrollTop=gs0; } $('bagCoins').textContent=fmt(S.coins); gemUI(); if(bagTab==='bag') renderSocial();
+  const gw0=$('bagBody').querySelector('.invGridWrap'), gs0=gw0?gw0.scrollTop:0; $('bag').querySelector('.panel').classList.toggle('inv',bagTab==='bag'); $('bagBody').innerHTML=h; { const gw1=$('bagBody').querySelector('.invGridWrap'); if(gw1&&gs0) gw1.scrollTop=gs0; } $('bagCoins').textContent=fmt(S.coins); gemUI(); if(bagTab==='bag') renderSocial(); triPvLoop();
 }
 function openBag(tab){ bagTab=tab||'bag'; bagOpen = true; resetInput(); renderBag(); $('bag').classList.add('on'); $('bag').querySelector('.panel').scrollTop=0; }
 function closeBag(){ if(setOpen){ closeSet(); return; } bagOpen = false; $('bag').classList.remove('on'); save(); }
@@ -4165,7 +4178,7 @@ const rtR=(i,n,v,sub,em,hi)=>`<div class="rtRow${hi?' hi':''}"><span class="i">$
 const rtS=(t,rows,note)=>`<div class="rtSec"><h4>${t}</h4>${rows.join('')}${note?`<p class="rtNote">${note}</p>`:''}</div>`;
 const rtW=(list,wk)=>{ const tw=list.reduce((a,k)=>a+(CROPS[k][wk]||0),0)||1; return list.map(k=>rtR(CROPS[k].emoji,CROPS[k].name,pct(CROPS[k][wk]/tw),'',`ขาย 🪙${fmt(CROPS[k].sell)}`)); };
 const RT_PLANT=()=>rtS('🌱 สถานะพืชตอนปลูก',[rtR('✨','ทอง',pct(GOLD_CH),'ออกผลทองทุกครั้ง','ราคา x'+MUT[1]),rtR('🌈','รุ้ง',pct(RB_CH),'ออกผลรุ้งทุกครั้ง','ราคา x'+MUT[2],1),rtR('🕳️','วอยด์','ถุง Void','เมล็ดจากถุง Void ทุกเม็ด','ราคา x'+MUT[3]),rtR('💠','Shine',pct(SHINE_CH_P),'สีแปลก มีออร่า · ซ้อนสถานะอื่นได้','ราคา x'+SHINE_MUL,1),rtR('🛡️','ต้นกันอีกาฟรี',pct(SH_CH),'อีกาขโมยไม่ได้'),rtR('🌳','ขนาดต้น 100 ขึ้นไป',pct(Math.pow(100,-SIZE_A)),'ขนาด 1–200 · ยิ่งใหญ่ยิ่งยาก','ราคา +5%/ขนาด')],'อากาศตอนต้นโต: 💧 ฝน ราคา x'+WXM[1]+' · ⚡ ฟ้าผ่า ราคา x'+WXM[2]);
-const RT_FISHST=()=>rtS('🐟 สถานะปลาตอนตก',[rtR('✨','ทอง',pct(FISH_ST[0]),'','ราคา x'+MUT[1]),rtR('🌈','รุ้ง',pct(FISH_ST[1]),'','ราคา x'+MUT[2]),rtR('🕳️','วอยด์',pct(FISH_ST[2]),'','ราคา x'+MUT[3],1),rtR('💠','Shine',pct(SHINE_CH),'สีแปลก มีออร่า','ราคา x'+SHINE_MUL,1),rtR('🌟','ตำนาน',pct(FISH_LEG),'อาชีพนักตกปลา Lv.'+JOB_MAX+' เท่านั้น (เพิ่มตามเลเวล)','ราคา x'+LEG_MUL,1),rtR('⚔️','ฟันแบบสุคุนะ',pct(FISH_SP_CH),'เฉพาะ ⚔️ เบ็ดดาบ','ราคา x'+FISH_SP_MUL,1),rtR('🎀','โบว์แรร์',pct(FISH_SP_CH),'เฉพาะ 🎀 เบ็ดโบว์','ราคา x'+FISH_SP_MUL,1),rtR('🏆','ปลาในตำนานประจำพื้นที่',pct(FISH_LGD_CH),'เฉพาะแมพที่ประกาศ · ย้ายทุก '+(LG_SEC/60)+' นาที','ราคา x'+FISH_LGD_MUL,1)],'ขนาดปลา 1–200 ยิ่งใหญ่ยิ่งหายาก (≥50 = '+pct(Math.pow(50,-FISH_SIZE_A))+' · ≥100 = '+pct(Math.pow(100,-FISH_SIZE_A))+'): ราคา +5%/ขนาด (ขนาด 200 = x10.95)');
+const RT_FISHST=()=>rtS('🐟 สถานะปลาตอนตก',[rtR('✨','ทอง',pct(FISH_ST[0]),'','ราคา x'+MUT[1]),rtR('🌈','รุ้ง',pct(FISH_ST[1]),'','ราคา x'+MUT[2]),rtR('🕳️','วอยด์',pct(FISH_ST[2]),'','ราคา x'+MUT[3],1),rtR('💠','Shine',pct(SHINE_CH),'สีแปลก มีออร่า','ราคา x'+SHINE_MUL,1),rtR('🌟','ตำนาน',pct(FISH_LEG),'อาชีพนักตกปลา Lv.'+JOB_MAX+' เท่านั้น (เพิ่มตามเลเวล)','ราคา x'+LEG_MUL,1),rtR('⚔️','ฟันแบบสุคุนะ',pct(FISH_SP_CH),'เฉพาะ ⚔️ เบ็ดดาบ · ลูกจากบ่อ '+POND_SP_1*100+'–'+POND_SP_2*100+'%','ราคา x'+FISH_SP_MUL,1),rtR('🎀','โบว์แรร์',pct(FISH_SP_CH),'เฉพาะ 🎀 เบ็ดโบว์ · ลูกจากบ่อ '+POND_SP_1*100+'–'+POND_SP_2*100+'%','ราคา x'+FISH_SP_MUL,1),rtR('🏆','ปลาในตำนานประจำพื้นที่',pct(FISH_LGD_CH),'เฉพาะแมพที่ประกาศ · ย้ายทุก '+(LG_SEC/60)+' นาที','ราคา x'+FISH_LGD_MUL,1)],'ขนาดปลา 1–200 ยิ่งใหญ่ยิ่งหายาก (≥50 = '+pct(Math.pow(50,-FISH_SIZE_A))+' · ≥100 = '+pct(Math.pow(100,-FISH_SIZE_A))+'): ราคา +5%/ขนาด (ขนาด 200 = x10.95)');
 const RATE={
   shop:()=>RT_PLANT()+rtS('🎁 ถุงเมล็ดลึกลับ (🪙'+fmt(BAG_PRICE)+')',[rtR('✨','ได้เมล็ดทอง',pct(BAG_GOLD),'ปลูกแล้วออกผลทองทุกครั้ง'),rtR('🌈','ได้เมล็ดรุ้ง',pct(BAG_RB),'ปลูกแล้วออกผลรุ้งทุกครั้ง')].concat(rtW(BAGK,'w')),'โอกาสได้พืชแต่ละชนิดต่อ 1 ถุง')+rtS('🕳️ ถุง Void (💎'+VBAG_GEM+')',rtW(VBAGK,'vw'),'ผลทุกลูกเป็นวอยด์ ราคา x'+MUT[3]),
   fish:()=>RT_FISHST()+['sea','riv','town','mnt'].map(z=>{ const L=FISHK[z]||[], tw=L.reduce((a,k)=>a+FISH[k].w,0)||1; return rtS({sea:'🏖️ ทะเล',riv:'🌾 ฟาร์ม / 🏘️ เมือง',town:'🏬 เมืองการค้า',mnt:'⛰️ ภูเขาซากุระ'}[z],L.map(k=>rtR(FISH[k].e,FISH[k].n,pct(FISH[k].w/tw),'','🪙'+fmt(FISH[k].sell)))); }).join('')+rtS('🎣 เบ็ด',RODS.map(r=>rtR(rodIc(r),r.n.replace('🔱 ',''),rodCostTx(r),'รอปลา '+(r.wmin===r.wmax?r.wmin:r.wmin+'–'+r.wmax)+' วิ'+(r.multi?' · ได้ทีละ '+r.multi+' ตัว':'')+(r.sp?' · '+FISH_SP_CH*100+'% '+FISH_SP[r.sp].n+' x'+FISH_SP_MUL:''))),'ลุงตกปลารับซื้อปลาแพงกว่า x'+FISHER_MUL),

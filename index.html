@@ -903,6 +903,10 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
 .hpAb{display:flex;flex-direction:column;gap:2px;margin:2px 0 4px;width:100%}.hpAb i{font-style:normal;font-size:12px;color:#bff0ff;background:rgba(80,180,255,.14);border:1px solid rgba(150,220,255,.4);border-radius:8px;padding:1px 4px}
 .hpc.on{border-color:#ffe08a;box-shadow:0 0 0 2px rgba(255,224,138,.35),0 0 14px rgba(255,210,100,.6)}
 #shop.prem .hpc .btn:disabled{opacity:1!important;color:#ffe7a8!important;background:rgba(255,224,138,.12)!important;border:2px dashed #d9b45a!important;box-shadow:none!important}
+.pmPv{display:flex;justify-content:center;margin:0 0 8px}.pmPv canvas{width:100%;max-width:340px;height:auto;border-radius:14px;border:2px solid #ffe08a;background:radial-gradient(ellipse at 30% 90%,rgba(255,215,120,.35),transparent 45%),linear-gradient(180deg,#3c2556,#1a1024);box-shadow:0 0 14px rgba(255,210,90,.35)}
+.pmWhy{margin:0 0 10px;padding:10px 12px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1.5px solid rgba(242,197,61,.6);color:#f3e9ff;font-size:14px;line-height:1.45}
+.pmWhy>b{display:block;margin:0 0 6px;color:#ffe7a8;font-size:16px}.pmWhy>div{display:flex;gap:8px;align-items:flex-start;margin:4px 0}.pmWhy>div>span{flex:none;width:24px;text-align:center;font-size:18px}.pmWhy>div>p{margin:0;flex:1;min-width:0}
+.pmWhy em{font-style:normal;color:#8ff08f;font-weight:700}.pmWhy em.bad{color:#ff9a8a}
 @keyframes pmBorder{0%{border-color:#f2c53d}50%{border-color:#fff3b0}100%{border-color:#d9a33a}}
 #shop.prem .shopT .shophead{background:linear-gradient(180deg,#8a5ae0,#5a2fb0 55%,#3c1d80)!important;border:2px solid #ffe08a!important;border-radius:12px!important;box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -3px 0 rgba(0,0,0,.25),0 0 16px rgba(255,210,90,.45)!important}
 #shop.prem .shopT .shophead h2{background:linear-gradient(180deg,#fffbe0 10%,#ffd75a 55%,#d99a22 90%);-webkit-background-clip:text;background-clip:text;color:transparent!important;text-shadow:none!important;filter:drop-shadow(0 2px 0 #1c1038) drop-shadow(0 0 6px rgba(255,210,90,.6));letter-spacing:.04em}
@@ -1559,15 +1563,54 @@ function trialClick(b){ const T_=TRL;
   if(g==='ok'){ T_.st=2; renderShop(); clearTimeout(T_.tm); T_.tm=setTimeout(()=>{ T_.npcOk=1; try{ sfx('open',1,1); }catch(e){} if(shopOpen&&shopMode==='trial') renderShop(); },900); return true; }
   if(g==='confirm'&&T_.npcOk){ T_.st=3; renderShop(); clearTimeout(T_.tm); T_.tm=setTimeout(()=>{ T_.npcCf=1; try{ sfx('open',4,1); }catch(e){} toast('🤝 ทดลองเทรดสำเร็จ (โหมดทดลอง ไม่มีการโอนของ)',2400); if(shopOpen&&shopMode==='trial') renderShop(); },900); return true; }
   return true; }
+/* 🎬 แอนิเมชันตัวอย่างในร้านพรีเมียม: 👑 มงกุฎ (บัฟทีละอย่าง) · 🛡️ โล่กันอีกา (ไม่มีโล่ vs มีโล่) */
+let pmTok=0;
+function pmPvLoop(kind){ const tok=++pmTok, t0=performance.now(); const step=()=>{ const cv=document.getElementById('pmCv'); if(tok!==pmTok||!cv||!shopOpen) return;
+    const t=(performance.now()-t0)/1000, p=cv.getContext('2d'), T0=T, W0=WS, c0=ctx; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,cv.width,cv.height);
+    try{ ctx=p; WS=1; if(kind==='shield') pmShieldPv(p,cv.width,cv.height,t); else pmCrownPv(p,cv.width,cv.height,t); }catch(e){} finally{ ctx=c0; T=T0; WS=W0; }
+    requestAnimationFrame(step); }; requestAnimationFrame(step); }
+const pmTxt=(p,tx,x,y,sz,col)=>{ p.font='bold '+sz+'px '+FONT; p.textAlign='center'; p.textBaseline='middle'; p.lineWidth=4; p.strokeStyle='rgba(0,0,0,.65)'; p.strokeText(tx,x,y); p.fillStyle=col||'#fff'; p.fillText(tx,x,y); };
+function pmShieldPv(p,W,H,t){ const D=3.4, k=t%D, half=W/2; T=46;
+  for(const side of [0,1]){ const ox=side*half, cx=ox+half/2, gy=H-36;
+    p.fillStyle=side?'rgba(80,170,255,.12)':'rgba(255,80,80,.1)'; p.fillRect(ox+4,4,half-8,H-8);
+    pmTxt(p,side?'✅ มีโล่':'❌ ไม่มีโล่',cx,18,15,side?'#9fe3ff':'#ffb0a8');
+    p.fillStyle='#6b4423'; p.beginPath(); p.ellipse(cx,gy+10,34,10,0,0,6.2832); p.fill();
+    const gone=!side&&k>1.9, pc=pxCv('tomato');
+    if(!gone&&pc){ p.imageSmoothingEnabled=false; const b=Math.sin(t*3)*1.5; p.drawImage(pc,cx-20,gy-34+b,40,40); }
+    if(side){ const hit=k>1.75&&k<2.3, a=hit?1:.55; p.save(); p.globalAlpha=a; const g=p.createRadialGradient(cx,gy-12,6,cx,gy-12,40); g.addColorStop(0,'rgba(150,210,255,.05)'); g.addColorStop(1,'rgba(120,190,255,'+(hit?.55:.3)+')'); p.fillStyle=g; p.beginPath(); p.ellipse(cx,gy-12,38,36,0,0,6.2832); p.fill(); p.strokeStyle='rgba(200,235,255,.9)'; p.lineWidth=2; p.stroke(); p.restore();
+      const sc=pxCv('shield'); if(sc){ p.imageSmoothingEnabled=false; p.drawImage(sc,cx+16,gy-46,20,20); } }
+    /* อีกา: บินเข้า (0–1) → จิก (1–1.9) → บินออก (1.9–3) */
+    let cx2, cy2, ph, dir; if(k<1){ const e=k; cx2=(ox+half+10)+(cx-(ox+half+10))*e; cy2=30+(gy-30)*e; ph=0; dir=-1; } else if(k<1.9){ cx2=cx+(side?30:6); cy2=gy+(side?-8:0); ph=1; dir=-1; if(side) cx2+=Math.sin(k*30)*2; } else { const e=Math.min(1,(k-1.9)/1.1); cx2=(cx+(side?30:6))+(side?60:-60)*e; cy2=gy-(gy-10)*e; ph=2; dir=side?1:-1; }
+    if(k<3.05) drawCrow({x:cx2/T,y:cy2/T,dir,ph},t);
+    if(k>1.9&&k<3){ const q=(k-1.9)/1.1; p.globalAlpha=1-q; pmTxt(p,side?'🛡️ กันได้!':'🐦‍⬛ ขโมย!',cx,gy-50-q*16,16,side?'#bff0ff':'#ff8a7a'); p.globalAlpha=1; } }
+  p.fillStyle='rgba(255,224,138,.5)'; p.fillRect(half-1,8,2,H-16); }
+function pmCrownPv(p,W,H,t){ const SC=4, D=2.6, i=Math.floor(t/D)%SC, k=(t%D)/D, cx=W*.2, fy=H-22; T=80;
+  const o=Object.assign(charObj(S.char||CH),{fx:0,fy:1,rd:'',noSh:false}); drawPerson(cx,fy,o,false,0,t);
+  const nm=(S.char&&S.char.name)||'คุณ', ly=fy-T*1.32; p.font=Math.round(T*.26)+'px '+FONT; p.textAlign='center'; p.textBaseline='middle'; p.lineWidth=4; p.strokeStyle='rgba(0,0,0,.6)'; p.fillStyle='#fff8e6'; p.strokeText(nm,cx,ly); p.fillText(nm,cx,ly); crownBeforeName(cx,ly,nm,t);
+  for(let j=0;j<5;j++){ const q=(t*.5+j/5)%1; p.globalAlpha=Math.sin(q*Math.PI); vStar(p,cx+Math.sin(j*2.4+t)*34,fy-20-q*90,3+2*Math.sin(t*5+j),'#ffe48a'); } p.globalAlpha=1;
+  const rx=W*.67, ry=H/2, e=Math.min(1,k/.45), ease=1-Math.pow(1-e,3);
+  const box=(c1)=>{ p.fillStyle='rgba(0,0,0,.35)'; p.strokeStyle=c1; p.lineWidth=2; p.beginPath(); if(p.roundRect) p.roundRect(rx-86,ry-62,172,124,14); else p.rect(rx-86,ry-62,172,124); p.fill(); p.stroke(); };
+  if(i===0){ box('#ffe08a'); pmTxt(p,'👑 มงกุฎหน้าชื่อ',rx,ry-34,15,'#ffe7a8'); pmTxt(p,'ผู้เล่นทุกคนเห็น',rx,ry-8,13,'#e2d2f0'); drawCrownE(rx,ry+28,t,1.2+.15*Math.sin(t*4)); }
+  else if(i===1){ box('#7fe07f'); pmTxt(p,'🔋 สตามิน่า x2',rx,ry-36,15,'#c8ffc8'); const bw=150, v=STAM_BASE+(STAM_CROWN-STAM_BASE)*ease; p.fillStyle='rgba(255,255,255,.15)'; p.fillRect(rx-bw/2,ry-6,bw,16); p.fillStyle='#5ad65a'; p.fillRect(rx-bw/2,ry-6,bw*(v/STAM_CROWN),16); p.strokeStyle='#fff'; p.lineWidth=1; p.strokeRect(rx-bw/2,ry-6,bw,16); pmTxt(p,'⚡ '+Math.round(v),rx,ry+2,12); pmTxt(p,STAM_BASE+' → '+STAM_CROWN,rx,ry+32,14,'#ffe7a8'); }
+  else if(i===2){ box('#ffb15a'); pmTxt(p,'🎒 กระเป๋า x2',rx,ry-36,15,'#ffd9a8'); const n=Math.round(BAG_BASE+(BAG_CROWN-BAG_BASE)*ease); for(let a=0;a<2;a++) for(let b2=0;b2<5;b2++){ const on=(a*5+b2)<Math.round(5+5*ease); p.fillStyle=on?'#c08a4a':'rgba(255,255,255,.12)'; p.fillRect(rx-70+b2*28,ry-14+a*24,24,20); } pmTxt(p,n+' ชิ้น',rx,ry+40,14,'#ffe7a8'); }
+  else { box('#9fe3ff'); pmTxt(p,'📈 +5% ทุกอย่าง',rx,ry-36,15,'#bff0ff'); const v=Math.round(100+5*ease); pmTxt(p,'ขาย 🪙100 → 🪙'+v,rx,ry-6,13); pmTxt(p,'🌱 โตไว +5% · 🎣 ตกไว +5%',rx,ry+20,12,'#e2d2f0');
+    for(let j=0;j<4;j++){ const q=(k*1.5+j*.25)%1; p.globalAlpha=1-q; pmTxt(p,'🪙',rx-60+j*40,ry+46-q*18,14); } p.globalAlpha=1; }
+  for(let j=0;j<SC;j++){ p.fillStyle=j===i?'#ffe08a':'rgba(255,255,255,.3)'; p.beginPath(); p.arc(rx-18+j*12,H-10,3.5,0,6.2832); p.fill(); } }
 function renderPrem(){ $('shopTitle').textContent='👑 ร้านพรีเมียม'; const gh=S.gems|0, need=Math.max(0,PREM_GEM-gh), own=!!S.crown;
   const tabs=`<div class="pmTabs">${[['crown','👑','มงกุฎ'],['fashion','👗','แฟชั่น'],['pose','✨','ท่าเก็บ'],['shield','🛡️','โล่อีกา']].map(t=>`<button data-ptab="${t[0]}" class="${premTab===t[0]?'on':''}"><span class="pe">${t[1]}</span>${t[2]}</button>`).join('')}</div>`;
   const bal=`<div class="pmBal">💎 เพชรของคุณ <b>${fmt(gh)}</b></div>`;
   if(premTab==='pose'){ $('shopBody').innerHTML=tabs+bal+poseUI(); $('shopCoins').textContent=fmt(S.coins); gemUI(); hpPvLoop(); return; }
   if(premTab==='shield'){ const bal2=`<div class="pmBal">🪙 เหรียญของคุณ <b>${fmt(S.coins)}</b></div>`;
     $('shopBody').innerHTML=tabs+bal2+`<div class="pmHero"><div class="pmCr">🛡️</div><div class="pmTx"><h3>โล่กันอีกา</h3><div class="pmPr">🪙${fmt(SHIELD_PRICE)} / อัน</div></div></div>
-      <div class="shNote">มีอยู่ <b>${fmt(S.shields|0)}</b> อัน · ยืนหน้าต้นที่ยังไม่โตแล้วกด ทำ (E) เพื่อติดโล่ — อีกาขโมยต้นนั้นไม่ได้จนกว่าจะเก็บเกี่ยว · ติ๊ก 🤖 ออโต้ "ใส่โล่กันอีกา" ให้ใส่ทุกต้นเอง</div>
+      <div class="pmPv"><canvas id="pmCv" width="320" height="170"></canvas></div>
+      <div class="pmWhy"><b>🤔 ทำไมต้องซื้อ?</b>
+        <div><span>🐦‍⬛</span><p>อีกาจะบินมาขโมยผลผลิตในฟาร์มทุก ~${CROW_EVERY} วินาที ต้นที่โดนขโมย <em class="bad">หายไปเลย</em> เสียทั้งเมล็ดและเวลาที่รอ</p></div>
+        <div><span>🛡️</span><p>ต้นที่ติดโล่ <em>อีกาขโมยไม่ได้</em> จะบินหนีไปเอง โล่อยู่จนกว่าจะเก็บเกี่ยว</p></div>
+        <div><span>💰</span><p>ราคาแค่ 🪙${fmt(SHIELD_PRICE)} ต่ออัน แต่ผลผลิตแพง ๆ ต้นเดียวอาจหลายร้อยถึงหลายพันเหรียญ — คุ้มมาก</p></div>
+        <div><span>👆</span><p>วิธีใช้: อยู่ในฟาร์มแล้วกดปุ่มกลม <b>🛡️ ใส่โล่</b> (เหนือปุ่ม ทำ) ใส่ให้ทุกต้นที่ยังไม่โตในครั้งเดียว</p></div></div>
+      <div class="shNote">มีอยู่ <b>${fmt(S.shields|0)}</b> อัน</div>
       <div class="pmBuy4 three">${[5,10,50].map(n=>`<button class="btn pmBtn" data-shield="${n}" ${S.coins<SHIELD_PRICE*n?'disabled':''}>ซื้อ ${n}<br><small>🪙${fmt(SHIELD_PRICE*n)}</small></button>`).join('')}</div>`;
-    $('shopCoins').textContent=fmt(S.coins); gemUI(); return; }
+    $('shopCoins').textContent=fmt(S.coins); gemUI(); pmPvLoop('shield'); return; }
   if(premTab==='fashion'&&S.char){ const cur=S.char.ac|0; if(fsSel<0||fsSel>=ACN) fsSel=cur; const ow=S.own||[], hav=i=>i===0||ow.includes(i);
     const sel=fsSel, buy=sel>0&&!hav(sel), lack=buy&&gh<ACC_PRICE;
     const btn=sel===cur?`<button class="btn pmBtn" disabled>👗 ${sel?'ใส่อยู่แล้ว':'ยังไม่ได้ใส่ของแต่งตัว'}</button>`:`<button class="btn pmBtn" data-fact="1" ${lack?'disabled':''}>${buy?(lack?'เพชรไม่พอ — ขาดอีก 💎'+(ACC_PRICE-gh):'💎 ซื้อและใส่เลย '+ACC_PRICE):(sel?'✅ ใส่เลย (ของคุณแล้ว)':'🚫 ถอดออก')}</button>`;
@@ -1577,10 +1620,16 @@ function renderPrem(){ $('shopTitle').textContent='👑 ร้านพรีเ
   const tile=(ic,t,d)=>`<div class="pmT"><span>${ic}</span><b>${t}</b><small>${d}</small></div>`;
   $('shopBody').innerHTML=tabs+bal+`
   <div class="pmHero${own?' own':''}"><div class="pmCr">👑</div><div class="pmTx"><h3>มงกุฎพรีเมียม</h3><div class="pmPr">${own?'<span class="pmOk">✅ คุณมีแล้ว</span>':'💎 '+PREM_GEM}</div></div></div>
+  <div class="pmPv"><canvas id="pmCv" width="320" height="190"></canvas></div>
+  <div class="pmWhy"><b>🤔 ทำไมต้องซื้อ?</b>
+    <div><span>🔋</span><p>สตามิน่า <em>x2</em> (${STAM_BASE} → ${STAM_CROWN}) เดิน/ทำงานได้นานขึ้นเท่าตัว ไม่ต้องนั่งพักบ่อย</p></div>
+    <div><span>🎒</span><p>กระเป๋า <em>x2</em> (${BAG_BASE} → ${BAG_CROWN} ชิ้น) เก็บของได้เยอะขึ้น เดินไปขายน้อยลงครึ่งหนึ่ง (ออโต้ก็ไปขายน้อยลง)</p></div>
+    <div><span>📈</span><p>ขายแพงขึ้น · พืชโตไว · ตกปลาไว <em>อย่างละ +5%</em> ได้เงินเร็วขึ้นทุกทาง และบวกกับบัฟอื่นได้</p></div>
+    <div><span>👑</span><p>มีมงกุฎหน้าชื่อ ผู้เล่นทุกคนเห็น · ซื้อครั้งเดียว <em>ใช้ได้ตลอด</em></p></div></div>
   <div class="pmBuffT">✨ บัฟติดตัวถาวร (ได้ทันทีที่ซื้อ)</div><div class="pmGrid">${tile('🔋','สตามิน่า','<em>+'+(STAM_CROWN-STAM_BASE)+'</em><br>'+STAM_BASE+' → '+STAM_CROWN)}${tile('🎒','กระเป๋า','<em>x2</em><br>'+BAG_BASE+' → '+BAG_CROWN+' ชิ้น')}${tile('🪙','ได้เงิน','<em>+5%</em><br>ขายทุกอย่าง')}${tile('🌱','พืชโตไว','<em>+5%</em><br>ทุกต้น')}${tile('🎣','ตกปลาไว','<em>+5%</em><br>ปลากินเบ็ดเร็วขึ้น')}${tile('👑','มงกุฎหน้าชื่อ','<em>ทุกคนเห็น</em>')}</div>
   ${own?'<div class="pmOkBar">✅ บัฟทั้งหมดทำงานอยู่</div>':`<button class="btn pmBtn" data-crown="buy" ${need?'disabled':''}>${need?'เพชรไม่พอ — ขาดอีก 💎'+need:'ซื้อเลย 💎'+PREM_GEM}</button>`}
   ${!own&&need?`<p class="pmHint">แลกเพชรที่พ่อค้าเพชรในเมืองกลาง (🪙${fmt(GEM_RATE)} = 💎1) · ขาดอีกประมาณ 🪙${fmt(need*GEM_RATE)}</p>`:''}
-  <p class="pmNote">ซื้อครั้งเดียว บัฟติดตัวตลอด · เทรด/ขายให้คนอื่นไม่ได้</p>`;
+  <p class="pmNote">ซื้อครั้งเดียว บัฟติดตัวตลอด · เทรด/ขายให้คนอื่นไม่ได้</p>`; pmPvLoop('crown');
   $('shopCoins').textContent=fmt(S.coins); gemUI(); }
 const PREM_GEM=30; /* ราคามงกุฎพรีเมียม (เพชร) — แก้เลขนี้ได้ */
 function renderGem(){ $('shopTitle').textContent='💎 พ่อค้าเพชร'; const mx=Math.floor(S.coins/GEM_RATE), bt=(n,l)=>`<button class="btn small" data-gem="${n}" ${mx<(n==='max'?1:n)?'disabled':''}>${l}</button>`, gh=S.gems|0, sb=(n,l)=>`<button class="btn small" data-sgem="${n}" ${gh<(n==='max'?1:n)?'disabled':''}>${l}</button>`;

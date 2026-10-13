@@ -3652,6 +3652,8 @@ function pathTo(m,r,n){ const a=[]; for(let c=n;r.p[c]>=0;c=r.p[c]) a.push({x:c%
 function pick(m,r,list){ let best=null;
   for(const t of list) for(const[dx,dy]of DIRS){ const nx=t.tx+dx,ny=t.ty+dy; if(!walkOK(m,nx,ny)) continue; const n=ny*m.w+nx,sc=r.d[n]; if(sc<0||m.t[n]===PORT) continue; if(!best||sc<best.s) best={t,n,s:sc}; }
   return best; }
+/* 🪙 ราคาผลที่ต้นนี้จะได้ตอนเก็บ (เหมือนป้ายราคาบนต้น) */
+function cropV(c){ return price(c.type,c.g|0)*sizeMult(c.z)*WXM[c.w|0]*(c.sh?SHINE_MUL:1); }
 function farmStats(){ const m=maps.farm,o={empty:[],ripe:[],grow:[]};
   for(const q of m.soil){ const tx=q.tx,ty=q.ty,c=FC[q.k];
     if(!c) o.empty.push({tx,ty}); else if(CROPS[c.type]&&CROPS[c.type].gch) continue; else if(rdLk(c)) continue; else if(cropProgress(c)>=1) o.ripe.push({tx,ty,c}); else o.grow.push({tx,ty,c}); }
@@ -3764,7 +3766,8 @@ function decide(){
   else if(k==='shield'){ const n=m.npcs.find(q=>q.kind==='robber'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🛡️ เดินไปซื้อโล่ '+shBatch()+' อัน ที่โจรสวมดำ'); }
   else if(k==='fisher'){ const n=fbFind('fisher'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🎣 เดินไปขายกับลุงตกปลา (ปลา +'+Math.round((FISHER_MUL-1)*100)+'%)'); }
   else if(k==='gold'){ const tr=goldTr(); list=[{tx:Math.floor(tr.x),ty:Math.floor(tr.y)}]; task('🤑 เดินไปขายกับพ่อค้าทอง (+'+Math.round((GOLD_MUL-1)*100)+'%)'); }
-  else if(k==='plant'||k==='harvest'){ const hv=k==='harvest'?(ripeP.length?ripeP:f.ripe):[], pl=k==='plant'?f.empty:[];
+  else if(k==='plant'||k==='harvest'){ let hv=k==='harvest'?(ripeP.length?ripeP:f.ripe):[]; const pl=k==='plant'?f.empty:[];
+    if(ai.rich&&hv.length>1){ const mx=Math.max(...hv.map(t=>cropV(t.c))); hv=hv.filter(t=>cropV(t.c)>=mx*.95); } /* 💎 เก็บต้นที่แพงที่สุดก่อน (ราคาใกล้กันไม่เกิน 5% = เก็บอันที่ใกล้กว่า) */
     list=[...pl.map(t=>({tx:t.tx,ty:t.ty,k:'plant'})),...hv.map(t=>({tx:t.tx,ty:t.ty,c:t.c,k:'harvest'}))];
     if(hv.length&&hpReach()>1&&!S.farm){ const rr=hpReach()+.3; let bt=null, bd=1e9; for(const t of list){ if(t.k!=='harvest') continue; const d=Math.hypot(t.tx+.5-S.x,t.ty+.5-S.y); if(d<=rr&&d<bd){ bd=d; bt=t; } } if(bt){ task('🧺 กำลังเก็บเกี่ยว (เหลือ '+hv.length+')'); B.path=null; B.act={k:'harvest',t:bt}; return; } } /* ✌️ อยู่ในระยะ = เก็บได้เลยไม่ต้องเดิน */
     const pk=pick(m,r,list); if(!pk) return; k=pk.t.k;
@@ -4429,7 +4432,7 @@ function botHTML(){ const run=botRun(), m=botMode, ai=S.ai, fb=S.fb||{}, pc=x=>M
   if(m==='farm'){ const sell=!ai.sell?'none':ai.gold?'gold':ai.fisher?'fisher':'shop', SN={shop:'🏪 ร้านค้า',gold:'🤑 พ่อค้าทอง',fisher:'🎣 ลุงตกปลา'};
     const f=[]; if(ai.plant) f.push('🌱 ปลูก'); if(ai.harvest) f.push('🧺 เก็บ'); if(ai.fry) f.push('🐟 เก็บลูกปลา'); if(sell!=='none') f.push('💰 ขายที่'+SN[sell].slice(2)); f.push('🔁 วนใหม่');
     h+='<div class="scard"><div class="sec">🔁 ออโต้จะทำแบบนี้</div>'+flow(f)+'</div>';
-    h+='<div class="scard"><div class="sec">✅ ให้ทำอะไรบ้าง <small>(แตะเพื่อเปิด/ปิด)</small></div><div class="agrid">'+row('data-ai="plant"',ai.plant,'🌱','ปลูก')+row('data-ai="harvest"',ai.harvest,'🧺','เก็บเกี่ยว')+row('data-ai="fry"',ai.fry,'🐟','เก็บลูกปลา','เมื่อบ่อเต็ม')+row('data-ai="shield"',ai.shield,'🛡️','ซื้อโล่กันโจร','โดนปล้น = หักเหรียญซื้อทันที')+'</div></div>';
+    h+='<div class="scard"><div class="sec">✅ ให้ทำอะไรบ้าง <small>(แตะเพื่อเปิด/ปิด)</small></div><div class="agrid">'+row('data-ai="plant"',ai.plant,'🌱','ปลูก')+row('data-ai="harvest"',ai.harvest,'🧺','เก็บเกี่ยว')+row('data-ai="fry"',ai.fry,'🐟','เก็บลูกปลา','เมื่อบ่อเต็ม')+row('data-ai="shield"',ai.shield,'🛡️','ซื้อโล่กันโจร','โดนปล้น = หักเหรียญซื้อทันที')+row('data-ai="rich"',ai.rich,'💎','เก็บของแพงก่อน','ต้นราคาสูงสุดก่อน')+'</div></div>';
     h+='<div class="scard"><div class="sec">💰 เก็บแล้วเอาไปขายที่ไหน</div><div class="agrid">'+row('data-bsell="shop"',sell==='shop','🏪','ร้านค้า','เมืองกลาง',1)+row('data-bsell="gold"',sell==='gold','🤑','พ่อค้าทอง','+'+pc(GOLD_MUL)+'%',1)+row('data-bsell="fisher"',sell==='fisher','🎣','ลุงตกปลา','ปลา +'+pc(FISHER_MUL)+'%',1)+row('data-bsell="none"',sell==='none','🚫','ไม่ขาย','เก็บไว้',1)+'</div></div>';
   } else { const fbn=FB_NPC[fb.npc]?fb.npc:'gold', nm=k=>FB_NPC[k].n.replace(/\s*\(.*\)$/,'');
     const f=['🎣 ตกปลา','🎒 กระเป๋าเต็ม',fbn==='none'?'⏹ หยุด':'💰 ไปขายที่'+nm(fbn)]; if(fbn!=='none') f.push(fb.back!==false?'🔁 กลับมาตกต่อ':'✅ จบ'); if(fb.leg) f.unshift('🏆 ตามปลาตำนาน');
@@ -4509,8 +4512,10 @@ $('setBody').addEventListener('click',e=>{
   else if(b.dataset.tog==='auto'){ S.auto=!S.auto; B.pause=0; B.path=B.act=null; toast(S.auto?'🤖 ออโต้เปิด — เดินปลูก เก็บ และไปขายให้เอง':'🤖 ออโต้ปิด',2200); }
   else if(b.dataset.rsu){ S.rsUnl=S.rsUnl?0:1; toast(S.rsUnl?'🤖 เปิดออโต้ซื้อโล่ไม่จำกัด · โดนค้อนตีแล้วซื้อโล่เติมให้เต็ม '+RS_MAX+' ทันที (เท่าที่เหรียญพอ)':'🤖 ปิดออโต้ซื้อโล่ไม่จำกัดแล้ว',2600); updateHUD(); }
   else if(b.dataset.rsn){ const v=b.dataset.rsn, c=S.rsBuyN|0||10; S.rsBuyN=Math.max(1,Math.min(RS_MAX,v==='max'?RS_MAX:c+(parseInt(v,10)||0))); toast('🛡️ ซื้อโล่ทีละ '+S.rsBuyN+' อัน (ไม่เกินเต็ม '+RS_MAX+')',1800); }
-  else if(b.dataset.ai){ const k=b.dataset.ai, on=Object.keys(S.ai).filter(q=>S.ai[q]).length;
-    if(S.ai[k]&&on<=1){ toast('ต้องติ๊กอย่างน้อย 1 อย่างนะ',1600); return; } S.ai[k]=!S.ai[k]; if(k==='gold'&&S.ai.gold){ S.ai.sell=true; S.ai.fisher=false; } if(k==='fisher'&&S.ai.fisher){ S.ai.sell=true; S.ai.gold=false; } if(k==='sell'&&!S.ai.sell){ S.ai.gold=false; S.ai.fisher=false; } B.path=B.act=null; B.think=0; }
+  else if(b.dataset.ai){ const k=b.dataset.ai, on=Object.keys(S.ai).filter(q=>S.ai[q]&&q!=='rich').length;
+    if(k==='rich'){ S.ai.rich=!S.ai.rich; toast(S.ai.rich?'💎 บอทจะเก็บต้นที่ราคาแพงที่สุดก่อน':'🧺 บอทเก็บต้นที่ใกล้ที่สุดก่อน (แบบเดิม)',1800); B.path=B.act=null; B.think=0; }
+    else
+    if(S.ai[k]&&on<=1){ toast('ต้องติ๊กอย่างน้อย 1 อย่างนะ',1600); return; } else { S.ai[k]=!S.ai[k]; if(k==='gold'&&S.ai.gold){ S.ai.sell=true; S.ai.fisher=false; } if(k==='fisher'&&S.ai.fisher){ S.ai.sell=true; S.ai.gold=false; } if(k==='sell'&&!S.ai.sell){ S.ai.gold=false; S.ai.fisher=false; } B.path=B.act=null; B.think=0; } }
   else if(b.dataset.fbn){ const k=b.dataset.fbn; if(!FB_NPC[k]) return; S.fb.npc=k; toast('🎣 กระเป๋าเต็มจะ'+(k==='none'?'หยุดตกปลา (ไม่ไปขาย)':'เดินไปขายที่ '+FB_NPC[k].e+FB_NPC[k].n),2400); }
   else if(b.dataset.fbback){ S.fb.back=!(S.fb.back!==false); }
   else if(b.dataset.fbleg){ S.fb.leg=!S.fb.leg; if(!S.fb.leg) LF.on=false; else { const L=legNow(); toast('🏆 เปิดตามปลาในตำนาน — ตอนนี้ปลาอยู่ที่ '+L.n+' · กด 🎣 ตกปลา แล้วบอทจะเดินไปตกให้เอง',3600,[L.id]); } }

@@ -6,7 +6,8 @@
 # Old backups are deleted by the bucket's 30-day lifecycle rule.
 set -euo pipefail
 cd "$(dirname "$0")"
-set -a; [ -f .env ] && . ./.env; set +a
+# read only the R2_* lines from .env (sourcing the whole file breaks on values like "Farm <login@...>")
+if [ -f .env ]; then while IFS='=' read -r k v; do v="${v%$'\r'}"; v="${v#[\"\']}"; v="${v%[\"\']}"; export "$k=$v"; done < <(grep -E '^R2_[A-Z_]+=' .env); fi
 if [ -z "${R2_ACCESS_KEY_ID:-}" ] || [ -z "${R2_SECRET_ACCESS_KEY:-}" ] || [ -z "${R2_ENDPOINT:-}" ] || [[ "$R2_ENDPOINT" == *xxxxxxxx* ]]; then echo "R2 keys not set in .env — backup skipped"; exit 0; fi
 BUCKET="${R2_BUCKET:-farm-backup}"
 export RCLONE_CONFIG_R2_TYPE=s3 RCLONE_CONFIG_R2_PROVIDER=Cloudflare RCLONE_CONFIG_R2_ENDPOINT="$R2_ENDPOINT" \

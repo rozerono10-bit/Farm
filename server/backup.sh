@@ -7,7 +7,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 set -a; [ -f .env ] && . ./.env; set +a
-: "${R2_ACCESS_KEY_ID:?missing in .env}" "${R2_SECRET_ACCESS_KEY:?missing in .env}" "${R2_ENDPOINT:?missing in .env}"
+if [ -z "${R2_ACCESS_KEY_ID:-}" ] || [ -z "${R2_SECRET_ACCESS_KEY:-}" ] || [ -z "${R2_ENDPOINT:-}" ] || [[ "$R2_ENDPOINT" == *xxxxxxxx* ]]; then echo "R2 keys not set in .env — backup skipped"; exit 0; fi
 BUCKET="${R2_BUCKET:-farm-backup}"
 export RCLONE_CONFIG_R2_TYPE=s3 RCLONE_CONFIG_R2_PROVIDER=Cloudflare RCLONE_CONFIG_R2_ENDPOINT="$R2_ENDPOINT" \
        RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true

@@ -40,6 +40,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 button{touch-action:manipulation}
 #botTag{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 118px);font-size:15px;padding:3px 12px;pointer-events:none;max-width:90vw}
+#bgFast{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 150px);font-size:14px;padding:3px 12px;pointer-events:none;max-width:92vw;background:rgba(40,90,200,.85);color:#fff;z-index:30}
 html,body{height:100%;margin:0;overflow:hidden;background:#1e3a1a;color:var(--ui-ink);
   font-family:'Itim','Noto Sans Thai','Sarabun',system-ui,sans-serif;
   touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
@@ -1180,6 +1181,7 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
   <div id="inv" class="pill"><span id="invT"></span><br><button class="btn small" id="invY">🌾 ไปฟาร์ม</button><button class="btn small ghost" id="invN">ไม่ไป</button></div>
   <button id="raidHome"></button>
   <div id="botTag" class="pill" style="display:none"></div>
+  <div id="bgFast" class="pill" style="display:none"></div>
   <div id="rdList"></div>
 
   <div id="warp"><button id="warpTog" type="button" aria-label="ย่อ/ขยายแถบปุ่ม" title="ย่อแถบปุ่ม">◀</button><button id="autoBtn">🤖 ออโต้</button><button id="statBtn">📊 สเตตัส</button><button id="rideBtn" style="display:none">🚀 ขึ้นยาน</button><button id="fishBtn">🎣 ตกปลา</button><button id="plBtn">👥 เพื่อน</button><button id="chatBtn">💬 แชท<b id="chatBadge"></b></button></div>
@@ -3234,7 +3236,7 @@ async function joinServer(n){ if(sroom){ sroom.leave().catch(()=>{}); sroom=null
   joined=true; try{ chatSrvJoined(); }catch(e){} beat(); $('servers').classList.remove('on'); startPlay(); sendPres(); toast(curSrv?'🌐 เข้า'+srvNm(curSrv)+' แล้ว — ไปเจอเพื่อนที่เมืองกลาง':'📴 เล่นคนเดียว',2800); }
 /* ---- เพื่อนในเซิร์ฟเวอร์ ---- */
 const myPeer=()=>{ const p=sroom&&sroom.peers().find(q=>q.isMe&&q.sameTab); return p?p.peer:''; };
-function sendPres(){ if(!sroom||!S.char) return; const c=S.char, k=[S.x.toFixed(1),S.y.toFixed(1),S.fx,S.fy,moving?1:0,S.map,FID,S.crown?1:0].join(); if(k===lastPres) return; lastPres=k;
+function sendPres(){ if(!sroom||!S.char||SIM) return; const c=S.char, k=[S.x.toFixed(1),S.y.toFixed(1),S.fx,S.fy,moving?1:0,S.map,FID,S.crown?1:0].join(); if(k===lastPres) return; lastPres=k;
   sroom.presence({x:+S.x.toFixed(2),y:+S.y.toFixed(2),fx:S.fx,fy:S.fy,mv:moving?1:0,ts:Math.round(performance.now()),map:S.map,at:S.map==='farm'?FID:'',pc:S.crown?1:0,n:c.name,c:{g:c.g,ey:c.ey,ec:c.ec,hs:c.hs,hc:c.hc,ac:c.ac,ak:c.ak,sk:c.sk,os:c.os,oc:c.oc,sz:c.sz,cs:c.cs|0}}).catch(()=>{}); }
 /* 🚶 ผู้เล่นคนอื่นเดินลื่น: เก็บตำแหน่งที่ได้รับ (พร้อมเวลา) แล้ววาดย้อนหลัง PEER_DELAY ms เลื่อนเป็นเส้นตรงระหว่างจุด (ความเร็วคงที่ ไม่เดิน-หยุด) · ห่างเกิน 4 ช่อง = วาร์ป */
 const PEER_DELAY=220;
@@ -6549,7 +6551,7 @@ function kbLoad(st){ const q=KB_SMP[st]; if(!q||KBB[st]||KBL[st]||!AC) return; K
 function kbSample(st,at,v){ const buf=KBB[st], C=KB_SMP[st]&&KB_SMP[st].c; if(!buf||!C) return false; let i=(Math.random()*C.length)|0; if(st+i===kbLast) i=(i+1+((Math.random()*(C.length-1))|0))%C.length; kbLast=st+i; const [a,b,g]=C[i];
   const t=AC.currentTime+(at||0), src=AC.createBufferSource(), gn=AC.createGain(); src.buffer=buf; src.playbackRate.value=.95+Math.random()*.1; gn.gain.value=g*(v||1); src.connect(gn); gn.connect(MG); src.start(t,a,b-a); return true; }
 function kbSnd(k,st){ st=st||S.kbs; if(!KBS[st]) return; kbLoad(st); k=k|0; kbPress(st,0,1); if(k>=1) kbPress(st,.075,.85); if(k>=2){ kbPress(st,.15,.8); kbPress(st,.24,1.05); } }
-function sfx(n,a,b){ if(!AC||S.mute) return;
+function sfx(n,a,b){ if(!AC||S.mute||SIM) return;
   if(kbOn()){ if(n==='ui') return kbSnd(0); if(S.kbH&&n==='harvest') return kbSnd(a?2:b>=5?1:0); if(S.kbF&&(n==='catch'||n==='bite'||n==='cast')) return kbSnd(n==='catch'?(a|0):n==='bite'?1:0); } if(n==='thunder'&&(S.muteWx||S.volWx<=0)) return; const wk=S.volWx/100;
   if(n==='step'){ puff(.07,{f:300+Math.random()*150,v:.07}); tone(100+Math.random()*25,.07,{v:.03,to:65}); }
   else if(n==='plant'){ tone(320,.15,{to:200,v:.14,lp:900}); puff(.09,{f:500,v:.06}); }
@@ -6874,11 +6876,26 @@ function drawHelper(h,time){
   const s=lbl(d.name+' 🧺'+h.rec.carry.length+'/'+hCap(d)+(rs?' 💤'+Math.ceil(h.rest)+'s':''),Math.max(11,T*.27),'#fff0f5','rgba(80,20,60,.8)',4);
   ctx.drawImage(s.c,x-s.w/2,by-s.h,s.w,s.h); }
 let fAcc=0, fN=0, slowN=0;
+/* ⏯️ เล่นต่อแม้พับจอ/สลับแอป: ตอนหน้าเกมถูกซ่อน เบราว์เซอร์หยุดวาด (และบนมือถือหยุดรันโค้ดทั้งหมด)
+ * → นับเวลาที่หายไป (BGS.lag) แล้ว "เร่งเวลา" เล่นย้อนหลังให้ทัน: รันเกมเป็นช่วงละ 50ms ด้วยนาฬิกาเสมือน (Date.now ถอยหลังเท่าที่ยังไม่ทัน)
+ *   พืชโต/บอทปลูก-เก็บ-ขาย/บ่อปลา เกิดครบเหมือนเปิดจอไว้ · เฉพาะตอนเปิดออโต้ (ไม่เปิดออโต้ = ตัวละครยืนเฉย ๆ อยู่แล้ว พืชโตตามเวลาจริงเอง)
+ *   ตอนซ่อนหน้า: ตัวจับเวลาทำงานทุก ~1 วิ (เท่าที่เบราว์เซอร์ยอม) · กลับมาหน้าเกม: เร่งส่วนที่เหลือต่อทีละเฟรม (ไม่ค้าง) · สูงสุด BG_MAX */
+const BGS={lag:0,last:0,on:false}, BG_MAX=6*3600e3, realNow=Date.now.bind(Date); var SIM=0;
+const bgOK=()=>playing&&!shopOpen&&!bagOpen&&(S.auto||rdOn())&&!window.FARM_HALT;
+function bgRun(budget){ if(!bgOK()){ BGS.lag=0; return; } BGS.lag=Math.min(BGS.lag,BG_MAX);
+  const t0=performance.now(); SIM=1; Date.now=()=>realNow()-BGS.lag;
+  try{ while(BGS.lag>0&&performance.now()-t0<budget&&bgOK()){ const d=Math.min(50,BGS.lag); update(d/1000); BGS.lag-=d; } }
+  catch(e){ BGS.lag=0; console.error(e); } finally{ Date.now=realNow; SIM=0; }
+  if(BGS.lag<=0) BGS.lag=0; }
+function bgUI(){ const e=$('bgFast'); if(!e) return; const on=BGS.lag>1500&&!document.hidden; if(on){ const m=BGS.lag/60000; e.textContent='⏩ เร่งเวลาย้อนหลังตอนพับจอ · เหลือ '+(m>=1?Math.ceil(m)+' นาที':Math.ceil(BGS.lag/1000)+' วิ'); } e.style.display=on?'':'none'; }
+document.addEventListener('visibilitychange',()=>{ const n=realNow(); if(document.hidden){ BGS.last=n; BGS.on=true; } else if(BGS.on){ BGS.on=false; if(bgOK()) BGS.lag+=Math.max(0,n-BGS.last); bgUI(); } });
+setInterval(()=>{ if(!document.hidden||!BGS.on) return; const n=realNow(); if(bgOK()) BGS.lag+=Math.max(0,n-BGS.last); BGS.last=n; bgRun(150); },1000);
 function frame(t){
   if(window.FARM_HALT) return; /* ⛔ โดนเด้ง/แบน: หยุดลูปเกม */
   requestAnimationFrame(frame); lruF++;
   const el=t-last; if(el<10.5) return; /* จำกัด ~60fps บนจอ 120/144Hz ไม่วาดเกินจำเป็น */
   last=t; const dt=Math.min(.05, el/1000);
+  if(BGS.lag>0){ BGS.lag+=el; bgRun(14); bgUI(); if(!frame.dt||t-frame.dt>90){ frame.dt=t; try{ draw(t); }catch(e){} } return; } /* ⏩ กำลังเร่งเวลา: วาดแค่ ~10 ครั้ง/วิ ให้เวลาไปเร่งเกม */
   if(el<250&&S.perf!==1&&autoCap>1){ fAcc+=el; fN++; if(fAcc>=2000){ const avg=fAcc/fN; fAcc=0; fN=0;
     if(avg>27){ if(++slowN>=2){ slowN=0; autoCap=autoCap>1.5?1.5:autoCap>1.25?1.25:1; resize(); } } else slowN=0; } }
   /* เปิดหน้าแต่งตัวอยู่: เกมยังเดินต่อ แต่วาดฉากด้านหลังแค่ ~4 ครั้ง/วินาที (ถูกบังอยู่แล้ว) ให้เครื่องว่างไปวาดหน้าแต่งตัวลื่น ๆ */

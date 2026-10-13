@@ -1397,6 +1397,7 @@ function banOut(reason,n){ if(document.getElementById('banDlg')) return; kicked=
 function onMsg(m){
   if(m.t==='kick'){ kickOut(); return; }
   if(m.t==='banned'){ banOut(m.reason,m.num); return; }
+  if(m.t==='rename'){ try{ window.dispatchEvent(new CustomEvent('farm-rename',{detail:String(m.name||'')})); }catch(e){} return; }
   if(m.t==='ent'){ if(entCb) try{ entCb(m.owned||[],m.give||[]); }catch(e){} return; }
   if(m.t==='res'){ const p=pend.get(m.id); if(!p) return; pend.delete(m.id); m.ok?p.res(m.data):p.rej(Object.assign(new Error(m.err),{code:m.err})); return; }
   if(m.t==='snap'){ const s=subs.get(m.sid); if(!s) return;
@@ -4570,6 +4571,9 @@ function renameOk(){ const n=$('nameNew').value.trim(); if(!n) return; const b=$
     .catch(e=>{ b.disabled=false; $('nameMsg').textContent=NAME_ERR[e&&e.code]||'📴 ต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง'; }); }
 $('nameOk').addEventListener('click',renameOk); $('nameNew').addEventListener('keydown',e=>{ if(e.key==='Enter') renameOk(); });
 window.addEventListener('farm-name-taken',renameOpen);
+/* ✏️ แอดมินเปลี่ยนชื่อให้ (เซิร์ฟเวอร์ส่งชื่อใหม่มา) → เปลี่ยนชื่อตัวละครทันที */
+window.addEventListener('farm-rename',e=>{ const n=String(e.detail||'').slice(0,12); if(!n||!S.char||S.char.name===n) return;
+  S.char.name=n; try{ uniq(); }catch(_){} if(DB&&myId) DB.doc('farms/'+myId).update({name:n}).catch(()=>{}); lastPres=''; try{ sendPres(); }catch(_){} updateHUD(); save(); toast('✏️ แอดมินเปลี่ยนชื่อตัวละครเป็น "'+n+'" แล้ว',3000); });
 if(window.farmAuth) farmAuth.ready.then(ok=>{ if(ok&&farmAuth.user()&&S.char&&S.char.name) farmAuth.nameClaim(S.char.name).catch(e=>{ if(e&&e.code==='name_taken') renameOpen(); }); });
 function openMenu(){
   playing = false; resetInput(); save();

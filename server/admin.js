@@ -5,6 +5,7 @@
  *   node admin.js jumps                เงิน/เพชร/เลเวลที่เพิ่มมากสุดใน 1 เซฟ ของแต่ละคน (ใช้ตั้ง CHEAT_*_JUMP)
  *   node admin.js who 1234567          ดูข้อมูลผู้เล่นคนนั้น (ของที่ซื้อ, ประวัติที่ระบบจดไว้)
  *   node admin.js grant 1234567 all    ให้ของพรีเมียมทุกอย่าง (VIP ชุด ท่าเก็บ) ฟรี · หรือระบุรหัสสินค้า เช่น grant 1234567 crown
+ *   node admin.js rename 1234567 ชื่อใหม่   เปลี่ยนชื่อตัวละครของผู้เล่น (ห้ามซ้ำกับคนอื่น · สูงสุด 12 ตัว) · เปลี่ยนในเกมทันทีถ้าออนไลน์อยู่
  *   node admin.js admin add 1234567    ให้เป็นแอดมิน (ป้าย ADMIN หน้าชื่อ) · admin remove 1234567 · admin list
  */
 'use strict';
@@ -43,6 +44,13 @@ else if (cmd === 'grant') {
     d.sessions['admin:' + u + ':' + it + ':' + Date.now()] = { uid: u, item: it, thb: 0, t: Date.now(), admin: 1 }; }
   write('purchases.json', d); console.log('🎁 ให้ของ', name(u), '·', want.join(', '), '· ได้ของภายในไม่กี่วินาที (ถ้าออนไลน์อยู่) หรือตอนเข้าเกมครั้งหน้า');
 }
+else if (cmd === 'rename') {
+  const u = who(id), nn = rest.join(' ').trim(); if (!u) { console.log('ไม่พบผู้เล่น UID', id); process.exit(1); }
+  if (!nn || nn.length > 12) { console.log('ใส่ชื่อใหม่ 1-12 ตัวอักษร เช่น: node admin.js rename 1234567 SouL'); process.exit(1); }
+  const norm = require('./names').norm || (x => String(x).normalize('NFC').toLowerCase().replace(/\s+/g, '')), nm = read('names.json'), o = nm[norm(nn)];
+  if (o && o !== u) { console.log('❌ ชื่อ "' + nn + '" มีคนใช้แล้ว:', name(o)); process.exit(1); }
+  const rn = read('renames.json'); rn[u] = nn; write('renames.json', rn); console.log('✏️ เปลี่ยนชื่อ', name(u), '→', nn, '· ออนไลน์อยู่ = เปลี่ยนภายในไม่กี่วินาที · ออฟไลน์ = เปลี่ยนตอนเข้าเกมครั้งหน้า');
+}
 else if (cmd === 'admin') {
   const F = 'admins.json', L = new Set((Array.isArray(read(F)) ? read(F) : []).map(String)), [op, n] = [id, rest[0]];
   if (op === 'add' || op === 'remove') { if (!/^\d{7}$/.test(n || '')) { console.log('ใส่ UID 7 หลัก เช่น: node admin.js admin add 1234567'); process.exit(1); }
@@ -50,4 +58,4 @@ else if (cmd === 'admin') {
   for (const x of L) { const a = Object.values(acc).find(q => q.num === x); console.log('🛡️ ADMIN UID', x, a ? ((a.google && a.google.name) || (a.line && a.line.name) || '') : '(ยังไม่พบบัญชี)'); }
   if (!L.size) console.log('ยังไม่มีแอดมิน');
 }
-else console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(0, 8).join('\n'));
+else console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(0, 9).join('\n'));

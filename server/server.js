@@ -39,6 +39,7 @@ const guard = require('./guard')(DATA_DIR, pay); /* 🛡️ กันโกง: 
 guard.onBan((uid, reason) => { const c = online.get(uid); if (c) { send(c, { t: 'banned', reason }); c.ws.close(4003, 'banned'); } });
 const slip = require('./slip')(DATA_DIR, pay);
 const names = require('./names')(DATA_DIR); /* 🏷️ ชื่อตัวละครห้ามซ้ำ */ pay.useSlip(slip.enabled); /* 🧾 พร้อมเพย์ + สลิป (EasySlip) — ถ้าตั้งค่าไว้ จะใช้แทน Stripe */
+names.onRename((uid, name) => { const c = online.get(uid); if (c) send(c, { t: 'rename', name }); }); /* ✏️ แอดมินเปลี่ยนชื่อ → เกมที่เปิดอยู่เปลี่ยนทันที */
 pay.onGrant((uid, owned, give) => { const c = online.get(uid); if (c) { c.premT = 0; send(c, { t: 'ent', owned, give }); } }); /* 💳 ซื้อสำเร็จ → แจ้งเกมที่เปิดอยู่ทันที */
 let docs = new Map();
 try { const raw = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); docs = new Map(Object.entries(raw)); console.log('loaded', docs.size, 'docs'); }
@@ -113,7 +114,7 @@ function handle(c, m) {
     if (m.token) { const s = auth.session(m.token); if (!s) return reply(c, id, 0, 'bad_token');
       const bn = guard.banned(s.uid); if (bn) { send(c, { t: 'banned', reason: bn.reason, num: s.num }); return reply(c, id, 0, 'banned'); } c.uid = s.uid; c.user = s.user; c.num = s.num; c.token = m.token;
       const old = online.get(s.uid); if (old && old !== c) { send(old, { t: 'kick', why: 'elsewhere' }); old.ws.close(4001, 'logged in elsewhere'); }
-      online.set(s.uid, c); }
+      online.set(s.uid, c); const rn = names.pending(s.uid); if (rn) setTimeout(() => send(c, { t: 'rename', name: rn }), 1500); }
     else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
     c.admin = !!(c.user && c.num && admins.has(String(c.num)));
     return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '', num: c.user ? c.num : '', season: SEASON, admin: c.admin ? 1 : 0, ver: GAME_VER });
@@ -151,8 +152,9 @@ function handle(c, m) {
   if (t === 'acct_info') return reply(c, id, 1, c.user ? auth.info(c.uid) : null);
   if (t === 'save_get' || t === 'save_put') {
     if (!c.user) return reply(c, id, 0, 'login_required');
-    if (t === 'save_get') return reply(c, id, 1, auth.saveGet(c.uid));
-    try { const prev = auth.saveGet(c.uid); guard.check(c.uid, prev && prev.data, m.data); names.check(c.uid, m.data); auth.savePut(c.uid, m.ts, m.data, m.base); c.premT = 0; return reply(c, id, 1); }
+    if (t === 'save_get') { const sv = auth.saveGet(c.uid); return reply(c, id, 1, sv && names.pending(c.uid) ? Object.assign({}, sv, { data: names.patch(c.uid, sv.data) }) : sv); }
+    try { const prev = auth.saveGet(c.uid); if (names.pending(c.uid) && typeof m.data === 'string') { const fx = names.fix(c.uid, m.data); if (fx !== m.data) { m.data = fx; send(c, { t: 'rename', name: names.pending(c.uid) }); } }
+      guard.check(c.uid, prev && prev.data, m.data); names.check(c.uid, m.data); auth.savePut(c.uid, m.ts, m.data, m.base); c.premT = 0; return reply(c, id, 1); }
     catch (e) { if (e === 'banned') { const bn = guard.banned(c.uid); send(c, { t: 'banned', reason: bn ? bn.reason : '', num: c.num }); } return reply(c, id, 0, typeof e === 'string' ? e : 'error'); }
   }
 

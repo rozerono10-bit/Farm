@@ -3660,14 +3660,15 @@ function openBagsN(n){ n=Math.min(n,S.bags|0); let got=0; S.bags-=n;
 function autoOpenBags(need){ let got=0; while(got<need&&(S.bags|0)>0) got+=openBagsN(1); if(got){ toast('🎁 บอทเปิดถุงเมล็ดสุ่ม ได้เมล็ด '+got+' เม็ด',1800); updateHUD(); save(); } return got; }
 let lastBagBuy=0;
 function autoShop(){
-  const ai=S.ai; let g=0, bought=0, fn=0; lastBagBuy=0;
-  if(ai.sell){ for(const k in CROPS) for(let i=0;i<4;i++) g+=takeVal(i,k,S[INV[i]][k]); { const r=takeFish(1); g+=r.g; fn=r.n; } S.coins+=g; }
+  const ai=S.ai; let g=0, bought=0, fn=0; lastBagBuy=0; const cheap=Math.min(...Object.keys(CROPS).filter(seedBuyable).map(k=>CROPS[k].seed)), want=Math.max(0,farmStats().empty.length-sum(S.seed));
+  const sell=ai.sell&&(B.why!=='seed'||bagTot()>=BAGCAP||S.coins<want*cheap); B.why=''; /* ไปซื้อเมล็ด: ขายของด้วยก็ต่อเมื่อกระเป๋าเต็ม หรือเงินไม่พอซื้อเมล็ดให้ครบ */
+  if(sell){ for(const k in CROPS) for(let i=0;i<4;i++) g+=takeVal(i,k,S[INV[i]][k]); { const r=takeFish(1); g+=r.g; fn=r.n; } S.coins+=g; }
   if(ai.plant){ let need=farmStats().empty.length-sum(S.seed);
-    while(need>0&&S.coins>=BAG_PRICE){ S.coins-=BAG_PRICE; S.bags=(S.bags|0)+1; lastBagBuy++; const n=openBagsN(1); need-=n; bought+=n; } /* 🎁 ซื้อถุงเมล็ดสุ่มก่อน · เหรียญไม่พอถุง → ซื้อเมล็ดธรรมดาแทน */
+    while(need>0&&S.coins-BAG_PRICE>=(need-1)*cheap){ /* เหลือเงินพอซื้อเมล็ดธรรมดาให้ครบช่องที่เหลือเสมอ */ S.coins-=BAG_PRICE; S.bags=(S.bags|0)+1; lastBagBuy++; const n=openBagsN(1); need-=n; bought+=n; } /* 🎁 ซื้อถุงเมล็ดสุ่มก่อน · เหรียญไม่พอถุง → ซื้อเมล็ดธรรมดาแทน */
     const ks=[S.sel,...Object.keys(CROPS).filter(k=>k!==S.sel)].filter(seedBuyable);
     while(need>0){ const k=ks.find(q=>S.coins>=CROPS[q].seed); if(!k) break; S.coins-=CROPS[k].seed; S.seed[k]++; need--; bought++; } }
   const n=maps.land.npcs[0]; if(g) floatText(n.x,n.y-.8,'+🪙'+g);
-  toast('🏪 '+(ai.sell?'ขายของทั้งหมด 🪙'+g+(fn?' (ปลา '+fn+' ตัว)':''):'')+(bought?(ai.sell?' · ':'')+'ซื้อเมล็ด '+bought+' เม็ด'+(lastBagBuy?' (ถุงสุ่ม '+lastBagBuy+' ถุง)':''):''),2400); updateHUD(); save(); }
+  toast('🏪 '+(sell?'ขายของทั้งหมด 🪙'+g+(fn?' (ปลา '+fn+' ตัว)':''):'')+(bought?(sell?' · ':'')+'ซื้อเมล็ด '+bought+' เม็ด'+(lastBagBuy?' (ถุงสุ่ม '+lastBagBuy+' ถุง)':''):''),2400); updateHUD(); save(); }
 function goldTr(){ return ((maps.town&&maps.town.walkers)||[]).find(w=>w.kind==='gold'); }
 function autoGold(){ const tr=goldTr();
   if(!tr||S.map!=='town'||Math.hypot(tr.x-S.x,tr.y-S.y)>3.2){ B.think=0; return; }
@@ -3724,30 +3725,32 @@ function decide(){
   const key=t=>t.tx+','+t.ty;
   for(const q of [...B.done]) if(!FC[q]) B.done.delete(q);
   const ripeP=f.ripe.filter(t=>!B.done.has(key(t))), growP=f.grow.filter(t=>!B.done.has(key(t))), soon=growP.length?Math.min(...growP.map(t=>cd(t.c)-(Date.now()-t.c.t))):0;
-  let k;
+  let k, why='sell';
   const full=bagTot()>=BAGCAP;
-  if(S.pDrain&&!(ai.fry&&pondOn()&&S.pond.rd.length)){ S.pDrain=0; if(ai.fry&&pondOn()){ if(ai.sell&&S.fish.length&&prod>0){ S.pSell=1; task('✅ เก็บลูกปลาหมดบ่อแล้ว → เอาปลาไปขายให้หมดก่อน'); } else task('✅ เก็บลูกปลาหมดบ่อแล้ว กลับไปทำงานเดิม'); } }
+  if(S.pDrain&&!(ai.fry&&pondOn()&&S.pond.rd.length)){ S.pDrain=0; if(ai.fry&&pondOn()){ if(false){ S.pSell=1; task('✅ เก็บลูกปลาหมดบ่อแล้ว → เอาปลาไปขายให้หมดก่อน'); } else task('✅ เก็บลูกปลาหมดบ่อแล้ว กลับไปทำงานเดิม'); } }
   if(S.pSell&&!(ai.sell&&prod>0&&S.fish.length)){ S.pSell=0; task('✅ ขายปลาหมดแล้ว กลับไปทำงานเดิม'); }   // 🐟 ขายปลาจากบ่อหมดแล้ว → กลับไปทำงานเดิม
   if(full&&ai.sell&&prod>0) k='shop';                              // กระเป๋าเต็ม → ไปขายก่อน
-  else if(S.pSell) k='shop';                                       // 🐟 เก็บลูกปลาหมดบ่อแล้ว → เอาปลาไปขายให้หมดก่อน แล้วค่อยกลับไปทำงานเดิม
+  else if(S.pSell){ S.pSell=0; }                                       // 🐟 เก็บลูกปลาหมดบ่อแล้ว → เอาปลาไปขายให้หมดก่อน แล้วค่อยกลับไปทำงานเดิม
   else if(ai.fry&&pondOn()&&S.pond.rd.length&&(S.pDrain||S.pond.rd.length>=pondHold(S.pond.lv))&&bagTot()<BAGCAP){ k='fry'; S.pDrain=1; }   // ลูกปลาในบ่อเต็ม → ไปเก็บ · กระเป๋าเต็มกลางทาง → ไปขายแล้วกลับมาเก็บต่อจนบ่อว่าง (S.pDrain) แล้วค่อยทำงานเดิม
   else if(shieldNeed()) k='shield';                       // โล่ยังไม่เต็มและเหรียญพอ → เดินไปซื้อโล่กันโจร
   /* 🤖 ลำดับงาน: ① ฟาร์มว่างแต่ไม่มีเมล็ด → ไปซื้อเมล็ด (ถุงสุ่ม) ② ปลูกให้เต็ม ③ เก็บผลผลิต ④ กระเป๋ายังไม่เต็ม → ยืนรอผลผลิต ⑤ กระเป๋าเต็ม → ไปขาย (บรรทัดบนสุด) */
-  else if(ai.plant&&f.empty.length&&seeds<1&&(S.bags|0)<1&&S.coins>=minSeed) k='shop';    // ① ไปซื้อเมล็ด
+  else if(ai.plant&&f.empty.length>=Math.max(3,total*.2)&&seeds<1&&(S.bags|0)<1&&S.coins>=minSeed){ k='shop'; why='seed'; } /* ว่างหลายช่อง (อีกาขโมย 1-2 ต้นไม่ต้องรีบเดินไปซื้อ) */    // ① ไปซื้อเมล็ด (ไม่ขายของ ถ้ากระเป๋ายังไม่เต็ม)
   else if(ai.plant&&f.empty.length&&(seeds>0||(S.bags|0)>0)&&(seeds>0||autoOpenBags(f.empty.length)>0)) k='plant'; // ② ปลูกจนเต็ม (มีถุงสุ่มในกระเป๋า → เปิดเลย)
   else if(ai.harvest&&!full&&f.ripe.length) k='harvest';                                       // ③ เก็บ
-  else if(ai.harvest&&f.grow.length&&!full) k='wait';                                          // ④ กระเป๋ายังไม่เต็ม → รอผลผลิต
-  else if(ai.sell&&prod>0) k='shop';                       // ไม่มีอะไรให้เก็บ/รอแล้ว → เอาไปขาย
+  else if(ai.harvest&&f.grow.length&&!full) k='wait';
+  else if(ai.plant&&f.empty.length&&seeds<1&&(S.bags|0)<1&&S.coins>=minSeed){ k='shop'; why='seed'; } // ไม่มีงานอื่นแล้ว → ไปซื้อเมล็ดมาปลูกช่องที่ว่าง                                          // ④ กระเป๋ายังไม่เต็ม → รอผลผลิต
+  else if(ai.sell&&prod>0&&ai.plant&&f.empty.length&&S.coins<minSeed) k='shop';  // ฟาร์มว่างแต่เงินไม่พอซื้อเมล็ด → ขายเอาเงินมาซื้อ
   else if(ai.harvest&&(f.ripe.length+f.grow.length)){ B.done.clear(); B.think=0; task('🔄 ครบทั้งฟาร์มแล้ว เริ่มรอบใหม่'); return; }
   else { task(ai.sell&&!ai.plant&&!ai.harvest?'💰 ไม่มีผลผลิตให้ขาย':ai.plant&&f.empty.length?'🪙 เหรียญไม่พอซื้อเมล็ด':ai.plant&&!ai.harvest?'✅ ปลูกเต็มแล้ว':'😴 ไม่มีงานให้ทำ'); return; }
-  if(k==='shop'&&ai.gold&&ai.sell&&prod>0&&goldTr()) k='gold'; /* ติ๊กไปขายกับพ่อค้าทอง → ไปเมืองการค้า */
-  else if(k==='shop'&&ai.fisher&&ai.sell&&prod>0&&fbFind('fisher')) k='fisher'; /* 🎣 ติ๊กไปขายกับลุงตกปลา → เดินไปหาดทะเล (ปลา +30%) */
+  B.why=k==='shop'?why:''; /* seed = ไปซื้อเมล็ดอย่างเดียว */
+  if(k==='shop'&&why==='sell'&&ai.gold&&ai.sell&&prod>0&&goldTr()) k='gold'; /* ติ๊กไปขายกับพ่อค้าทอง → ไปเมืองการค้า */
+  else if(k==='shop'&&why==='sell'&&ai.fisher&&ai.sell&&prod>0&&fbFind('fisher')) k='fisher'; /* 🎣 ติ๊กไปขายกับลุงตกปลา → เดินไปหาดทะเล (ปลา +30%) */
   const r=bfs(m,Math.floor(S.x),Math.floor(S.y)), need=k==='gold'?'town':k==='fisher'?'beach':(k==='shop'||k==='shield')?'land':'farm';
   if(S.map!==need){
     let bn=-1; for(let i=0;i<m.t.length;i++) if(m.t[i]===PORT&&r.d[i]>=0&&portDest(m,i)===(S.map==='land'?need:'land')&&(bn<0||r.d[i]<r.d[bn])) bn=i;
     if(bn<0) return; B.path=pathTo(m,r,bn); task(k==='shield'?'🚶 เดินไปซื้อโล่กันโจร':need==='land'?'🚶 เดินไปร้านค้า':need==='town'?'🚶 เดินไปเมืองการค้า (พ่อค้าทอง)':need==='beach'?'🚶 เดินไปหาดทะเล (ลุงตกปลา)':'🚶 เดินกลับฟาร์ม'); return; }
   let list;
-  if(k==='shop'){ const n=m.npcs.find(q=>q.kind==='shop'); list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task(prod>0&&ai.sell?'🏪 เดินไปขายของทั้งหมดที่ลุงพ่อค้า':'🏪 เดินไปซื้อเมล็ด'); }
+  if(k==='shop'){ const n=m.npcs.find(q=>q.kind==='shop'); list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task(why==='sell'&&prod>0&&ai.sell?'🏪 กระเป๋าเต็ม → เดินไปขายของทั้งหมดที่ลุงพ่อค้า':'🏪 เดินไปซื้อเมล็ด'); }
   else if(k==='shield'){ const n=m.npcs.find(q=>q.kind==='robber'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🛡️ เดินไปซื้อโล่ '+shBatch()+' อัน ที่โจรสวมดำ'); }
   else if(k==='fisher'){ const n=fbFind('fisher'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🎣 เดินไปขายกับลุงตกปลา (ปลา +'+Math.round((FISHER_MUL-1)*100)+'%)'); }
   else if(k==='gold'){ const tr=goldTr(); list=[{tx:Math.floor(tr.x),ty:Math.floor(tr.y)}]; task('🤑 เดินไปขายกับพ่อค้าทอง (+'+Math.round((GOLD_MUL-1)*100)+'%)'); }

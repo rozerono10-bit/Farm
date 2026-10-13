@@ -1375,10 +1375,12 @@ window.farmAuth={
   queueSave(json,t){ if(!user) return; pendSave={json,t}; if(!svTm) svTm=setTimeout(flushSave,10000); } };
 function docSnap(id,d){ return {id,exists:d!=null,data:()=>d==null?undefined:J(d),metadata:{hasPendingWrites:false,fromCache:false}}; }
 /* 🚪 บัญชีนี้เข้าเล่นจากเครื่อง/แท็บอื่น: หยุดเซฟ (กันเซฟทับกัน) ไม่ต่อใหม่ แล้วออกจากเกม */
+/* ⛔ หยุดเกมทั้งหมดจริง ๆ (โดนเด้งเพราะล็อกอินซ้อน / โดนแบน): ตัวละคร ออโต้ เสียง เซฟ หยุดหมด */
+function farmHalt(){ window.FARM_HALT=1; window.FARM_NO_SAVE=1; try{ window.dispatchEvent(new Event('farm-halt')); }catch(e){} }
 function kickOut(){ kicked=true; svStop=true; pendSave=null; clearTimeout(svTm); window.FARM_NO_SAVE=1;
   const T=window.__tr||(x=>x), d=document.createElement('div'); d.className='overlay on'; d.style.zIndex='99999'; d.style.background='rgba(0,0,0,.65)';
   d.innerHTML='<div class="panel" style="max-width:360px;text-align:center"><h2>🚪 '+T('ออกจากเกมแล้ว')+'</h2><p>'+T('บัญชีนี้เข้าสู่ระบบจากเครื่องหรือแท็บอื่น')+'<br>'+T('เล่นได้ทีละเครื่อง เพื่อกันเซฟทับกัน')+'</p><div class="stack"><button class="btn wide">'+T('เข้าเล่นที่เครื่องนี้')+'</button></div></div>';
-  d.querySelector('button').onclick=()=>location.reload(); document.body.appendChild(d); try{ playing=false; }catch(e){} }
+  d.querySelector('button').onclick=()=>location.reload(); document.body.appendChild(d); farmHalt(); }
 /* 🚫 บัญชีถูกระงับ (ระบบกันโกง): หยุดเซฟ ไม่ต่อใหม่ แสดงเหตุผลและ UID ให้ติดต่อแอดมิน */
 function banOut(reason,n){ if(document.getElementById('banDlg')) return; kicked=true; svStop=true; pendSave=null; clearTimeout(svTm); window.FARM_NO_SAVE=1;
   const T=window.__tr||(x=>x), d=document.createElement('div'); d.id='banDlg'; d.className='overlay on'; d.style.zIndex='99999'; d.style.background='rgba(0,0,0,.75)';
@@ -1386,7 +1388,7 @@ function banOut(reason,n){ if(document.getElementById('banDlg')) return; kicked=
   d.innerHTML='<div class="panel" style="max-width:360px;text-align:center"><h2>🚫 '+T('บัญชีถูกระงับ')+'</h2><p>'+T('ระบบกันโกงตรวจพบข้อมูลเกมที่ผิดปกติ')+'</p>'+(reason?'<p style="font-size:13px;opacity:.8">'+e(reason)+'</p>':'')
     +'<p>UID: <b>'+e(n||num||'-')+'</b><br>'+T('ถ้าคิดว่าเป็นความผิดพลาด ติดต่อแอดมินพร้อมแจ้ง UID')+'</p><div class="stack"><button class="btn ghost wide">'+T('ออกจากระบบ')+'</button></div></div>';
   d.querySelector('button').onclick=()=>{ try{ localStorage.removeItem('farm_tok'); localStorage.removeItem('farm_user'); }catch(e){} location.reload(); };
-  document.body.appendChild(d); try{ playing=false; }catch(e){} }
+  document.body.appendChild(d); farmHalt(); }
 function onMsg(m){
   if(m.t==='kick'){ kickOut(); return; }
   if(m.t==='banned'){ banOut(m.reason,m.num); return; }
@@ -4651,6 +4653,7 @@ if(window.farmAuth){
     const chk=()=>farmAuth.payCheck(sid).then(r=>{ if(r.paid) applyEnt(r.owned,r.give); else if(++n<20){ if(n===1) toast('⏳ กำลังรอยืนยันการชำระเงิน…',3000); setTimeout(chk,3000); } else toast('💳 ยังไม่ได้รับยืนยันการชำระเงิน — ถ้าจ่ายแล้ว ของจะเข้าเองภายในไม่กี่นาที',4200); },()=>{ if(++n<20) setTimeout(chk,3000); });
     chk(); }).catch(()=>{});
   if(farmAuth.payCancel()) setTimeout(()=>toast('💳 ยกเลิกการชำระเงินแล้ว',2400),600); }
+window.addEventListener('farm-halt',()=>{ try{ playing=false; S.auto=false; B.path=B.act=null; resetInput(); if(FT.on) FT.on=false; if(FI.on) stopFish(1); }catch(e){} try{ if(AC) AC.suspend(); }catch(e){} try{ document.querySelectorAll('audio').forEach(a=>a.pause()); }catch(e){} });
 if(window.farmAuth) farmAuth.onUpdate(()=>{ toast('🔄 เกมอัปเดตเป็นเวอร์ชันใหม่แล้ว — กำลังโหลดใหม่…',3000); try{ saveNow(); }catch(e){} setTimeout(()=>location.reload(),1800); });
 /* 📶 แสดงปิงของเซิร์ฟเวอร์ ที่หน้าเริ่มเกม และข้างจำนวนคนออนไลน์ (อัปเดตทุก 3 วิ) */
 function pingShow(ms){ const t=ms==null?' · 📴':' · 📶 '+ms+' ms', c='ping '+(ms==null?'r':ms<100?'g':ms<250?'y':'r');
@@ -6850,6 +6853,7 @@ function drawHelper(h,time){
   ctx.drawImage(s.c,x-s.w/2,by-s.h,s.w,s.h); }
 let fAcc=0, fN=0, slowN=0;
 function frame(t){
+  if(window.FARM_HALT) return; /* ⛔ โดนเด้ง/แบน: หยุดลูปเกม */
   requestAnimationFrame(frame); lruF++;
   const el=t-last; if(el<10.5) return; /* จำกัด ~60fps บนจอ 120/144Hz ไม่วาดเกินจำเป็น */
   last=t; const dt=Math.min(.05, el/1000);

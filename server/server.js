@@ -34,6 +34,8 @@ const OWN_ONLY = new Set(['players', 'chatw']); // only the owner (players/<uid>
 /* ---------- storage ---------- */
 const auth = createAuth(DATA_DIR);
 const pay = require('./pay')(DATA_DIR);
+const guard = require('./guard')(DATA_DIR, pay); /* 🛡️ กันโกง: ตรวจทุกเซฟก่อนเก็บ (ดู guard.js · node admin.js) */
+guard.onBan((uid, reason) => { const c = online.get(uid); if (c) { send(c, { t: 'banned', reason }); c.ws.close(4003, 'banned'); } });
 const slip = require('./slip')(DATA_DIR, pay); pay.useSlip(slip.enabled); /* 🧾 พร้อมเพย์ + สลิป (EasySlip) — ถ้าตั้งค่าไว้ จะใช้แทน Stripe */
 pay.onGrant((uid, owned, give) => { const c = online.get(uid); if (c) send(c, { t: 'ent', owned, give }); }); /* 💳 ซื้อสำเร็จ → แจ้งเกมที่เปิดอยู่ทันที */
 let docs = new Map();
@@ -79,7 +81,8 @@ function reply(c, id, ok, data) { send(c, ok ? { t: 'res', id, ok: 1, data } : {
 function handle(c, m) {
   const { t, id } = m;
   if (t === 'hello') {
-    if (m.token) { const s = auth.session(m.token); if (!s) return reply(c, id, 0, 'bad_token'); c.uid = s.uid; c.user = s.user; c.num = s.num; c.token = m.token;
+    if (m.token) { const s = auth.session(m.token); if (!s) return reply(c, id, 0, 'bad_token');
+      const bn = guard.banned(s.uid); if (bn) { send(c, { t: 'banned', reason: bn.reason, num: s.num }); return reply(c, id, 0, 'banned'); } c.uid = s.uid; c.user = s.user; c.num = s.num; c.token = m.token;
       const old = online.get(s.uid); if (old && old !== c) { send(old, { t: 'kick', why: 'elsewhere' }); old.ws.close(4001, 'logged in elsewhere'); }
       online.set(s.uid, c); }
     else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
@@ -117,7 +120,8 @@ function handle(c, m) {
   if (t === 'save_get' || t === 'save_put') {
     if (!c.user) return reply(c, id, 0, 'login_required');
     if (t === 'save_get') return reply(c, id, 1, auth.saveGet(c.uid));
-    try { auth.savePut(c.uid, m.ts, m.data, m.base); return reply(c, id, 1); } catch (e) { return reply(c, id, 0, typeof e === 'string' ? e : 'error'); }
+    try { const prev = auth.saveGet(c.uid); guard.check(c.uid, prev && prev.data, m.data); auth.savePut(c.uid, m.ts, m.data, m.base); return reply(c, id, 1); }
+    catch (e) { if (e === 'banned') { const bn = guard.banned(c.uid); send(c, { t: 'banned', reason: bn ? bn.reason : '', num: c.num }); } return reply(c, id, 0, typeof e === 'string' ? e : 'error'); }
   }
 
   if (t === 'get' || t === 'set' || t === 'update') {
@@ -224,6 +228,6 @@ wss.on('connection', ws => {
 // drop connections that stopped answering pings (closed tabs, lost phones)
 setInterval(() => { for (const ws of wss.clients) { if (!ws.isAlive) { ws.terminate(); continue; } ws.isAlive = false; ws.ping(); } }, 30000);
 
-process.on('SIGINT', () => { saveNow(); auth.flush(); process.exit(0); });
-process.on('SIGTERM', () => { saveNow(); auth.flush(); process.exit(0); });
+process.on('SIGINT', () => { saveNow(); auth.flush(); guard.flush(); process.exit(0); });
+process.on('SIGTERM', () => { saveNow(); auth.flush(); guard.flush(); process.exit(0); });
 server.listen(PORT, () => console.log('Farm server on http://localhost:' + PORT + '  (game: ' + GAME + ')'));

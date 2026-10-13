@@ -1304,7 +1304,7 @@ function raw(m){ if(open&&ws.readyState===1){ ws.send(JSON.stringify(m)); return
 function req(t,body,ms){ return new Promise((res,rej)=>{ const id=++seq; if(!raw(Object.assign({t,id},body))) return rej(new Error('offline')); pend.set(id,{res,rej}); setTimeout(()=>{ if(pend.delete(id)) rej(new Error('timeout')); },ms||15000); }); }
 function connect(){
   try{ ws=new WebSocket(URL_); }catch(e){ firstOk(false); return; }
-  ws.onopen=()=>{ open=true; retry=1000; hello().then(r=>{ myPeer=r.peer; uid=r.uid; num=r.num||''; season=r.season||'';
+  ws.onopen=()=>{ open=true; retry=1000; hello().then(r=>{ myPeer=r.peer; uid=r.uid; num=r.num||''; season=r.season||''; admin=!!r.admin;
       /* 🧪 เปลี่ยนรอบเกม (เช่น CBT → OBT): ล้างเซฟในเครื่องนี้ แล้วเริ่มใหม่ · บัญชีและของที่ซื้อด้วยเงินจริงยังอยู่ (เซิร์ฟเวอร์ใส่คืนให้) */
       if(season){ let prev=''; try{ prev=localStorage.getItem('farm_season')||'cbt'; localStorage.setItem('farm_season',season); }catch(e){}
         if(prev!==season){ window.FARM_NO_SAVE=1; try{ localStorage.removeItem(SKEY()); localStorage.removeItem('farm_sync_ts'); sessionStorage.removeItem('farm_synced'); }catch(e){} location.reload(); return; } } if(tok&&r.user) setAuth(tok,r.user);
@@ -1345,12 +1345,12 @@ async function afterLogin(isNew){ try{ const loc=localSave(), sv=await req('save
 const httpBase=URL_.replace(/^ws/,'http').replace(/\/ws\/?$/,'');
 const offline=()=>Object.assign(new Error('offline'),{code:'offline'});
 /* กลับมาจากหน้า Google / LINE: ผลล็อกอินอยู่ใน #hash ของลิงก์ (farm_token / farm_login_error / farm_linked) */
-let hashLogin=null, loginErr='', linkedMsg='', num='', season='', paidSid='', payCancel=false, entCb=null;
+let hashLogin=null, loginErr='', linkedMsg='', num='', season='', admin=false, paidSid='', payCancel=false, entCb=null;
 try{ const h=new URLSearchParams(location.hash.slice(1)); if(/^[0-9a-f]{64}$/.test(h.get('farm_token')||'')){ setAuth(h.get('farm_token'),'…'); hashLogin={isNew:h.get('farm_new')==='1'}; }
   loginErr=h.get('farm_login_error')||''; linkedMsg=h.get('farm_linked')||''; paidSid=/^cs_\w+$/.test(h.get('farm_paid')||'')?h.get('farm_paid'):''; payCancel=h.has('farm_pay_cancel');
   if(h.has('farm_token')||loginErr||linkedMsg||paidSid||payCancel) history.replaceState(null,'',location.pathname+location.search); }catch(e){}
 window.farmAuth={
-  user:()=>user, num:()=>num, season:()=>season, ready,
+  user:()=>user, num:()=>num, season:()=>season, admin:()=>admin, ready,
   /* 💳 ชำระเงิน (Stripe): ของที่ขาย · ไปหน้าจ่ายเงิน · เช็กผลตอนกลับมา · แจ้งเมื่อได้ของ */
   slipOrder:item=>req('slip_order',{item}), slipSend:(oid,image)=>req('slip_send',{oid,image},45000),
   payCfg:()=>req('pay_cfg',{}), payAck:refs=>req('pay_ack',{refs}), payCheck:sid=>req('pay_check',{sid}), paidSid:()=>paidSid, payCancel:()=>payCancel, onEnt:f=>{ entCb=f; },
@@ -3236,6 +3236,11 @@ $('invY').addEventListener('click',async()=>{ const v=invD; $('inv').style.displ
 /* ---------- 👑 มงกุฎพรีเมียม: วาด + เทรดระหว่างผู้เล่น ---------- */
 const CRW={};
 function crownSprite(px){ const r=Math.max(1,dpr||1), k=px+'_'+r; if(CRW[k]) return CRW[k]; const sz=Math.ceil(px*2.6), c=document.createElement('canvas'); c.width=c.height=Math.ceil(sz*r); const g=c.getContext('2d'); g.scale(r,r); const m=sz/2, gr=g.createRadialGradient(m,m,px*.1,m,m,m); gr.addColorStop(0,'rgba(255,214,64,.8)'); gr.addColorStop(.5,'rgba(255,190,30,.3)'); gr.addColorStop(1,'rgba(255,190,30,0)'); g.fillStyle=gr; g.fillRect(0,0,sz,sz); g.font=px+'px '+FONT; g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#000'; g.fillText('👑',m,m); return CRW[k]={c,sz}; }
+/* 🛡️ ป้าย ADMIN หน้าชื่อ (เซิร์ฟเวอร์เป็นคนติดให้ ปลอมไม่ได้) · ถ้ามีมงกุฎด้วย ป้ายอยู่ซ้ายมงกุฎ */
+function adminBeforeName(cx,y,name,crown){ const w=ctx.measureText(name).width, fs=Math.max(8,Math.round(T*.19)), off=crown?Math.max(10,Math.round(T*.5*.72))*1.55:0;
+  ctx.save(); ctx.font='bold '+fs+'px '+FONT; const pw=ctx.measureText('ADMIN').width+fs*.9, ph=fs*1.4, x=cx-w/2-off-pw-5;
+  ctx.fillStyle='#d42a2a'; ctx.beginPath(); ctx.roundRect(x,y-ph/2,pw,ph,ph/2); ctx.fill(); ctx.lineWidth=Math.max(1.5,fs*.14); ctx.strokeStyle='#ffe08a'; ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('ADMIN',x+pw/2,y+1); ctx.restore(); }
 function crownBeforeName(cx,y,name,tm){ const w=ctx.measureText(name).width, px=Math.max(10,Math.round(T*.5*.72)); drawCrownE(cx-w/2-px*.78,y,tm,.72); } /* 👑 อยู่หน้าชื่อ (ซ้ายของชื่อ) */
 function drawCrownE(x,y,tm,k){ const px=Math.max(10,Math.round(T*.5*(k||1))), q=crownSprite(px), ga=ctx.globalAlpha; ctx.globalAlpha=ga*(.82+.18*Math.sin(tm*4)); ctx.drawImage(q.c,x-q.sz/2,y+Math.sin(tm*3)*2-q.sz/2,q.sz,q.sz); ctx.globalAlpha=ga; } /* วาดจากภาพที่แคชไว้ — ไม่ใช้ shadowBlur ทุกเฟรม (หนักมากบนมือถือ) */
 let TS=null, TB=null, TBold={}, trP=30, trTo=null, trT1=0, trT2=0;
@@ -6367,7 +6372,7 @@ function draw(tms){
   /* 👥 เซิร์ฟละ 100 คน: วาดเฉพาะคนที่อยู่ใกล้ (ในจอ) สูงสุด OTH_MAX คน กันเครื่องหนัก */
   others().filter(p=>{ const r=p.presence; return r&&Math.abs((+r.x||0)-S.x)<16&&Math.abs((+r.y||0)-S.y)<12; }).sort((a,b)=>Math.hypot(a.presence.x-S.x,a.presence.y-S.y)-Math.hypot(b.presence.x-S.x,b.presence.y-S.y)).slice(0,OTH_MAX).forEach(p=>{ const r=p.presence, q=peerPos[p.peer]||(peerPos[p.peer]={x:+r.x||0,y:+r.y||0}); q.x+=((+r.x||0)-q.x)*.3; q.y+=((+r.y||0)-q.y)*.3;
     items.push({ fy:q.y+.3, d:() => { const y=(q.y+.3)*T; drawPerson(q.x*T,y,Object.assign(charObj(cc(r.c)),{fx:+r.fx||0,fy:+r.fy||1}),!!r.mv,walkT,time);
-      ctx.font=`${Math.max(11,T*.3)}px ${FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=4; ctx.strokeStyle='rgba(0,0,0,.55)'; ctx.fillStyle='#d8f3ff'; { const lz=T/WS*1.5*Math.max(.8,normSz(r.c&&r.c.sz)); ctx.strokeText(cl(r.n),q.x*T,y-lz); ctx.fillText(cl(r.n),q.x*T,y-lz); if(r.pc) crownBeforeName(q.x*T,y-lz,cl(r.n),time); }
+      ctx.font=`${Math.max(11,T*.3)}px ${FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=4; ctx.strokeStyle='rgba(0,0,0,.55)'; ctx.fillStyle='#d8f3ff'; { const lz=T/WS*1.5*Math.max(.8,normSz(r.c&&r.c.sz)); ctx.strokeText(cl(r.n),q.x*T,y-lz); ctx.fillText(cl(r.n),q.x*T,y-lz); if(r.pc) crownBeforeName(q.x*T,y-lz,cl(r.n),time); if(r.adm) adminBeforeName(q.x*T,y-lz,cl(r.n),r.pc); }
       if(info.p&&info.p.peer===p.peer){ ctx.font=`${T*.4}px ${FONT}`; ctx.fillStyle='#000'; ctx.fillText('🤝',q.x*T,y-T*1.95+Math.sin(time*5)*3); } } }); });
   items.push({ fy:S.y+.3, d:() => { const y=(S.y+.3)*T, v=S.veh&&S.veh[S.ride]; let yy=y, vd=vDir(S.fx,S.fy), vg=0, vb=0;
     if(v){ const cx=S.x*T; vg=v.g|0; vb=vBob(v.t,moving,walkT,time); yy=y-(VLIFT[v.t]+vb)*T/WS*VK;
@@ -6379,7 +6384,7 @@ function draw(tms){
       if(on&&HPN.q.fx){ ctx.save(); try{ HPN.q.fx(hk,S.x*T,yy+dy,u,(HPN.q.reach||2)*T); }catch(e){} ctx.restore(); }
       drawHFly(S.x,S.y-.6); }
     if(v) drawVeh(v.t,vd,S.x*T,y,moving,walkT,time,vg,1,vb);
-    if(S.char){ const ly=yy-T/WS*1.5*Math.max(.8,normSz(S.char.sz)); ctx.font=`${Math.max(11,T*.3)}px ${FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=4; ctx.strokeStyle='rgba(0,0,0,.55)'; ctx.fillStyle='#fff8e6'; ctx.strokeText(S.char.name,S.x*T,ly); ctx.fillText(S.char.name,S.x*T,ly); if(S.crown) crownBeforeName(S.x*T,ly,S.char.name,time); if(FI.on&&FI.map===S.map) fishBar(S.x*T,ly-T*.42,time);
+    if(S.char){ const ly=yy-T/WS*1.5*Math.max(.8,normSz(S.char.sz)); ctx.font=`${Math.max(11,T*.3)}px ${FONT}`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineWidth=4; ctx.strokeStyle='rgba(0,0,0,.55)'; ctx.fillStyle='#fff8e6'; ctx.strokeText(S.char.name,S.x*T,ly); ctx.fillText(S.char.name,S.x*T,ly); if(S.crown) crownBeforeName(S.x*T,ly,S.char.name,time); if(window.farmAuth&&farmAuth.admin()) adminBeforeName(S.x*T,ly,S.char.name,S.crown); if(FI.on&&FI.map===S.map) fishBar(S.x*T,ly-T*.42,time);
       if(restT>0){ const ry=ly-T*.4; ctx.font=`${Math.max(12,T*.34)}px ${FONT}`; ctx.lineWidth=4; ctx.strokeStyle='rgba(0,0,0,.7)'; ctx.fillStyle='#ffd25a'; const rt='😮‍💨 กำลังพัก '+Math.ceil(restT)+'วิ'; ctx.strokeText(rt,S.x*T,ry); ctx.fillText(rt,S.x*T,ry); } } } });
   if(crow&&S.map==='farm') items.push({ fy:crow.y+4, d:() => drawCrow(crow,time) });
   if(rdThief&&S.map==='farm'&&!S.farm){ const th=rdThief; items.push({ fy:th.y+.3, d:() => drawThief(th,time) }); }

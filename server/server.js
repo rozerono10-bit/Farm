@@ -70,6 +70,10 @@ function colDocs(col) { const out = []; for (const [p, v] of docs) { const s = p
 
 /* ---------- rooms ---------- */
 const rooms = new Map(); // name -> Map<peer, conn>
+/* 🛡️ แอดมิน: data/admins.json = รายการ UID 7 หลัก (แก้ด้วย node admin.js admin add <UID>) · เซิร์ฟติดป้าย adm ให้เอง ปลอมไม่ได้ */
+const ADMINS_FILE = path.join(DATA_DIR, 'admins.json'); let admins = new Set(), adminsAt = 0;
+function loadAdmins() { try { const mt = fs.statSync(ADMINS_FILE).mtimeMs; if (mt === adminsAt) return; adminsAt = mt; admins = new Set(JSON.parse(fs.readFileSync(ADMINS_FILE, 'utf8')).map(String)); } catch (e) { if (adminsAt) { admins = new Set(); adminsAt = 0; } } }
+loadAdmins(); setInterval(loadAdmins, 5000).unref();
 const online = new Map(); // account uid -> its one logged-in connection (logging in again elsewhere kicks the old one)
 function roomPeers(name) { const r = rooms.get(name); return r ? [...r.values()] : []; }
 function peerInfo(c, name) { return { peer: c.peer, uid: c.uid, presence: c.pres.get(name) || null }; }
@@ -86,7 +90,8 @@ function handle(c, m) {
       const old = online.get(s.uid); if (old && old !== c) { send(old, { t: 'kick', why: 'elsewhere' }); old.ws.close(4001, 'logged in elsewhere'); }
       online.set(s.uid, c); }
     else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
-    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '', num: c.user ? c.num : '', season: SEASON });
+    c.admin = !!(c.user && c.num && admins.has(String(c.num)));
+    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '', num: c.user ? c.num : '', season: SEASON, admin: c.admin ? 1 : 0 });
   }
   if (t === 'email_start' || t === 'email_verify' || t === 'line_ticket' || t === 'oauth_ticket') {
     const now = Date.now(); c.authTries = (c.authTries || []).filter(x => now - x < 60000);
@@ -162,7 +167,7 @@ function handle(c, m) {
   }
   if (t === 'pres') {
     if (!c.rooms.has(m.room) || !isObj(m.data)) return reply(c, id, 0, 'not_joined');
-    const old = c.pres.get(m.room) || {}, nu = m.data; c.pres.set(m.room, nu);
+    const old = c.pres.get(m.room) || {}, nu = Object.assign({}, m.data); delete nu.adm; if (c.admin) nu.adm = 1; c.pres.set(m.room, nu);
     const mapChanged = old.map !== nu.map || old.at !== nu.at;
     const onlyPos = !mapChanged && Object.keys(nu).every(k => POS_KEYS.has(k) || JSON.stringify(old[k]) === JSON.stringify(nu[k]));
     for (const o of roomPeers(m.room)) {

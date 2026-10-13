@@ -4,6 +4,7 @@
  *   node admin.js ban 1234567 เหตุผล    แบนเอง
  *   node admin.js jumps                เงิน/เพชร/เลเวลที่เพิ่มมากสุดใน 1 เซฟ ของแต่ละคน (ใช้ตั้ง CHEAT_*_JUMP)
  *   node admin.js who 1234567          ดูข้อมูลผู้เล่นคนนั้น (ของที่ซื้อ, ประวัติที่ระบบจดไว้)
+ *   node admin.js admin add 1234567    ให้เป็นแอดมิน (ป้าย ADMIN หน้าชื่อ) · admin remove 1234567 · admin list
  */
 'use strict';
 const fs = require('fs'), path = require('path');
@@ -32,4 +33,11 @@ else if (cmd === 'who') {
   console.log('ของที่ซื้อ:', (pay.owned && pay.owned[u] || []).join(', ') || '-', '· โล่ที่ซื้อ:', (pay.give && pay.give[u] || []).map(x => x.grant).join(', ') || '-');
   const r = guard[u]; if (r) { console.log('เพิ่มมากสุดต่อเซฟ: 🪙+' + (r.jump.coins || 0), '💎+' + (r.jump.gems || 0), 'Lv+' + (r.jump.lv || 0)); for (const f of r.flags || []) console.log(' ', when(f.t), f.kind, f.text); }
 }
-else console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(0, 7).join('\n'));
+else if (cmd === 'admin') {
+  const F = 'admins.json', L = new Set((Array.isArray(read(F)) ? read(F) : []).map(String)), [op, n] = [id, rest[0]];
+  if (op === 'add' || op === 'remove') { if (!/^\d{7}$/.test(n || '')) { console.log('ใส่ UID 7 หลัก เช่น: node admin.js admin add 1234567'); process.exit(1); }
+    if (op === 'add') L.add(n); else L.delete(n); write(F, [...L]); console.log(op === 'add' ? '🛡️ เพิ่มแอดมิน' : '➖ เอาแอดมินออก', n, '· มีผลเมื่อผู้เล่นคนนั้นเข้าเกมใหม่ (รีเฟรช)'); }
+  for (const x of L) { const a = Object.values(acc).find(q => q.num === x); console.log('🛡️ ADMIN UID', x, a ? ((a.google && a.google.name) || (a.line && a.line.name) || '') : '(ยังไม่พบบัญชี)'); }
+  if (!L.size) console.log('ยังไม่มีแอดมิน');
+}
+else console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(0, 8).join('\n'));

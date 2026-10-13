@@ -27,7 +27,7 @@ const MAX_MSG = 1200 * 1024;         // bytes per websocket message (a cloud sav
 const SEASON = process.env.SEASON || 'cbt'; /* 🧪 รอบเกม (cbt / obt …) · เปลี่ยนค่า = เกมทุกเครื่องล้างเซฟในเครื่องตัวเอง (ดู obt-reset.sh) */
 const MAX_ROOM_PEERS = +process.env.MAX_ROOM_PEERS || 100;
 const RATE = { msgs: 60, per: 1000 }; // per connection
-const POS_KEYS = new Set(['x', 'y', 'fx', 'fy', 'mv']);
+const POS_KEYS = new Set(['x', 'y', 'fx', 'fy', 'mv', 'ts']); // ts = sender's clock (ms) so others can place each position at the time it was sent
 const COLLECTIONS = new Set(['farms', 'players', 'chatw']);
 const OWN_ONLY = new Set(['players', 'chatw']); // only the owner (players/<uid>, chatw/<uid>) may write
 
@@ -37,7 +37,7 @@ const pay = require('./pay')(DATA_DIR);
 const guard = require('./guard')(DATA_DIR, pay); /* 🛡️ กันโกง: ตรวจทุกเซฟก่อนเก็บ (ดู guard.js · node admin.js) */
 guard.onBan((uid, reason) => { const c = online.get(uid); if (c) { send(c, { t: 'banned', reason }); c.ws.close(4003, 'banned'); } });
 const slip = require('./slip')(DATA_DIR, pay); pay.useSlip(slip.enabled); /* 🧾 พร้อมเพย์ + สลิป (EasySlip) — ถ้าตั้งค่าไว้ จะใช้แทน Stripe */
-pay.onGrant((uid, owned, give) => { const c = online.get(uid); if (c) send(c, { t: 'ent', owned, give }); }); /* 💳 ซื้อสำเร็จ → แจ้งเกมที่เปิดอยู่ทันที */
+pay.onGrant((uid, owned, give) => { const c = online.get(uid); if (c) { c.premT = 0; send(c, { t: 'ent', owned, give }); } }); /* 💳 ซื้อสำเร็จ → แจ้งเกมที่เปิดอยู่ทันที */
 let docs = new Map();
 try { const raw = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); docs = new Map(Object.entries(raw)); console.log('loaded', docs.size, 'docs'); }
 catch (e) { if (e.code !== 'ENOENT') console.error('db load failed:', e.message); }
@@ -79,6 +79,8 @@ function roomPeers(name) { const r = rooms.get(name); return r ? [...r.values()]
 function peerInfo(c, name) { return { peer: c.peer, uid: c.uid, presence: c.pres.get(name) || null }; }
 
 /* ---------- connections ---------- */
+/** 👑 มีมงกุฎพรีเมียมจริง (ซื้อด้วยเงินจริง หรือมีมาก่อนช่วง CBT) — จำผลไว้ 30 วินาที */
+function premium(c) { if (!c.user) return false; const now = Date.now(); if (c.premT && now - c.premT < 30000) return c.prem; c.premT = now; c.prem = guard.hasCrown(c.uid); return c.prem; }
 function send(c, m) { if (c.ws.readyState === 1) c.ws.send(JSON.stringify(m)); }
 function reply(c, id, ok, data) { send(c, ok ? { t: 'res', id, ok: 1, data } : { t: 'res', id, ok: 0, err: data }); }
 
@@ -125,7 +127,7 @@ function handle(c, m) {
   if (t === 'save_get' || t === 'save_put') {
     if (!c.user) return reply(c, id, 0, 'login_required');
     if (t === 'save_get') return reply(c, id, 1, auth.saveGet(c.uid));
-    try { const prev = auth.saveGet(c.uid); guard.check(c.uid, prev && prev.data, m.data); auth.savePut(c.uid, m.ts, m.data, m.base); return reply(c, id, 1); }
+    try { const prev = auth.saveGet(c.uid); guard.check(c.uid, prev && prev.data, m.data); auth.savePut(c.uid, m.ts, m.data, m.base); c.premT = 0; return reply(c, id, 1); }
     catch (e) { if (e === 'banned') { const bn = guard.banned(c.uid); send(c, { t: 'banned', reason: bn ? bn.reason : '', num: c.num }); } return reply(c, id, 0, typeof e === 'string' ? e : 'error'); }
   }
 
@@ -161,13 +163,15 @@ function handle(c, m) {
   if (t === 'leave') { leaveRoom(c, m.room); return reply(c, id, 1); }
   if (t === 'emit') {
     if (!c.rooms.has(m.room) || typeof m.topic !== 'string' || m.topic.length > 40) return reply(c, id, 0, 'not_joined');
+    /* 🤝 เทรดของ (topic tx*): ได้เฉพาะคนที่มีมงกุฎพรีเมียมจริงทั้งสองฝั่ง */
+    if (/^tx/.test(m.topic)) { const to = m.data && m.data.to, o = roomPeers(m.room).find(x => x.peer === to); if (!premium(c) || !o || !premium(o)) return reply(c, id, 0, 'need_premium'); }
     const ev = { t: 'ev', room: m.room, topic: m.topic, peer: c.peer, uid: c.uid, data: m.data };
     for (const o of roomPeers(m.room)) send(o, ev); // the sender hears its own emit too (isMe), like claude.ai
     return reply(c, id, 1);
   }
   if (t === 'pres') {
     if (!c.rooms.has(m.room) || !isObj(m.data)) return reply(c, id, 0, 'not_joined');
-    const old = c.pres.get(m.room) || {}, nu = Object.assign({}, m.data); delete nu.adm; if (c.admin) nu.adm = 1; c.pres.set(m.room, nu);
+    const old = c.pres.get(m.room) || {}, nu = Object.assign({}, m.data); delete nu.adm; if (c.admin) nu.adm = 1; nu.pc = premium(c) ? 1 : 0; c.pres.set(m.room, nu); /* 👑 มงกุฎหน้าชื่อ = ของจริงเท่านั้น */
     const mapChanged = old.map !== nu.map || old.at !== nu.at;
     const onlyPos = !mapChanged && Object.keys(nu).every(k => POS_KEYS.has(k) || JSON.stringify(old[k]) === JSON.stringify(nu[k]));
     for (const o of roomPeers(m.room)) {

@@ -53,6 +53,8 @@ module.exports = function createGuard(dataDir, pay) {
   return {
     onBan: f => { onBan = f; },
     banned: uid => bans[uid] || null,
+    /** has the premium crown for real (bought, or CBT legacy) */
+    hasCrown: uid => allowed(uid).crown,
     ban, unban(uid) { if (!bans[uid]) return false; delete bans[uid]; flag(uid, 'unban', 'admin'); flush(); return true; },
     list: () => ({ bans, info }),
     flush,

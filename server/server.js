@@ -32,6 +32,8 @@ const OWN_ONLY = new Set(['players', 'chatw']); // only the owner (players/<uid>
 
 /* ---------- storage ---------- */
 const auth = createAuth(DATA_DIR);
+const pay = require('./pay')(DATA_DIR);
+pay.onGrant((uid, owned) => { const c = online.get(uid); if (c) send(c, { t: 'ent', owned }); }); /* 💳 ซื้อสำเร็จ → แจ้งเกมที่เปิดอยู่ทันที */
 let docs = new Map();
 try { const raw = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); docs = new Map(Object.entries(raw)); console.log('loaded', docs.size, 'docs'); }
 catch (e) { if (e.code !== 'ENOENT') console.error('db load failed:', e.message); }
@@ -95,6 +97,15 @@ function handle(c, m) {
   }
   if (t === 'auth_cfg') return reply(c, id, 1, auth.enabled());
   if (t === 'ping') return reply(c, id, 1);
+  if (t === 'pay_cfg') return reply(c, id, 1, pay.catalog(c.user ? c.uid : ''));
+  if (t === 'pay_start' || t === 'pay_check') {
+    if (!c.user) return reply(c, id, 0, 'login_required');
+    const now = Date.now(); c.payTries = (c.payTries || []).filter(x => now - x < 60000);
+    if (c.payTries.length >= 10) return reply(c, id, 0, 'too_many_tries'); c.payTries.push(now);
+    const fail = e => reply(c, id, 0, typeof e === 'string' ? e : (console.error('pay:', e.message), 'pay_failed'));
+    if (t === 'pay_start') { if (!auth.okReturn(m.ret)) return reply(c, id, 0, 'bad_return'); return void pay.start(c.uid, c.num, m.item, m.ret).then(url => reply(c, id, 1, { url }), fail); }
+    return void pay.check(c.uid, m.sid).then(r => reply(c, id, 1, r), fail);
+  }
   if (!c.uid) return reply(c, id, 0, 'hello_first');
   if (t === 'logout') { auth.logout(c.token); return reply(c, id, 1); }
   if (t === 'acct_info') return reply(c, id, 1, c.user ? auth.info(c.uid) : null);
@@ -166,6 +177,12 @@ function leaveRoom(c, name) {
 /* ---------- http + websocket ---------- */
 const server = http.createServer((req, res) => {
   const u = (req.url || '/').split('?')[0];
+  if (u === '/stripe/webhook' && req.method === 'POST') {
+    const parts = []; let size = 0, big = false;
+    req.on('data', d => { size += d.length; if (size > 512 * 1024) { big = true; req.destroy(); } else parts.push(d); });
+    req.on('end', () => { if (big) return; const code = pay.webhook(Buffer.concat(parts).toString('utf8'), req.headers['stripe-signature']); res.writeHead(code, { 'content-type': 'application/json' }); res.end(code === 200 ? '{"received":true}' : '{"error":"bad signature"}'); });
+    return;
+  }
   const am = u.match(/^\/auth\/(line|google)\/(start|callback)$/);
   if (am) {
     const [, p, step] = am, q = new URL(req.url, 'http://x').searchParams;

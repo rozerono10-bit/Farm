@@ -126,6 +126,7 @@ module.exports = function createAuth(dataDir) {
   return {
     /** uid owned by an account → that uid can only be used with a login token */
     isOwned: uid => !!accounts[uid],
+    okReturn,
     /** token → {uid,user} or null */
     session(token) {
       if (typeof token !== 'string' || token.length !== 64) return null;

@@ -106,6 +106,15 @@ Backup เก่าเกิน 30 วันจะถูกลบเองจา
 5. `systemctl restart farm` → ปุ่ม LINE จะขึ้นในเกม
 6. ช่องที่ยังเป็น **Developing** ล็อกอินได้เฉพาะบัญชีที่เป็น admin/tester ของช่อง · พร้อมเปิดให้คนทั่วไปแล้วกด **Publish** (มุมบนของหน้าช่อง)
 
+### 3.5 ตั้งระบบเติมเงิน (Stripe: พร้อมเพย์ + บัตร)
+ของที่ขายและราคาอยู่ที่ `server/products.js` (มงกุฎ ฿99 · ท่าเก็บ 2 นิ้ว ฿59 · แฟชั่นทุกชิ้น ฿49 แก้ได้) · ผู้เล่นซื้อได้ที่ 👑 ร้านพรีเมียม > แท็บ 💳 เติมเงิน (ขึ้นเฉพาะตอนล็อกอินและตั้งค่า Stripe แล้ว)
+1. dashboard.stripe.com > Settings > **Payment methods** > เปิด **PromptPay** และ Cards
+2. Developers > **API keys** > คัดลอก **Secret key** ใส่ `STRIPE_SECRET_KEY` ใน `.env` (ทดสอบก่อนด้วย `sk_test_...` ได้ ไม่มีเงินจริง)
+3. Developers > **Webhooks** > Add endpoint: `https://play.farmdtest.com/stripe/webhook` · เลือก events `checkout.session.completed` และ `checkout.session.async_payment_succeeded` · คัดลอก **Signing secret** ใส่ `STRIPE_WEBHOOK_SECRET`
+4. `systemctl restart farm` แล้วลองซื้อ (โหมดทดสอบใช้บัตร `4242 4242 4242 4242` วันหมดอายุอะไรก็ได้ในอนาคต)
+5. ประวัติการซื้ออยู่ที่ `data/purchases.json` (รวมอยู่ใน backup) และใน Stripe Dashboard > Payments
+6. เปลี่ยนเป็นเงินจริง: ใช้ `sk_live_...` และสร้าง webhook ใหม่ในโหมด Live (signing secret คนละตัวกับโหมดทดสอบ)
+
 ### 4. แก้ farmdtest.com ขึ้น 404
 สาเหตุ: Cloudflare Workers สร้างเว็บจาก branch หลักของ repo (`claude/female-hairstyle-anime-fashion-16gg9i`) ซึ่งยังไม่มีไฟล์ `wrangler.jsonc` / โค้ดล่าสุด · ไฟล์ตั้งค่าอยู่ใน branch `claude/happy-bell-5sj3qh`
 1. Cloudflare > Workers & Pages > `farmdtest` > Settings > Build > **Branch control** > Production branch = `claude/happy-bell-5sj3qh` (หรือ merge branch นี้เข้า branch หลักบน GitHub ก็ได้)
@@ -128,6 +137,6 @@ Backup เก่าเกิน 30 วันจะถูกลบเองจา
 ## ยังต้องทำก่อนเปิดให้คนทั่วไปเล่น
 
 - ผู้เล่นที่ไม่ล็อกอินยังเป็นไอดีสุ่มในเบราว์เซอร์เหมือนเดิม (ล้างเบราว์เซอร์แล้วเซฟหาย)
-- **กันโกง:** เงิน เพชร และกระเป๋ายังเก็บในเครื่องผู้เล่น ควรย้ายมาคำนวณบนเซิร์ฟเวอร์
+- **กันโกง:** เงิน เพชร และกระเป๋ายังเก็บในเครื่องผู้เล่น ควรย้ายมาคำนวณบนเซิร์ฟเวอร์ · ของที่ซื้อด้วยเงินจริงบันทึกบนเซิร์ฟเวอร์แล้ว (ล้างเครื่องก็ได้คืน) แต่คนที่แก้ค่าในเบราว์เซอร์ยังเปิดมงกุฎเองได้
 - **ฐานข้อมูลจริง:** ไฟล์ JSON เหมาะกับช่วงทดสอบ ถ้าคนเยอะควรย้ายไป PostgreSQL
 - **HTTPS:** ตอนขึ้น VPS ต้องมีโดเมนและใบรับรอง (ใช้ Cloudflare หรือ Caddy ได้ฟรี) เพราะเว็บแบบ https ต่อ `ws://` ไม่ได้ ต้องเป็น `wss://`

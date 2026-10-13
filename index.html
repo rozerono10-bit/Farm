@@ -3594,7 +3594,8 @@ function robberBuy(k,q){ const hm=k==='h', c=hm?HAMMER_PRICE:RSHIELD_PRICE, mx=h
   S.coins-=n*c; if(hm) S.hammers=have+n; else{ S.rshield=have+n; if(DB&&myId) DB.doc('farms/'+myId).update({rs:S.rshield|0}).catch(()=>{}); }
   sfx('open',1,1); toast(hm?'🔨 ซื้อค้อน '+n+' อัน · มี '+S.hammers+'/'+HM_MAX+' อัน':'🛡️ ซื้อโล่กันโจร '+n+' อัน · ฟาร์มมี '+S.rshield+'/'+RS_MAX+' อัน',2000); updateHUD(); save(); }
 /* ออโต้: หลังโดนปล้น (โล่โดนทุบ / มีโจรบุกฟาร์ม) ซื้อโล่เติมให้ครบตามจำนวนที่ตั้งไว้ ถ้าเหรียญพอ */
-function autoShield(){ if(S.ai&&S.ai.shield&&!S.farm) S.shPend=1; /* โดนปล้น → ให้บอทเดินไปซื้อโล่ 1 รอบ */
+function autoShield(){ /* 🛡️ ติ๊ก "ซื้อโล่กันโจร เมื่อโดนปล้น" → โดนปล้นปุ๊บ หักเหรียญซื้อโล่ให้ทันที (ไม่ต้องเดินไปหาโจรสวมดำ) */
+  if(S.ai&&S.ai.shield&&!S.farm){ S.shPend=0; if(shBatch()<1){} else if(S.coins<RSHIELD_PRICE) toast('🛡️ ซื้อโล่กันโจรอัตโนมัติไม่ได้: เหรียญไม่พอ (ต้องใช้ 🪙'+fmt(RSHIELD_PRICE)+'/อัน)',3000); else autoBuyShield(); }
   const A=S.rsAuto, unl=!!S.rsUnl; if(S.farm||(!unl&&(!A||!A.on))) return;
   const want=unl?RS_MAX:Math.min(RS_MAX,Math.max(1,A.n|0)), have=S.rshield|0; if(have>=want) return;
   const k=Math.min(want-have,Math.floor(S.coins/RSHIELD_PRICE));
@@ -3718,12 +3719,13 @@ function doAct(a){
   else if(a.k==='fisher'){ autoFisher(); B.wait=.9; } }
 /* 🛡️ บอทเดินไปซื้อโล่กันโจร: เติมทีละ S.rsBuyN อัน แต่ไม่ให้เกินเพดาน RS_MAX · ต้องมีเหรียญพอซื้อครบล็อตนั้น */
 function shBatch(){ const have=S.rshield|0, room=RS_MAX-have; return Math.max(0,Math.min(Math.max(1,S.rsBuyN|0||10),room)); }
-function shieldNeed(){ if(!S.shPend) return false; if(!(S.ai&&S.ai.shield)||S.farm||shBatch()<1||S.coins<RSHIELD_PRICE){ S.shPend=0; return false; } return true; }
+function shieldNeed(){ S.shPend=0; return false; /* ซื้อทันทีตอนโดนปล้นแล้ว (autoShield) ไม่ต้องเดินไป */
+  if(!S.shPend) return false; if(!(S.ai&&S.ai.shield)||S.farm||shBatch()<1||S.coins<RSHIELD_PRICE){ S.shPend=0; return false; } return true; }
 function autoBuyShield(){ S.shPend=0; const have=S.rshield|0, n=Math.min(shBatch(),Math.floor(S.coins/RSHIELD_PRICE));
   if(n<1) return; S.coins-=n*RSHIELD_PRICE; S.rshield=Math.min(RS_MAX,have+n);
   if(DB&&myId) DB.doc('farms/'+myId).update({rs:S.rshield|0}).catch(()=>{});
-  const r=maps.land.npcs.find(q=>q.kind==='robber'); if(r) floatText(r.x,r.y-.8,'🛡️+'+n);
-  sfx('open',1,1); toast('🤖 เดินไปซื้อโล่กันโจร '+n+' อัน (🪙'+fmt(n*RSHIELD_PRICE)+') · ฟาร์มมี '+S.rshield+'/'+RS_MAX+' อัน',2800); updateHUD(); save(); }
+  floatText(S.x,S.y-1,'🛡️+'+n);
+  sfx('open',1,1); toast('🛡️ โดนปล้น → ซื้อโล่กันโจรให้ทันที '+n+' อัน (🪙'+fmt(n*RSHIELD_PRICE)+') · ฟาร์มมี '+S.rshield+'/'+RS_MAX+' อัน',2800); updateHUD(); save(); }
 function decide(){
   if(rdOn()){ raidDecide(); return; } /* ไปปล้นอยู่ → ใช้ระบบปล้นออโต้แทน */
   if(S.farm&&S.map==='farm'){ task('👀 อยู่ในฟาร์มเพื่อน — ออโต้ไม่ปลูก/ไม่เก็บของคนอื่น (กด 🏠 กลับฟาร์มตัวเอง)'); B.path=B.act=null; B.think=1; return; }
@@ -4427,7 +4429,7 @@ function botHTML(){ const run=botRun(), m=botMode, ai=S.ai, fb=S.fb||{}, pc=x=>M
   if(m==='farm'){ const sell=!ai.sell?'none':ai.gold?'gold':ai.fisher?'fisher':'shop', SN={shop:'🏪 ร้านค้า',gold:'🤑 พ่อค้าทอง',fisher:'🎣 ลุงตกปลา'};
     const f=[]; if(ai.plant) f.push('🌱 ปลูก'); if(ai.harvest) f.push('🧺 เก็บ'); if(ai.fry) f.push('🐟 เก็บลูกปลา'); if(sell!=='none') f.push('💰 ขายที่'+SN[sell].slice(2)); f.push('🔁 วนใหม่');
     h+='<div class="scard"><div class="sec">🔁 ออโต้จะทำแบบนี้</div>'+flow(f)+'</div>';
-    h+='<div class="scard"><div class="sec">✅ ให้ทำอะไรบ้าง <small>(แตะเพื่อเปิด/ปิด)</small></div><div class="agrid">'+row('data-ai="plant"',ai.plant,'🌱','ปลูก')+row('data-ai="harvest"',ai.harvest,'🧺','เก็บเกี่ยว')+row('data-ai="fry"',ai.fry,'🐟','เก็บลูกปลา','เมื่อบ่อเต็ม')+row('data-ai="shield"',ai.shield,'🛡️','ซื้อโล่กันโจร','เมื่อโดนปล้น')+'</div></div>';
+    h+='<div class="scard"><div class="sec">✅ ให้ทำอะไรบ้าง <small>(แตะเพื่อเปิด/ปิด)</small></div><div class="agrid">'+row('data-ai="plant"',ai.plant,'🌱','ปลูก')+row('data-ai="harvest"',ai.harvest,'🧺','เก็บเกี่ยว')+row('data-ai="fry"',ai.fry,'🐟','เก็บลูกปลา','เมื่อบ่อเต็ม')+row('data-ai="shield"',ai.shield,'🛡️','ซื้อโล่กันโจร','โดนปล้น = หักเหรียญซื้อทันที')+'</div></div>';
     h+='<div class="scard"><div class="sec">💰 เก็บแล้วเอาไปขายที่ไหน</div><div class="agrid">'+row('data-bsell="shop"',sell==='shop','🏪','ร้านค้า','เมืองกลาง',1)+row('data-bsell="gold"',sell==='gold','🤑','พ่อค้าทอง','+'+pc(GOLD_MUL)+'%',1)+row('data-bsell="fisher"',sell==='fisher','🎣','ลุงตกปลา','ปลา +'+pc(FISHER_MUL)+'%',1)+row('data-bsell="none"',sell==='none','🚫','ไม่ขาย','เก็บไว้',1)+'</div></div>';
   } else { const fbn=FB_NPC[fb.npc]?fb.npc:'gold', nm=k=>FB_NPC[k].n.replace(/\s*\(.*\)$/,'');
     const f=['🎣 ตกปลา','🎒 กระเป๋าเต็ม',fbn==='none'?'⏹ หยุด':'💰 ไปขายที่'+nm(fbn)]; if(fbn!=='none') f.push(fb.back!==false?'🔁 กลับมาตกต่อ':'✅ จบ'); if(fb.leg) f.unshift('🏆 ตามปลาตำนาน');

@@ -1726,7 +1726,7 @@ function fsDraw(){ const cv=document.getElementById('fsPv'); if(!cv||!S.char) re
   try{ const o=Object.assign(charObj(Object.assign({},S.char,{ac:fsSel,ak:fsSel===(S.char.ac|0)?S.char.ak:-1})),{sz:1,fx:0,fy:1,rd:'',noSh:true}); WS=1; T=80; ctx=p; p.setTransform(1,0,0,1,0,0); p.clearRect(0,0,cv.width,cv.height); drawPerson(60,174,o,false,0,0); }
   finally{ ctx=c0; T=t0; WS=w0; } }
 function fsAct(){ const i=fsSel, c=S.char; if(!c||i<0||i>=ACN) return; S.own=S.own||[];
-  if(i>0&&!S.own.includes(i)){ if((S.gems|0)<ACC_PRICE){ toast('💎 เพชรไม่พอ — ไปแลกที่พ่อค้าเพชรในเมืองกลาง (🪙'+fmt(GEM_RATE)+' = 💎1)',3200); return; } S.gems=(S.gems|0)-ACC_PRICE; S.own.push(i); sfx('open',3,1); toast('💎 ซื้อ'+ACC[i].n+'แล้ว! (-💎'+ACC_PRICE+')',2400); }
+  if(i>0&&!S.own.includes(i)){ toast('🔓 ปลดล็อกแฟชั่นทุกชิ้น '+ppTh('fashion_all')+' ที่ 👑 ร้านพรีเมียม',2600); return; }
   else toast(i?'👗 ใส่'+ACC[i].n+'แล้ว':'👗 ถอดของแต่งตัวแล้ว',1800);
   if((c.ac|0)!==i) c.ak=-1; c.ac=i; lastPres=''; sendPres(); updateHUD(); save(); renderShop(); }
 /* 🎬 แอนิเมชันตัวอย่างในร้านพรีเมียม: 👑 มงกุฎ (บัฟทีละอย่าง) · 🛡️ โล่กันอีกา (ไม่มีโล่ vs มีโล่) */
@@ -1763,30 +1763,30 @@ function pmCrownPv(p,W,H,t){ const SC=4, D=2.6, i=Math.floor(t/D)%SC, k=(t%D)/D,
     for(let j=0;j<4;j++){ const q=(k*1.5+j*.25)%1; p.globalAlpha=1-q; pmTxt(p,'🪙',rx-60+j*40,ry+46-q*18,14); } p.globalAlpha=1; }
   for(let j=0;j<SC;j++){ p.fillStyle=j===i?'#ffe08a':'rgba(255,255,255,.3)'; p.beginPath(); p.arc(rx-18+j*12,H-10,3.5,0,6.2832); p.fill(); } }
 function renderPrem(){ $('shopTitle').textContent='👑 ร้านพรีเมียม'; const gh=S.gems|0, need=Math.max(0,PREM_GEM-gh), own=!!S.crown;
-  const tabs=`<div class="pmTabs">${[['crown','👑','มงกุฎ'],['fashion','👗','แฟชั่น'],['pose','✨','ท่าเก็บ'],['shield','🛡️','โล่อีกา']].concat(PAY&&PAY.on&&window.farmAuth&&farmAuth.user()?[['pay','💳','เติมเงิน']]:[]).map(t=>`<button data-ptab="${t[0]}" class="${premTab===t[0]?'on':''}"><span class="pe">${t[1]}</span>${t[2]}</button>`).join('')}</div>`;
+  const tabs=`<div class="pmTabs">${[['crown','👑','มงกุฎ'],['fashion','👗','แฟชั่น'],['pose','✨','ท่าเก็บ'],['shield','🛡️','โล่อีกา']].map(t=>`<button data-ptab="${t[0]}" class="${premTab===t[0]?'on':''}"><span class="pe">${t[1]}</span>${t[2]}</button>`).join('')}</div>`;
   const bal=''; /* ยอดเพชร/เหรียญแสดงในแถบด้านบนร้านแล้ว */
   if(premTab==='pay'&&PAY){ $('shopBody').innerHTML=tabs+payUI(); $('shopCoins').textContent=fmt(S.coins); gemUI(); return; }
   if(premTab==='pose'){ $('shopBody').innerHTML=tabs+bal+poseUI(); $('shopCoins').textContent=fmt(S.coins); gemUI(); hpPvLoop(); return; }
   if(premTab==='shield'){ const bal2='';
-    $('shopBody').innerHTML=tabs+bal2+`<div class="pmHero"><div class="pmCr">🛡️</div><div class="pmTx"><h3>โล่กันอีกา</h3><div class="pmPr">🪙${fmt(SHIELD_PRICE)} / อัน</div></div></div>
+    $('shopBody').innerHTML=tabs+bal2+`<div class="pmHero"><div class="pmCr">🛡️</div><div class="pmTx"><h3>โล่กันอีกา</h3><div class="pmPr">${ppIt('shield_10')?'฿'+(ppIt('shield_10').thb/10)+' / อัน':'฿—'}</div></div></div>
       <div class="pmPv"><canvas id="pmCv" width="320" height="170"></canvas></div>
       <div class="pmWhy"><b>🤔 ทำไมต้องซื้อ?</b>
         <div><span>🐦‍⬛</span><p>อีกาจะบินมาขโมยผลผลิตในฟาร์มทุก ~${CROW_EVERY} วินาที ต้นที่โดนขโมย <em class="bad">หายไปเลย</em> เสียทั้งเมล็ดและเวลาที่รอ</p></div>
         <div><span>🛡️</span><p>ต้นที่ติดโล่ <em>อีกาขโมยไม่ได้</em> จะบินหนีไปเอง โล่อยู่จนกว่าจะเก็บเกี่ยว</p></div>
-        <div><span>💰</span><p>ราคาแค่ 🪙${fmt(SHIELD_PRICE)} ต่ออัน แต่ผลผลิตแพง ๆ ต้นเดียวอาจหลายร้อยถึงหลายพันเหรียญ — คุ้มมาก</p></div>
+        <div><span>💰</span><p>ราคาแค่ ${ppIt('shield_10')?'฿'+(ppIt('shield_10').thb/10):'฿1'} ต่ออัน แต่ผลผลิตแพง ๆ ต้นเดียวอาจหลายร้อยถึงหลายพันเหรียญ — คุ้มมาก</p></div>
         <div><span>👆</span><p>วิธีใช้: อยู่ในฟาร์มแล้วกดปุ่มกลม <b>🛡️ ใส่โล่</b> (เหนือปุ่ม ทำ) ใส่ให้ทุกต้นที่ยังไม่โตในครั้งเดียว</p></div></div>
       <div class="shNote">มีอยู่ <b>${fmt(S.shields|0)}</b> อัน</div>
-      <div class="pmBuy4 three">${[5,10,50].map(n=>`<button class="btn pmBtn" data-shield="${n}" ${S.coins<SHIELD_PRICE*n?'disabled':''}>ซื้อ ${n}<br><small>🪙${fmt(SHIELD_PRICE*n)}</small></button>`).join('')}</div>`;
+      <div class="pmBuy4 three">${[5,10,50].map(n=>ppB('shield_'+n,'ซื้อ '+n+'<br><small>{p}</small>')).join('')}</div>`;
     $('shopCoins').textContent=fmt(S.coins); gemUI(); pmPvLoop('shield'); return; }
   if(premTab==='fashion'&&S.char){ const cur=S.char.ac|0; if(fsSel<0||fsSel>=ACN) fsSel=cur; const ow=S.own||[], hav=i=>i===0||ow.includes(i);
-    const sel=fsSel, buy=sel>0&&!hav(sel), lack=buy&&gh<ACC_PRICE;
-    const btn=sel===cur?`<button class="btn pmBtn" disabled>👗 ${sel?'ใส่อยู่แล้ว':'ยังไม่ได้ใส่ของแต่งตัว'}</button>`:`<button class="btn pmBtn" data-fact="1" ${lack?'disabled':''}>${buy?(lack?'เพชรไม่พอ — ขาดอีก 💎'+(ACC_PRICE-gh):'💎 ซื้อและใส่เลย '+ACC_PRICE):(sel?'✅ ใส่เลย (ของคุณแล้ว)':'🚫 ถอดออก')}</button>`;
+    const sel=fsSel, buy=sel>0&&!hav(sel);
+    const btn=sel===cur?`<button class="btn pmBtn" disabled>👗 ${sel?'ใส่อยู่แล้ว':'ยังไม่ได้ใส่ของแต่งตัว'}</button>`:buy?ppB('fashion_all','🔓 ปลดล็อกแฟชั่นทุกชิ้น {p}'):`<button class="btn pmBtn" data-fact="1">${sel?'✅ ใส่เลย (ของคุณแล้ว)':'🚫 ถอดออก'}</button>`;
     $('shopBody').innerHTML=tabs+bal+`<div class="skModeBox"><div class="skModeT">🔄 เลือกแบบตัวละคร <span>เปลี่ยนได้ตลอด · ฟรี</span></div><div class="skMode"><button type="button" data-skmini="1" class="${skMini()?'on':''}"><b>🎮 แบบตัวในเกม</b><small>ตัวเล็กหัวโต เหมือนตัวละครในเกม · แบบหลัก</small>${skMini()?'<i>✓ ใช้อยู่</i>':''}</button><button type="button" data-skmini="0" class="${skMini()?'':'on'}"><b>✨ แบบชุดใหญ่ <span class="beta">แถม (Beta)</span></b><small>ตัวใหญ่ ละเอียด ท่าทางเต็ม</small>${skMini()?'':'<i>✓ ใช้อยู่</i>'}</button></div><div class="skModeH">👇 แตะเลือกแล้วตัวละครด้านล่าง, ในเกม และรูปโปรไฟล์จะเปลี่ยนทันที</div></div>`+skCard(gh)
-      +`<p class="pmNote">ซื้อครั้งเดียว ใส่/ถอดได้ฟรีตลอด</p>`;
+      +`<p class="pmNote">จ่ายครั้งเดียว ${ppTh('fashion_all')} ได้ของแต่งตัวทุกชิ้น · ใส่/ถอดได้ฟรีตลอด</p>`;
     $('shopCoins').textContent=fmt(S.coins); gemUI(); fsDraw(); skLoop(); setTimeout(()=>{ if(shopOpen&&premTab==='fashion') fsDraw(); },700); return; }
   const tile=(ic,t,d)=>`<div class="pmT"><span>${ic}</span><b>${t}</b><small>${d}</small></div>`;
   $('shopBody').innerHTML=tabs+bal+`
-  <div class="pmHero${own?' own':''}"><div class="pmCr">👑</div><div class="pmTx"><h3>มงกุฎพรีเมียม</h3><div class="pmPr">${own?'<span class="pmOk">✅ คุณมีแล้ว</span>':'💎 '+PREM_GEM}</div></div></div>
+  <div class="pmHero${own?' own':''}"><div class="pmCr">👑</div><div class="pmTx"><h3>มงกุฎพรีเมียม</h3><div class="pmPr">${own?'<span class="pmOk">✅ คุณมีแล้ว</span>':ppTh('crown')}</div></div></div>
   <div class="pmPv"><canvas id="pmCv" width="320" height="190"></canvas></div>
   <div class="pmWhy"><b>🤔 ทำไมต้องซื้อ?</b>
     <div><span>🔋</span><p>สตามิน่า <em>x2</em> (${STAM_BASE} → ${STAM_CROWN}) เดิน/ทำงานได้นานขึ้นเท่าตัว ไม่ต้องนั่งพักบ่อย</p></div>
@@ -1794,8 +1794,7 @@ function renderPrem(){ $('shopTitle').textContent='👑 ร้านพรีเ
     <div><span>📈</span><p>ขายแพงขึ้น · พืชโตไว · ตกปลาไว <em>อย่างละ +5%</em> ได้เงินเร็วขึ้นทุกทาง และบวกกับบัฟอื่นได้</p></div>
     <div><span>👑</span><p>มีมงกุฎหน้าชื่อ ผู้เล่นทุกคนเห็น · ซื้อครั้งเดียว <em>ใช้ได้ตลอด</em></p></div></div>
   <div class="pmBuffT">✨ บัฟติดตัวถาวร (ได้ทันทีที่ซื้อ)</div><div class="pmGrid">${tile('🔋','สตามิน่า','<em>+'+(STAM_CROWN-STAM_BASE)+'</em><br>'+STAM_BASE+' → '+STAM_CROWN)}${tile('🎒','กระเป๋า','<em>x2</em><br>'+BAG_BASE+' → '+BAG_CROWN+' ชิ้น')}${tile('🪙','ได้เงิน','<em>+5%</em><br>ขายทุกอย่าง')}${tile('🌱','พืชโตไว','<em>+5%</em><br>ทุกต้น')}${tile('🎣','ตกปลาไว','<em>+5%</em><br>ปลากินเบ็ดเร็วขึ้น')}${tile('👑','มงกุฎหน้าชื่อ','<em>ทุกคนเห็น</em>')}</div>
-  ${own?'<div class="pmOkBar">✅ บัฟทั้งหมดทำงานอยู่</div>':`<button class="btn pmBtn" data-crown="buy" ${need?'disabled':''}>${need?'เพชรไม่พอ — ขาดอีก 💎'+need:'ซื้อเลย 💎'+PREM_GEM}</button>`}
-  ${!own&&need?`<p class="pmHint">แลกเพชรที่พ่อค้าเพชรในเมืองกลาง (🪙${fmt(GEM_RATE)} = 💎1) · ขาดอีกประมาณ 🪙${fmt(need*GEM_RATE)}</p>`:''}
+  ${own?'<div class="pmOkBar">✅ บัฟทั้งหมดทำงานอยู่</div>':ppB('crown','💳 ซื้อเลย {p}')}
   <p class="pmNote">ซื้อครั้งเดียว บัฟติดตัวตลอด · เทรด/ขายให้คนอื่นไม่ได้</p>`; pmPvLoop('crown');
   $('shopCoins').textContent=fmt(S.coins); gemUI(); }
 const PREM_GEM=30; /* ราคามงกุฎพรีเมียม (เพชร) — แก้เลขนี้ได้ */
@@ -4176,12 +4175,12 @@ $('shopBody').addEventListener('click', e => {
     for(let i=0;i<n;i++){ let r=Math.random()*tw, q=GACHA_PRIZES[GACHA_PRIZES.length-1]; for(const z of GACHA_PRIZES){ if(r<z.w){ q=z; break; } r-=z.w; } addJobXp('greed',1); for(let gx=greedX();gx>0;gx--){ if(q.rod){ const id=q.rod; if(!S.rodN) S.rodN={}; if(!S.rods.includes(id)){ S.rods.push(id); S.rods.sort((a,b)=>a-b); S.rodN[id]=0; } S.rodN[id]=(S.rodN[id]|0)+1; got[q.id]=(got[q.id]|0)+1; } else if(q.helper){ if(S.helpers.length>=HELP_MAX){ S.coins+=GACHA_COST; dup[q.id]=(dup[q.id]|0)+1; } else { const had=S.helpers.some(h=>h.id===q.helper); S.helpers.push({id:q.helper,carry:[]}); spawnHelpers(); if(had) dup[q.id]=(dup[q.id]|0)+1; else fresh[q.id]=1; } } else if(q.seed){ S.seed[q.seed]=(S.seed[q.seed]|0)+CFLY_SEEDS; got[q.id]=(got[q.id]|0)+CFLY_SEEDS; } else { S[q.id]=(S[q.id]|0)+1; got[q.id]=(got[q.id]|0)+1; } } }
     gachaMsg='สุ่ม '+n+' ครั้ง ได้: '+GACHA_PRIZES.filter(q=>got[q.id]).map(q=>q.e+q.n+' x'+got[q.id]).concat(GACHA_PRIZES.filter(q=>q.helper&&(fresh[q.id]||dup[q.id])).map(q=>q.e+q.n+(fresh[q.id]?' 🎉 ได้ใหม่!':'')+(dup[q.id]?(fresh[q.id]?' · ':' ')+'ได้เพิ่ม'+(dup[q.id]>1?' x'+dup[q.id]:''):''))).join(' · '); if(got.tri){ toast('🔱🎉 แจ็คพอต!! ได้ เบ็ดตรีศูลโพไซดอน (โอกาส 0.1%) — เลือกใช้ได้ใน 🎒 กระเป๋า',6000); try{ sfx('catch',2); }catch(e){} } if(got.cfly) toast('🪴 ได้เมล็ดเวนัสฟลายแทรป Curse 1 x'+got.cfly+' — ปลูกในฟาร์มได้เลย',3000); if(fresh.akiko) toast('🌸 ได้ อากิโกะ ผู้ช่วยพิเศษ! เธอไปเดินรอที่ฟาร์มของคุณแล้ว',3400); else if(dup.akiko) toast('🌸 อากิโกะ — มีแล้ว',1800); try{ sfx('open',0,n); }catch(e){} updateHUD(); save(); renderShop(); return; }
   if(b.dataset.salt){ const n=S.salt|0; if(n>0&&isLocked('n:salt')){ toast('🔒 เกลือถูกล็อกอยู่ — ปลดล็อกในกระเป๋าก่อนถึงจะขายได้',2400); return; } if(n>0){ S.salt=0; try{ sfx('open',1,1); }catch(e){} toast('🧂 ขายเกลือ '+n+' ชิ้น ได้ 🪙0',2000); updateHUD(); save(); renderShop(); } return; }
-  if(b.dataset.crown){ if(b.dataset.crown==='buy'){ if(!S.crown&&(S.gems|0)>=PREM_GEM){ S.gems-=PREM_GEM; S.crown=1; applyJob(); STAM=stMax(); restT=0; sfx('open',4,1); toast('👑 ได้มงกุฎพรีเมียมแล้ว! สตามิน่า '+STAM_CROWN+' · 🎒 กระเป๋า '+BAG_BASE+' → '+BAG_CROWN+' · เทรดกับผู้เล่นอื่นได้',3600); updateHUD(); save(); sendPres(); renderShop(); } }
+  if(b.dataset.crown){ if(b.dataset.crown==='buy'){ if(false){ /* 👑 ขายด้วยเงินจริงเท่านั้น (data-pay) */ S.gems-=PREM_GEM; S.crown=1; applyJob(); STAM=stMax(); restT=0; sfx('open',4,1); toast('👑 ได้มงกุฎพรีเมียมแล้ว! สตามิน่า '+STAM_CROWN+' · 🎒 กระเป๋า '+BAG_BASE+' → '+BAG_CROWN+' · เทรดกับผู้เล่นอื่นได้',3600); updateHUD(); save(); sendPres(); renderShop(); } }
     else { closeShop(); trdOpenList(); } return; }
   if(b.dataset.sgem!==undefined){ const gh=S.gems|0, n=b.dataset.sgem==='max'?gh:+b.dataset.sgem; if(n>0&&gh>=n){ S.gems=gh-n; S.coins+=n*GEM_RATE; sfx('open',4,1); toast('💰 ขายเพชร '+n+' เม็ด ได้ 🪙'+fmt(n*GEM_RATE),2200); updateHUD(); save(); } return; }
   if(b.dataset.gem!==undefined){ const n=b.dataset.gem==='max'?Math.floor(S.coins/GEM_RATE):+b.dataset.gem; if(n>0&&S.coins>=n*GEM_RATE){ S.coins-=n*GEM_RATE; S.gems=(S.gems|0)+n; sfx('open',4,1); toast('💎 แลกได้เพชร '+n+' เม็ด (🪙'+fmt(n*GEM_RATE)+')',2200); updateHUD(); save(); } return; }
   if(b.dataset.rb){ const a=b.dataset.rb.split(':'); if(a[0]==='buy') robberBuy(a[1],a[2]); else if(a[0]==='go') raid(a[1]); else if(a[0]==='rsa'){ const A=S.rsAuto||(S.rsAuto={on:false,n:10}); if(a[1]==='tog'){ A.on=!A.on; toast(A.on?'🤖 เปิดซื้อโล่ออโต้ · หลังโดนปล้นจะเติมโล่ให้ครบ '+A.n+' อัน':'🤖 ปิดซื้อโล่ออโต้แล้ว',2400); } else A.n=Math.max(1,Math.min(RS_MAX,a[1]==='max'?RS_MAX:(A.n|0)+(parseInt(a[1],10)||0))); updateHUD(); save(); } return; }
-  if(b.dataset.shield){ const n=+b.dataset.shield, c=n*SHIELD_PRICE; if(S.coins>=c){ S.coins-=c; S.shields=(S.shields|0)+n; sfx('open',1,1); toast('🛡️ ซื้อโล่กันอีกา '+n+' อัน · มี '+fmt(S.shields)+' อัน',1800); updateHUD(); save(); renderShop(); } return; }
+  if(b.dataset.shield){ const n=+b.dataset.shield, c=n*SHIELD_PRICE; if(false){ /* 🛡️ ขายด้วยเงินจริงเท่านั้น (data-pay) */ S.coins-=c; S.shields=(S.shields|0)+n; sfx('open',1,1); toast('🛡️ ซื้อโล่กันอีกา '+n+' อัน · มี '+fmt(S.shields)+' อัน',1800); updateHUD(); save(); renderShop(); } return; }
   if(b.dataset.pvb!==undefined){ const i=+b.dataset.pvb; vpi[i]=((vpi[i]|0)+1)%4; paintVehPV(); return; }
   if(b.dataset.ride!==undefined){ S.ride=+b.dataset.ride; toast(S.ride<0?'🚶 ลงจากยานแล้ว':'🚀 ขี่'+VEH[S.veh[S.ride].t].n+' ความเร็ว x'+vehMul().toFixed(2),1800); updateHUD(); save(); return; }
   if(b.dataset.vbuy!==undefined){ const i=+b.dataset.vbuy, d=VEH[i]; if(vCan(d)){ S.coins-=d.price; S.gems=(S.gems|0)-d.gem; const g=vRoll(); S.veh.push({t:i,g}); if(greedX()===2) S.veh.push({t:i,g}); S.ride=S.veh.length-1; sfx('open',g?4:1,1); toast((g?VTN[g]+'! ':'🚀 ')+'ได้'+d.n+' ความเร็วรวม x'+vehMul().toFixed(2),2600); updateHUD(); save(); } return; }
@@ -4469,7 +4468,7 @@ function startPlay(){
 }
 function begin(){ if($('title').classList.contains('needLogin')&&!(window.farmAuth&&farmAuth.user())) return; if(S.char) return joined?startPlay():openServers(); $('title').classList.remove('on'); edUI('create'); $('create').classList.add('on'); syncCh(); }
 $('createBtn').addEventListener('click',()=>{ if(edMode==='fashion'){ const nc=normCh(CH); S.own=S.own||[];
-    if(nc.ac>0&&!S.own.includes(nc.ac)){ if((S.gems|0)<ACC_PRICE){ toast('💎 เพชรไม่พอ — ไปแลกที่พ่อค้าเพชรในเมืองกลาง (🪙'+fmt(GEM_RATE)+' = 💎1)',3400); return; } S.gems=(S.gems|0)-ACC_PRICE; S.own.push(nc.ac); sfx('open',3,1); toast('💎 ซื้อ'+ACC[nc.ac].n+'แล้ว! (-💎'+ACC_PRICE+')',2400); }
+    if(nc.ac>0&&!S.own.includes(nc.ac)){ shopOpen=false; $('create').classList.remove('on'); premTab='fashion'; fsSel=nc.ac; openShop('premium'); toast('🔓 '+ACC[nc.ac].n+' — ปลดล็อกแฟชั่นทุกชิ้น '+ppTh('fashion_all')+' ที่ร้านพรีเมียม',3000); return; }
     Object.assign(S.char,nc); lastPres=''; sendPres(); shopOpen=false; $('create').classList.remove('on'); updateHUD(); save(); toast('👗 เปลี่ยนลุคเรียบร้อย!',2000); return; }
   const n=$('nameIn').value.trim(); if(!n){ $('nameIn').focus(); $('nameIn').placeholder='ต้องใส่ชื่อก่อนนะ'; return; }
   S.char=Object.assign({},CH,{name:n}); uniq(); $('create').classList.remove('on'); if(DB) DB.doc('farms/'+myId).update({name:n}).catch(()=>{}); save(); openServers(); });
@@ -4536,6 +4535,9 @@ $('meX').addEventListener('click',()=>$('meDlg').classList.remove('on'));
 $('meDlg').addEventListener('click',e=>{ if(e.target.id==='meDlg') $('meDlg').classList.remove('on'); });
 /* 💳 ของพรีเมียมที่ซื้อด้วยเงินจริง: เซิร์ฟเวอร์จำว่าบัญชีนี้ซื้ออะไรไปแล้ว → ใส่ให้ในเกม (เปลี่ยนเครื่องก็ได้คืน) */
 let PAY=null;
+/* ราคาเงินจริงของแต่ละอย่างในร้านพรีเมียม: ppIt('crown') → สินค้า · ppB(id,label) → ปุ่มซื้อ (ยังไม่เปิดขาย = ปุ่มกดไม่ได้) */
+const ppIt=id=>PAY&&PAY.on&&PAY.items.find(x=>x.id===id)||null, ppTh=id=>{ const it=ppIt(id); return it?'฿'+it.thb:'฿—'; };
+const ppB=(id,label,cls)=>{ const it=ppIt(id); return it?`<button class="btn ${cls||'pmBtn'}" data-pay="${id}">${label.replace('{p}','฿'+it.thb)}</button>`:`<button class="btn ${cls||'pmBtn'}" disabled>${window.farmAuth&&!farmAuth.user()?'🔒 เข้าสู่ระบบก่อนซื้อ':'💳 ยังไม่เปิดขาย'}</button>`; };
 const PAY_ERR={pay_off:'ยังไม่ได้เปิดระบบชำระเงินบนเซิร์ฟเวอร์',already_owned:'คุณมีของชิ้นนี้แล้ว',login_required:'เข้าสู่ระบบก่อนซื้อ',too_many_tries:'กดบ่อยเกินไป รอสักครู่',bad_return:'เว็บนี้ยังไม่ได้รับอนุญาตให้ชำระเงิน',offline:'📴 ต่อเซิร์ฟเวอร์ไม่ได้'};
 const pEsc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 function applyEnt(owned,give){ if(!PAY||!S) return; PAY.owned=owned||[]; const got=[], acked=[];
@@ -4546,6 +4548,7 @@ function applyEnt(owned,give){ if(!PAY||!S) return; PAY.owned=owned||[]; const g
   for(const id of PAY.owned){ const it=PAY.items.find(x=>x.id===id); if(!it) continue; const g=it.grant||'';
     if(g==='crown'){ if(!S.crown){ S.crown=1; try{ applyJob(); STAM=stMax(); restT=0; }catch(e){} got.push(it); } }
     else if(g.indexOf('pose:')===0){ const k=g.slice(5); S.ownHp=S.ownHp||[]; if(!S.ownHp.includes(k)){ S.ownHp.push(k); got.push(it); } }
+    else if(g.indexOf('skin:')===0){ const i=+g.slice(5); S.ownSk=S.ownSk||[]; if(SKINS[i]&&!S.ownSk.includes(i)){ S.ownSk.push(i); got.push(it); } }
     else if(g==='acc:all'){ S.own=S.own||[]; let add=0; for(let i=1;i<ACN;i++) if(!S.own.includes(i)){ S.own.push(i); add=1; } if(add) got.push(it); } }
   if(acked.length){ try{ saveNow(); }catch(e){} farmAuth.payAck(acked).catch(()=>{}); }
   if(got.length){ try{ updateHUD(); save(); sendPres(); sfx('open',4,1); }catch(e){} toast('💳 ได้รับ '+got.map(i=>i.e+' '+i.name).join(' · ')+' แล้ว! ขอบคุณที่สนับสนุนเกม 💖',3600); }
@@ -5602,16 +5605,15 @@ function drawSkin(x,y,o,moving,wt){ const cs2=o.cs|0; if(!SKINS[cs2]||!skReady(c
   if(!o.noSh&&S.perf!==1) skSpark(ctx,x,y,ps,t,3,seed);
   return true; }
 function skAct(id){ id=id|0; if(!SKINS[id]) id=1; const c=S.char; if(!c) return; S.ownSk=S.ownSk||[]; const P=skPrice(id), K=SKINS[id];
-  if(!S.ownSk.includes(id)){ if((S.gems|0)<P){ toast('💎 เพชรไม่พอ — ไปแลกที่พ่อค้าเพชรในเมืองกลาง (🪙'+fmt(GEM_RATE)+' = 💎1)',3200); return; }
-    S.gems=(S.gems|0)-P; S.ownSk.push(id); c.cs=id; sfx('open',3,1); toast(K.e+' ซื้อชุด'+K.n+'แล้ว! (-💎'+P+')'+(SK_BON[id]?' · ได้บัฟติดตัว '+SK_BON[id].t:''),3200); }
+  if(!S.ownSk.includes(id)){ toast('💳 ชุดนี้ซื้อด้วยเงินจริง '+ppTh('skin_'+id)+' ที่ 👑 ร้านพรีเมียม > แฟชั่น',2600); return; } /* 💳 ขายด้วยเงินจริงเท่านั้น (data-pay) */
   else if((c.cs|0)===id){ c.cs=0; toast('👗 ถอดชุดโมเดลแล้ว กลับเป็นตัวละครเดิม',2000); }
   else { c.cs=id; toast(K.e+' ใส่ชุด'+K.n+'แล้ว!',2000); }
   lastPres=''; sendPres(); updateHUD(); save(); renderShop(); }
 function skCard(gh){ const owned=S.ownSk||[], cur=(S.char&&S.char.cs)|0;
   let h='<div class="skGrid">';
-  for(let i=1;i<SKINS.length;i++){ const K=SKINS[i], P=skPrice(i), own=owned.includes(i), on=cur===i, lack=!own&&gh<P;
-    const lb=!own?(lack?'💎 ไม่พอ':'💎 '+P+' ซื้อ'):(on?'ถอด':'ใส่เลย');
-    h+=`<div class="skC${on?' on':own?' own':''}"><canvas id="skPv${i}" class="skPv" width="240" height="360"></canvas><div class="skN">${K.n}</div>${SK_BON[i]?`<div class="skBon${own?' on':''}">${SK_BON[i].t}${own?' ✓':''}</div>`:''}<div class="skS">${on?'✓ ใส่อยู่':own?'✓ มีแล้ว':'ยังไม่มี'}</div><button class="btn small${on?' ghost':''}" data-skact="${i}" ${lack?'disabled':''}>${lb}</button></div>`; }
+  for(let i=1;i<SKINS.length;i++){ const K=SKINS[i], own=owned.includes(i), on=cur===i;
+    const lb=!own?'':(on?'ถอด':'ใส่เลย');
+    h+=`<div class="skC${on?' on':own?' own':''}"><canvas id="skPv${i}" class="skPv" width="240" height="360"></canvas><div class="skN">${K.n}</div>${SK_BON[i]?`<div class="skBon${own?' on':''}">${SK_BON[i].t}${own?' ✓':''}</div>`:''}<div class="skS">${on?'✓ ใส่อยู่':own?'✓ มีแล้ว':'ยังไม่มี'}</div>${own?`<button class="btn small${on?' ghost':''}" data-skact="${i}">${lb}</button>`:ppB('skin_'+i,'💳 {p} ซื้อ','small')}</div>`; }
   return h+'</div>'; }
 let skTok=0;
 /* 🎬 พรีวิวชุดในร้าน: เวทีมีไฟสปอตไลต์ + ประกาย · หมุนโชว์ หน้า→ขวา→หลัง→ซ้าย สลับท่ายืนหายใจ/เดิน ลื่นไหล */
@@ -6133,7 +6135,7 @@ function poseUI(){ const own=S.ownHp||[], cur=S.hp||'';
   h+=`<div class="hpc${cur?'':' on'}"><span class="he">🧺</span><b>ท่าปกติ</b><small>เก็บแบบธรรมดา</small><button type="button" class="btn small" data-hp="" ${cur?'':'disabled'}>${cur?'ใช้ท่านี้':'✓ ใช้อยู่'}</button></div>`;
   for(const q of HPOSE){ const have=own.includes(q.k), on=cur===q.k;
     const ab=(q.reach?'<i>📏 ระยะเก็บ '+q.reach+' ช่อง</i>':'')+(q.spd?'<i>⚡ เก็บเร็วขึ้น '+Math.round(q.spd*100)+'%</i>':'')+(q.ride?'<i>🛵 ใช้ตอนขี่ยานได้</i>':'');
-    h+=`<div class="hpc${on?' on':''}${hpPv===q.k?' pv':''}" data-hpv="${q.k}"><span class="he">${q.e}</span><b>${q.n}</b><small>${q.d||''}</small>${ab?'<span class="hpAb">'+ab+'</span>':''}<button type="button" class="btn small" data-hp="${q.k}" ${on?'disabled':''}>${on?'✓ ใช้อยู่':have?'ใช้ท่านี้':'💎 '+q.p+' ซื้อ'}</button></div>`; }
+    h+=`<div class="hpc${on?' on':''}${hpPv===q.k?' pv':''}" data-hpv="${q.k}"><span class="he">${q.e}</span><b>${q.n}</b><small>${q.d||''}</small>${ab?'<span class="hpAb">'+ab+'</span>':''}<button type="button" class="btn small" data-hp="${q.k}" ${on?'disabled':''}>${on?'✓ ใช้อยู่':have?'ใช้ท่านี้':(ppIt('pose_'+q.k)?ppTh('pose_'+q.k)+' ซื้อ':'💳 ยังไม่เปิดขาย')}</button></div>`; }
   return h+'</div><p class="pmNote">ซื้อครั้งเดียวเป็นของคุณตลอด · เลือกใช้ได้ทีละท่า</p>'; }
 let hpPv='', hpTok=0;
 /* 🎬 เวทีพรีวิวท่าเก็บ: ตัวละครของเรา (รวมชุดพรีเมียม) เล่นท่าวน + ผลผลิตลอยเข้าตัว */
@@ -6147,17 +6149,17 @@ function hpPvLoop(){ const tok=++hpTok, t0=performance.now(); const step=()=>{ c
     requestAnimationFrame(step); }; requestAnimationFrame(step); }
 $('shopBody').addEventListener('click',e=>{ if(e.target.closest('button')) return; const c=e.target.closest('[data-hpv]'); if(!c||!hpGet(c.dataset.hpv)) return; hpPv=c.dataset.hpv; document.querySelectorAll('#shopBody .hpc').forEach(x=>x.classList.toggle('pv',x===c)); const cap=document.querySelector('#shopBody .hpCap'); if(cap) cap.textContent=hpGet(hpPv).e+' '+hpGet(hpPv).n; });
 function hpUse(k){ S.ownHp=S.ownHp||[]; if(!k){ S.hp=''; toast('🧺 กลับไปใช้ท่าปกติ',1600); save(); renderShop(); return; } const q=hpGet(k); if(!q) return;
-  if(!S.ownHp.includes(k)){ if((S.gems|0)<q.p){ toast('💎 เพชรไม่พอ — ต้องใช้ '+q.p+' เม็ด',2600); return; } S.gems=(S.gems|0)-q.p; S.ownHp.push(k); try{ sfx('catch',1); }catch(e){} toast(q.e+' ซื้อท่า "'+q.n+'" แล้ว! (-💎'+q.p+')',2600); }
+  if(!S.ownHp.includes(k)){ const it=ppIt('pose_'+k); if(!it){ toast('💳 ท่านี้ยังไม่เปิดขาย',2200); return; } const b=document.querySelector('[data-hp="'+k+'"]'); if(b){ b.dataset.pay='pose_'+k; payGo(b); } return; }
   else toast(q.e+' ใช้ท่า "'+q.n+'" ตอนเก็บผลผลิต',1800);
   S.hp=k; hpPv=k; updateHUD(); save(); renderShop(); }
 let edMode='create';
-function edUI(m){ edMode=m; const f=m==='fashion'; edTab='hair'; edLast=''; edHG=''; $('create').classList.toggle('fash',f); $('edHint').textContent=f?'ลองแต่งได้ฟรี · จ่ายเพชรเฉพาะของแต่งชิ้นใหม่ตอนกดยืนยัน':'เลือกหมวดด้านล่าง แล้วแตะเพื่อลองแต่งได้เลย'; if(!f){ CH.ac=0; CH.ak=-1; CH.cs=0; } $('edTitle').textContent=f?'✦ Fashion Boutique ✦':'สร้างตัวละคร'; $('nameIn').style.display=f?'none':''; $('optG').style.display=''; $('createBtn').textContent=f?'✅ เปลี่ยนเลย':'สร้างตัวละคร'; $('edCancel').style.display='none'; }
+function edUI(m){ edMode=m; const f=m==='fashion'; edTab='hair'; edLast=''; edHG=''; $('create').classList.toggle('fash',f); $('edHint').textContent=f?'ลองแต่งได้ฟรี · ของแต่งชิ้นที่ 🔒 ปลดล็อกได้ที่ร้านพรีเมียม':'เลือกหมวดด้านล่าง แล้วแตะเพื่อลองแต่งได้เลย'; if(!f){ CH.ac=0; CH.ak=-1; CH.cs=0; } $('edTitle').textContent=f?'✦ Fashion Boutique ✦':'สร้างตัวละคร'; $('nameIn').style.display=f?'none':''; $('optG').style.display=''; $('createBtn').textContent=f?'✅ เปลี่ยนเลย':'สร้างตัวละคร'; $('edCancel').style.display='none'; }
 function accUI(){ if(edMode!=='fashion') return ''; const own=S.own||[], hav=i=>own.includes(i), sec=t=>`<div class="sec">${t}</div>`;
-  let h=sec('🎩 ของแต่งตัว · ชิ้นละ 💎'+ACC_PRICE+' (คุณมี 💎'+fmt(S.gems|0)+')')+'<div class="acg">'+ACC.map((a,i)=>`<button data-k="ac" data-i="${i}" class="${CH.ac===i?'on':''}"><span class="ae">${a.e}</span><span class="an">${a.n}</span><small>${i===0?'ถอดออก':hav(i)?'✓ มีแล้ว':'💎'+ACC_PRICE}</small></button>`).join('')+'</div>';
+  let h=sec('🎩 ของแต่งตัว · ปลดล็อกทุกชิ้น '+ppTh('fashion_all')+' ที่ 👑 ร้านพรีเมียม')+'<div class="acg">'+ACC.map((a,i)=>`<button data-k="ac" data-i="${i}" class="${CH.ac===i?'on':''}"><span class="ae">${a.e}</span><span class="an">${a.n}</span><small>${i===0?'ถอดออก':hav(i)?'✓ มีแล้ว':'🔒'}</small></button>`).join('')+'</div>';
   if(CH.ac>0){ const cur=accHex(CH.ac,CH.ak);
     h+=sec('🎨 สีของ'+ACC[CH.ac].n+' (ปรับสีได้ฟรี)')+`<div class="nb" style="margin-bottom:6px"><button data-k="ak" data-i="-1" class="${CH.ak===-1?'on':''}" style="padding:0 12px">🎨 สีดั้งเดิม</button></div><div class="sw">`+ACOL.map((c,i)=>`<button data-k="ak" data-i="${i}" style="background:${c}" class="${CH.ak===i?'on':''}" aria-label="สี ${i+1}"></button>`).join('')+`</div><label class="cpk">🌈 เลือกสีเอง <input type="color" id="acPick" value="${cur}"></label>`; }
-  return h+'<p>ลองใส่ดูก่อนได้ฟรี · ตอนกดปุ่มด้านล่างถึงจะหักเพชร · ซื้อแล้วเป็นของคุณตลอด สลับใส่/ถอดได้ฟรี<br>💎 แลกเพชรได้ที่ <b>พ่อค้าเพชร</b> ที่เดินอยู่ในเมืองกลาง (🪙'+fmt(GEM_RATE)+' = 💎1)</p>'; }
-function accBtn(){ if(edMode!=='fashion') return; const need=CH.ac>0&&!(S.own||[]).includes(CH.ac); $('createBtn').textContent=need?'💎 ซื้อ '+ACC_PRICE+' เม็ด แล้วใส่เลย':'✅ เปลี่ยนเลย'; }
+  return h+'<p>ลองใส่ดูก่อนได้ฟรี · ชิ้นที่มี 🔒 ปลดล็อกได้ที่ 👑 ร้านพรีเมียม (จ่าย '+ppTh('fashion_all')+' ครั้งเดียว ได้ทุกชิ้น) · สลับใส่/ถอดได้ฟรีตลอด</p>'; }
+function accBtn(){ if(edMode!=='fashion') return; const need=CH.ac>0&&!(S.own||[]).includes(CH.ac); $('createBtn').textContent=need?'🔓 ปลดล็อกที่ร้านพรีเมียม '+ppTh('fashion_all'):'✅ เปลี่ยนเลย'; }
 /* ---------- UI ทรงผม: ปุ่มพรีวิวทุกทรง (สร้างจาก HD อัตโนมัติ — เพิ่มทรงใหม่ใน HD แล้วจะโผล่เอง) ---------- */
 let edHG='';
 const hairGrp=g=>Array.from({length:HSN},(_,i)=>i).filter(i=>(HD[i].g==='m')===(g==='m')&&(!HD[i].x||i===CH.hs));

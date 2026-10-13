@@ -18,15 +18,16 @@ module.exports = function createNames(dataDir) {
   const rLoad = () => { try { renames = JSON.parse(fs.readFileSync(RFILE, 'utf8')) || {}; rAt = fs.statSync(RFILE).mtimeMs; } catch (e) { renames = {}; } };
   const rSave = () => { try { fs.writeFileSync(RFILE + '.tmp', JSON.stringify(renames)); fs.renameSync(RFILE + '.tmp', RFILE); rAt = fs.statSync(RFILE).mtimeMs; } catch (e) { console.error('renames save failed:', e.message); } };
   function force(uid, name) { const k = norm(name); if (!k) return; const o = byName[k]; if (o && o !== uid) delete byUid[o]; if (byUid[uid] && byUid[uid] !== k) delete byName[byUid[uid]]; byName[k] = uid; byUid[uid] = k; persist(); }
-  rLoad(); for (const [u, n] of Object.entries(renames)) force(u, n);
-  setInterval(() => { try { const mt = fs.statSync(RFILE).mtimeMs; if (mt <= rAt + 50) return; const before = renames; rLoad();
-    for (const [u, n] of Object.entries(renames)) if (before[u] !== n) { force(u, n); console.log('✏️ rename:', u, '→', n); onRename(u, n); } } catch (e) {} }, 4000).unref();
   /** save JSON with the forced name put in (or the same string when nothing to change) */
   function patch(uid, data) { const n = renames[uid]; if (!n) return data; let d; try { d = JSON.parse(data); } catch (e) { return data; }
     if (!d || !d.char) return data; if (d.char.name === n) return data; d.char.name = n; return JSON.stringify(d); }
   let tm = 0;
   const persist = () => { if (tm) return; tm = setTimeout(flush, 800); };
   function flush() { clearTimeout(tm); tm = 0; try { fs.mkdirSync(dataDir, { recursive: true }); fs.writeFileSync(FILE + '.tmp', JSON.stringify(byName)); fs.renameSync(FILE + '.tmp', FILE); } catch (e) { console.error('names save failed:', e.message); } }
+  /* เริ่มหลังประกาศ persist/flush แล้ว (มีชื่อค้างใน renames.json ตอนเปิดเซิร์ฟ → ใส่ให้เลย) */
+  rLoad(); for (const [u, n] of Object.entries(renames)) force(u, n);
+  setInterval(() => { try { const mt = fs.statSync(RFILE).mtimeMs; if (mt <= rAt + 50) return; const before = renames; rLoad();
+    for (const [u, n] of Object.entries(renames)) if (before[u] !== n) { force(u, n); console.log('✏️ rename:', u, '→', n); onRename(u, n); } } catch (e) {} }, 4000).unref();
   return {
     norm, flush,
     owner: name => byName[norm(name)] || '',

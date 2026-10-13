@@ -1806,7 +1806,7 @@ function renderPrem(){ $('shopTitle').textContent='👑 ร้านพรีเ
     const sel=fsSel, buy=sel>0&&!hav(sel);
     const btn=sel===cur?`<button class="btn pmBtn" disabled>👗 ${sel?'ใส่อยู่แล้ว':'ยังไม่ได้ใส่ของแต่งตัว'}</button>`:`<button class="btn pmBtn" data-fact="1" ${buy&&S.coins<ACC_PRICE?'disabled':''}>${buy?(S.coins<ACC_PRICE?'🪙 เหรียญไม่พอ — ขาดอีก 🪙'+fmt(ACC_PRICE-S.coins):'🪙 ซื้อและใส่เลย '+fmt(ACC_PRICE)):(sel?'✅ ใส่เลย (ของคุณแล้ว)':'🚫 ถอดออก')}</button>`;
     $('shopBody').innerHTML=tabs+bal+`<div class="skModeBox"><div class="skModeT">🔄 เลือกแบบตัวละคร <span>เปลี่ยนได้ตลอด · ฟรี</span></div><div class="skMode"><button type="button" data-skmini="1" class="${skMini()?'on':''}"><b>🎮 แบบตัวในเกม</b><small>ตัวเล็กหัวโต เหมือนตัวละครในเกม · แบบหลัก</small>${skMini()?'<i>✓ ใช้อยู่</i>':''}</button><button type="button" data-skmini="0" class="${skMini()?'':'on'}"><b>✨ แบบชุดใหญ่ <span class="beta">แถม (Beta)</span></b><small>ตัวใหญ่ ละเอียด ท่าทางเต็ม</small>${skMini()?'':'<i>✓ ใช้อยู่</i>'}</button></div><div class="skModeH">👇 แตะเลือกแล้วตัวละครด้านล่าง, ในเกม และรูปโปรไฟล์จะเปลี่ยนทันที</div></div>`+skCard(gh)
-      +`<p class="pmNote">ของแต่งตัวชิ้นละ 🪙${fmt(ACC_PRICE)} · ซื้อครั้งเดียว ใส่/ถอดได้ฟรีตลอด</p>`;
+      +`<p class="pmNote">💳 ชุดละ ${ppTh('skin_1')} (เงินจริง) · ซื้อครั้งเดียว ใส่/ถอดได้ฟรีตลอด</p>`;
     $('shopCoins').textContent=fmt(S.coins); gemUI(); fsDraw(); skLoop(); setTimeout(()=>{ if(shopOpen&&premTab==='fashion') fsDraw(); },700); return; }
   const tile=(ic,t,d)=>`<div class="pmT"><span>${ic}</span><b>${t}</b><small>${d}</small></div>`;
   $('shopBody').innerHTML=tabs+bal+`

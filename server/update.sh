@@ -2,7 +2,10 @@
 # 🔄 อัปเดตเกมจาก GitHub แล้วรีสตาร์ตเซิร์ฟเวอร์ทุกครั้ง:  sudo /home/farm/Farm/server/update.sh
 #   ผู้เล่นที่เปิดเกมอยู่จะต่อใหม่เอง แล้วเกมโหลดเวอร์ชันใหม่ให้อัตโนมัติ (เซฟก่อนโหลด)
 set -euo pipefail
-cd "$(dirname "$0")/.."
+# รันจากสำเนาชั่วคราว: git pull อาจเขียนทับไฟล์นี้ระหว่างที่ bash กำลังอ่าน
+if [ -z "${FARM_UPD_DIR:-}" ]; then T="$(mktemp /tmp/farm-update.XXXXXX)"; cp "$0" "$T"; FARM_UPD_DIR="$(cd "$(dirname "$0")/.." && pwd)" exec bash "$T" "$@"; fi
+trap 'rm -f "$0"' EXIT
+cd "$FARM_UPD_DIR"
 OWNER="$(stat -c %U .)"
 BR="$(sudo -u "$OWNER" git rev-parse --abbrev-ref HEAD)"
 OLD="$(sudo -u "$OWNER" git rev-parse HEAD)"

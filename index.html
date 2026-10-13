@@ -3173,7 +3173,7 @@ function update(dt){
   if(S.map==='land'||S.map==='town') wStep(dt,maps[S.map]);
   helperStep(dt);
   if(resting){ moving=false; } else { const ax=S.x, ay=S.y, am=S.map; autoStep(dt); tripStep(dt); if(S.map===am) stamDrain(Math.hypot(S.x-ax,S.y-ay)); }
-  stamUI(); fishStep(dt);
+  stamUI(); fishStep(dt); if(!SIM) animTick(dt);
 }
 const B={done:new Set(),path:null,act:null,pause:0,wait:0,think:0,stuck:0,task:''};
 const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
@@ -3184,9 +3184,10 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';'
 const cc=o=>Object.assign({},o||{},{g:o&&o.g==='f'?'f':'m'});
 /* 💠 Shine: สถานะหายากสีแปลก มีออร่า · พืช = ผลผลิต x2 · ปลา = ราคา x2 · โอกาส 1% (SHINE_CH) */
 const SHINE_CH=.001, SHINE_CH_P=.0001, SHINE_MUL=100, SHC=t=>`hsl(${(t*220)%360},100%,62%)`;
-function plantAt(tx,ty,k){ if(S.farm) return; S.seed[k]--; let g0=0; if(CROPS[k].gch){} else if(S.seedR[k]>0){ S.seedR[k]--; g0=2; } else if(S.seedG[k]>0){ S.seedG[k]--; g0=1; } const key=tx+','+ty, g=CROPS[k].vbag?3:(CROPS[k].gch?0:(g0||roll())), s=(!CROPS[k].gemp&&Math.random()<SH_CH)?1:0, z=CROPS[k].gemp?1:rollSize(); FC[key]={type:k,t:Date.now(),g,s,z,w:0}; if(!CROPS[k].gemp&&!CROPS[k].gch&&Math.random()<SHINE_CH_P){ FC[key].sh=1; toast('💠 ได้ต้น Shine! สีแปลกมีออร่า · ราคาผล x'+SHINE_MUL+' ทุกครั้งที่เก็บ',2600); } if(CROPS[k].gemp){ FC[key].v=1; toast('💎 ปลูกต้นเพชรแล้ว! ผลิตเพชร '+GEMP_N+' เม็ดทุก '+(GEMP_MS/60000)+' นาที',2800); } else if(CROPS[k].gch){ const pc=1+Math.floor(Math.random()*100); FC[key].v=pc/100; toast('🪴 ขนาดต้น '+pc+'%',1500); } /* ขนาดต้น Curse สุ่ม 1-100% (100% = ขนาดเดิมเต็ม) */ if(z>=30&&!g) toast('🌳 ได้ต้นยักษ์!',2000); if(g) toast(g===3?'🕳️ ได้ต้นวอยด์! ทุกผล x'+MUT[3]:g===2?'🌈 ได้ต้นรุ้ง!':'✨ ได้ต้นทอง!',1600); else if(s) toast('🛡️ ได้ต้นกันอีกา!',1600); floatText(tx+.5,ty+.3,'🌱'); sfx('plant'); updateHUD(); save(); pushFarm(key); }
+function plantAt(tx,ty,k){ if(S.farm) return; S.seed[k]--; let g0=0; if(CROPS[k].gch){} else if(S.seedR[k]>0){ S.seedR[k]--; g0=2; } else if(S.seedG[k]>0){ S.seedG[k]--; g0=1; } const key=tx+','+ty, g=CROPS[k].vbag?3:(CROPS[k].gch?0:(g0||roll())), s=(!CROPS[k].gemp&&Math.random()<SH_CH)?1:0, z=CROPS[k].gemp?1:rollSize(); FC[key]={type:k,t:Date.now(),g,s,z,w:0}; if(!CROPS[k].gemp&&!CROPS[k].gch&&Math.random()<SHINE_CH_P){ FC[key].sh=1; toast('💠 ได้ต้น Shine! สีแปลกมีออร่า · ราคาผล x'+SHINE_MUL+' ทุกครั้งที่เก็บ',2600); } if(CROPS[k].gemp){ FC[key].v=1; toast('💎 ปลูกต้นเพชรแล้ว! ผลิตเพชร '+GEMP_N+' เม็ดทุก '+(GEMP_MS/60000)+' นาที',2800); } else if(CROPS[k].gch){ const pc=1+Math.floor(Math.random()*100); FC[key].v=pc/100; toast('🪴 ขนาดต้น '+pc+'%',1500); } /* ขนาดต้น Curse สุ่ม 1-100% (100% = ขนาดเดิมเต็ม) */ if(z>=30&&!g) toast('🌳 ได้ต้นยักษ์!',2000); if(g) toast(g===3?'🕳️ ได้ต้นวอยด์! ทุกผล x'+MUT[3]:g===2?'🌈 ได้ต้นรุ้ง!':'✨ ได้ต้นทอง!',1600); else if(s) toast('🛡️ ได้ต้นกันอีกา!',1600); floatText(tx+.5,ty+.3,'🌱'); if(!SIM){ animPlay('plant'); fxAdd('dirt',tx+.5,ty+.6,7); if(g) fxAdd('spark',tx+.5,ty+.5,3); } sfx('plant'); updateHUD(); save(); pushFarm(key); }
 function harvestAt(tx,ty,c){ if(S.farm||CROPS[c.type].gch) return false; if(rdLk(c)){ toast('🔒 ต้นนี้ถูก '+(c.ln||'โจร')+' ล็อกอยู่ เก็บไม่ได้ (อีก '+rdFmt(c.lk-Date.now())+')',2200); return false; } const fz=rollFs(), g=c.g|0, room=cropRoom(c.type+':'+g+':'+fz); if(room<=0){ toast('🎒 กระเป๋าเต็ม ('+BAGCAP+' ชิ้น) ไปขายก่อนนะ',1800); return false; } const key=tx+','+ty, xp=CROPS[c.type].xp*[1,2,4,8][g], w=c.w|0, mult=sizeMult(c.z)*WXM[w]*SZM(fz)*(c.sh?SHINE_MUL:1), iv=S.mv[INV[g]], dbl=Math.min(room,((S.job==='farm'&&Math.random()<farmDbl())?2:1)*greedX());
   S[INV[g]][c.type]+=dbl; iv[c.type]=(iv[c.type]||0)+mult*dbl; { const sk=c.type+':'+g+':'+fz, st=S.fs[sk]||(S.fs[sk]={n:0,m:0}); st.n+=dbl; st.m+=mult*dbl; } S.hv+=dbl; addJobXp('farm',dbl); addJobXp('porter',dbl); c.p=1; c.t=Date.now(); c.w=0; /* ต้นอยู่ต่อ ชนิด/ขนาดต้นคงเดิม สถานะอากาศหมดไปกับผลที่เก็บ */
+  if(!SIM){ animPlay('harvest'); fxAdd('leaf',tx+.5,ty+.5,6); if(g||c.sh) fxAdd('spark',tx+.5,ty+.4,3); }
   floatText(tx+.5,ty+.3,'+'+dbl+' '+VG[g]+CROPS[c.type].emoji+(mult>1.04?' x'+mult.toFixed(2):'')+(w?['','💧','⚡'][w]:'')); if(c.sh) toast('💠 ต้น Shine! ราคาผล x'+SHINE_MUL,1600); else if(dbl>1) toast('🌾 โชคดี! ได้ผลผลิต x2 (อาชีพฟาร์ม)',1800); floatText(tx+.5,ty-.2,'+'+xp+' XP');
   if(g) toast(g===3?'🕳️ ต้นวอยด์! ออกผลวอยด์ทุกครั้ง ขายได้ x'+MUT[3]:g===2?'🌈 ต้นรุ้ง! ออกผลรุ้งทุกครั้ง ขายได้ x'+MUT[2]:'✨ ต้นทอง! ออกผลทองทุกครั้ง ขายได้ x'+MUT[1],1800);
   sfx('harvest',g,fz); hpPlay(); { const q=hpCur(); if(q&&q.fly) hpFly(tx,ty,c.type); }
@@ -4471,6 +4472,7 @@ function renderSet(){
       +'<div class="tgGrid">'+HU.map(([k,e,n])=>chip(!hd[k],`data-hud="${k}"`,e+' '+n)).join('')+'</div>';
     h+=sec('📱 หน้าจอ & ความลื่น')
       +`<div class="slab">⚡ โหมดการแสดงผล</div><div class="mrow"><button class="btn small tog ${S.perf===1?'ghost':'on'}" data-perf="0">🚀 ปกติ</button><button class="btn small tog ${S.perf===1?'on':'ghost'}" data-perf="1">🐢 ประหยัด</button></div><p class="sNote">ประหยัด = ลดความละเอียด/เอฟเฟกต์ เครื่องไม่ร้อน แบตอยู่นาน</p>`
+      +`<div class="slab">🎬 อนิเมชั่นตัวละคร</div><div class="mrow"><button class="btn small tog ${S.anim!==0?'on':'ghost'}" data-anim="1">🎬 เปิด</button><button class="btn small tog ${S.anim===0?'on':'ghost'}" data-anim="0">⬜ ปิด</button></div><p class="sNote">หายใจ · กะพริบตา · ตัวเด้งตอนเดิน/ปลูก/เก็บ · ฝุ่น ใบไม้ หัวใจ 💕 · ยืนนาน ๆ หลับ 💤</p>`
       +`<div class="slab">🌤️ แสง & เงา (ภาพสวยขึ้น)</div><div class="mrow"><button class="btn small tog ${S.light===1?'on':'ghost'}" data-light="1">🌤️ เปิด</button><button class="btn small tog ${S.light===1?'ghost':'on'}" data-light="0">⬜ ปิด</button></div><p class="sNote">แดดอุ่นจากมุมซ้ายบน · ลำแสงแดด · เงาต้นไม้/บ้าน/ตัวละคร · ขอบจอนุ่ม ๆ — เครื่องรุ่นเก่าอาจหน่วงขึ้นนิดหน่อย (โหมด 🐢 ประหยัด ปิดให้อัตโนมัติ)</p>`
       +`<div class="slab">✨ Bloom (แสงฟุ้ง นุ่ม ๆ)</div><div class="mrow"><button class="btn small tog ${S.bloom!==0?'on':'ghost'}" data-bloom="1">✨ เปิด</button><button class="btn small tog ${S.bloom===0?'on':'ghost'}" data-bloom="0">⬜ ปิด</button></div><p class="sNote">ทำให้ภาพดูฟุ้ง ๆ มีแสงนุ่ม · โหมดประหยัดจะปิดให้อัตโนมัติ${S.perf===1&&S.bloom!==0?' (ตอนนี้ปิดอยู่เพราะเปิดโหมดประหยัด)':''}</p>`
       +`<div class="slab">🧭 แถบปุ่มล่าง (ออโต้/ตกปลา/แชท …)</div><div class="mrow"><button class="btn small tog ${S.warpMin?'ghost':'on'}" data-warp="0">📂 แสดง</button><button class="btn small tog ${S.warpMin?'on':'ghost'}" data-warp="1">◀ ย่อเก็บ</button></div>`
@@ -4506,6 +4508,7 @@ $('setBody').addEventListener('click',e=>{
   else if(b.dataset.set==='mutewx'){ initAudio(); S.muteWx=!S.muteWx; sndTick(1); }
   else if(b.dataset.warp!==undefined){ S.warpMin=+b.dataset.warp?1:0; warpUI(); }
   else if(b.dataset.skm!==undefined){ S.skMini=+b.dataset.skm?1:0; pfSig=''; }
+  else if(b.dataset.anim!==undefined){ S.anim=+b.dataset.anim?1:0; if(!S.anim) FXP.length=0; toast(S.anim?'🎬 เปิดอนิเมชั่นตัวละครแล้ว':'⬜ ปิดอนิเมชั่นตัวละครแล้ว',1600); }
   else if(b.dataset.light!==undefined){ S.light=+b.dataset.light?1:0; toast(S.light?'🌤️ เปิดแสง & เงาแล้ว':'⬜ ปิดแสง & เงาแล้ว',1600); }
   else if(b.dataset.bloom!==undefined){ S.bloom=+b.dataset.bloom?1:0; toast(S.bloom?'✨ เปิด Bloom แล้ว — ภาพฟุ้ง ๆ นุ่ม ๆ':'⬜ ปิด Bloom แล้ว',1600); }
   else if(b.dataset.perf!==undefined){ S.perf=+b.dataset.perf===1?1:0; if(S.perf===0) autoCap=2; applyPerf(); toast(S.perf===1?'🐢 โหมดประหยัด: ลดความละเอียด/เอฟเฟกต์':'🚀 โหมดปกติ (ปรับความละเอียดอัตโนมัติถ้าเครื่องช้า)',2000); }
@@ -6141,7 +6144,48 @@ function mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi,fem){
   out.hair=cvH; if(top&&!H.hi) out.top=top; if(top&&H.hi){ const sl3=document.createElement('canvas'); sl3.width=32; sl3.height=48; const q3=sl3.getContext('2d'); q3.drawImage(top,0,0); q3.globalCompositeOperation='source-in'; q3.fillStyle='#1b1620'; q3.fillRect(0,0,32,48); const t2=document.createElement('canvas'); t2.width=32; t2.height=48; const o3=t2.getContext('2d'); for(const d of [[-1,0],[1,0],[0,-1],[0,1]]) o3.drawImage(sl3,d[0],d[1]); o3.drawImage(top,0,0); out.top=t2; }
   return out;
 }
-function drawPerson(x,y,o,moving,wt,time){ if(LITF) personShadow(x,y); try{ drawPerson_(x,y,o,moving,wt,time); }catch(e){ ctx.fillStyle='#e8c6a0'; ctx.fillRect(x-T*.2,y-T*.9,T*.4,T*.9); } }
+function drawPerson(x,y,o,moving,wt,time){ if(LITF) personShadow(x,y); const A=animOn()?animOf(x,y,o,moving,wt,time):null;
+  if(A){ ctx.save(); ctx.translate(x,y+A.dy); if(A.rot) ctx.rotate(A.rot); ctx.scale(A.sx,A.sy); ctx.translate(-x,-y); BLINK=A.blink; }
+  try{ drawPerson_(x,y,o,moving,wt,time); }catch(e){ ctx.fillStyle='#e8c6a0'; ctx.fillRect(x-T*.2,y-T*.9,T*.4,T*.9); }
+  finally{ if(A){ ctx.restore(); BLINK=0; } } }
+/* 🎬 อนิเมชั่นตัวละคร (ตั้งค่า → 🎬 อนิเมชั่น · เปิดเป็นค่าเริ่มต้น)
+ *  ยืนเฉย: หายใจตัวพองยุบเบา ๆ + โยกนิด ๆ + กะพริบตา · เดิน: ตัวยืด/ยุบตามจังหวะก้าว + เอนไปทางที่เดิน + ฝุ่นที่เท้า
+ *  ปลูก: ย่อตัวแล้วเด้ง + ดินกระจาย · เก็บ: กระโดดดีใจ + ใบไม้ปลิว · ได้เหรียญ: กระโดด 2 ที + หัวใจลอย · ยืนนาน: 💤 · NPC ตอนเราเข้าใกล้: เด้งดีใจ */
+var BLINK=0; const PA={k:'',t0:0};
+const animOn=()=>S.anim!==0;
+function animPlay(k){ PA.k=k; PA.t0=performance.now()/1000; }
+function animOf(x,y,o,moving,wt,time){ if(o.rd) return null; const ps=T*.03*(o.sz==null?NPC_SZ:normSz(o.sz))/WS, ph=o.me?0:((x*.0137+y*.0071)*97)%6.283;
+  let sx=1, sy=1, dy=0, rot=0;
+  if(moving){ const c=Math.abs(Math.cos(wt*11)); sy=1-.045*c+.035*(1-c); sx=1+.03*c-.02*(1-c); rot=(o.fx||0)*.055; }
+  else { const br=Math.sin(time*2.6+ph); sy=1+br*.022; sx=1-br*.014; rot=Math.sin(time*1.3+ph*1.7)*.018; }
+  if(o.talk>0||(o.me&&0)){ dy-=Math.abs(Math.sin(time*7+ph))*2.2*ps; } /* NPC คุยกับเรา: เด้งดีใจ */
+  if(o.me&&PA.k){ const k=(performance.now()/1000-PA.t0)/(PA.k==='happy'?.9:PA.k==='plant'?.38:.42);
+    if(k>=1) PA.k=''; else if(PA.k==='plant'){ const q=Math.sin(Math.PI*k); sy*=1-.2*q*(k<.5?1:-.4); sx*=1+.14*q*(k<.5?1:-.3); }
+    else if(PA.k==='harvest'){ const q=Math.sin(Math.PI*k); dy-=q*10*ps; sy*=1+.12*q-(k>.85?.12*(1-k)/.15:0); sx*=1-.06*q; }
+    else { const kk=(k*2)%1, q=Math.sin(Math.PI*kk); dy-=q*12*ps; sy*=1+.14*q; sx*=1-.09*q; rot+=Math.sin(k*Math.PI*4)*.08; } }
+  const blink=((time+ph*.7)%4.3)<.12||(((time+ph*.7)%4.3)>.3&&((time+ph*.7)%4.3)<.4&&ph<1.2);
+  return {sx,sy,dy,rot,blink:blink?1:0}; }
+/* ✨ อนุภาคเล็ก ๆ (หน่วยเป็นช่อง) */
+const FXP=[]; let fxpT=0;
+function fxAdd(k,x,y,n){ if(!animOn()) return; n=S.perf===1?Math.ceil(n/2):n; for(let i=0;i<n;i++){ if(FXP.length>160) FXP.shift(); const a=Math.random()*6.283, sp=Math.random();
+  if(k==='dust') FXP.push({k,x:x+(Math.random()-.5)*.25,y:y+(Math.random()-.5)*.08,vx:(Math.random()-.5)*.6,vy:-.15-Math.random()*.2,t:0,l:.45,s:.1+Math.random()*.07});
+  else if(k==='dirt') FXP.push({k,x,y,vx:Math.cos(a)*(.8+sp),vy:-1.6-sp*1.2,t:0,l:.55,s:.05+Math.random()*.05,g:5});
+  else if(k==='leaf') FXP.push({k,x,y,vx:Math.cos(a)*(.7+sp*1.1),vy:-2-sp*1.5,t:0,l:.8,s:.07+Math.random()*.05,g:4.5,r:Math.random()*6,vr:(Math.random()-.5)*14,c:['#5fc04a','#8be36a','#3e9a35'][i%3]});
+  else if(k==='spark') FXP.push({k,x:x+(Math.random()-.5)*.7,y:y-Math.random()*.6,vx:0,vy:-.5,t:-i*.06,l:.7,s:.22,e:'✨'});
+  else FXP.push({k,x:x+(Math.random()-.5)*.6,y,vx:(Math.random()-.5)*.3,vy:-.9-Math.random()*.4,t:-i*.12,l:1.3,s:k==='zzz'?.3:.28,e:k==='zzz'?'💤':['💕','💖','💗','🎵'][i%4],w:Math.random()*6}); } }
+function drawFxp(){ const now=performance.now()/1000, dt=Math.min(.05,fxpT?now-fxpT:0); fxpT=now; if(!FXP.length) return;
+  for(let i=FXP.length-1;i>=0;i--){ const p=FXP[i]; p.t+=dt; if(p.t>=p.l){ FXP.splice(i,1); continue; } if(p.t<0) continue;
+    p.vy+=(p.g||0)*dt; p.x+=p.vx*dt+(p.w!=null?Math.sin(p.t*5+p.w)*.006:0); p.y+=p.vy*dt; const a=1-p.t/p.l;
+    if(p.k==='dust'){ ctx.globalAlpha=a*.55; ctx.fillStyle='#e9dcc0'; ctx.beginPath(); ctx.arc(p.x*T,p.y*T,p.s*T*(1+p.t*2),0,6.3); ctx.fill(); }
+    else if(p.k==='dirt'){ ctx.globalAlpha=a; ctx.fillStyle='#7a4f2a'; ctx.fillRect(p.x*T,p.y*T,p.s*T,p.s*T); }
+    else if(p.k==='leaf'){ p.r+=p.vr*dt; ctx.globalAlpha=a; ctx.save(); ctx.translate(p.x*T,p.y*T); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.beginPath(); ctx.ellipse(0,0,p.s*T,p.s*T*.45,0,0,6.3); ctx.fill(); ctx.restore(); }
+    else { ctx.globalAlpha=Math.min(1,a*1.6); emoD(p.e,p.x*T,p.y*T,p.s*T*(p.k==='spark'?(.6+Math.sin(p.t*12)*.3):Math.min(1,p.t*5))); } }
+  ctx.globalAlpha=1; }
+/* ฝุ่นตอนเดิน + 💤 ตอนยืนนาน (ตัวเรา) */
+let stepPh=0, idleT=0, zzzT=0;
+function animTick(dt){ if(!animOn()||!playing) return;
+  if(moving&&!(S.veh&&S.veh[S.ride])){ idleT=0; const p=Math.floor(walkT*11/Math.PI); if(p!==stepPh){ stepPh=p; fxAdd('dust',S.x,S.y+.25,2); } }
+  else if(!moving){ idleT+=dt; if(idleT>25&&!S.auto&&!shopOpen&&!bagOpen){ zzzT-=dt; if(zzzT<=0){ zzzT=1.6; fxAdd('zzz',S.x+.25,S.y-1.3,1); } } } }
 /* 🎮 โหมด "ตัวแบบในเกม": ชุดพรีเมียมทุกชุดวาดเป็นตัวพิกเซลแบบตัวละครปกติ (32×48) แต่สี/ลาย/ของประดับเหมือนชุดหลัก · สลับได้ที่ร้านพรีเมียม > แฟชั่น */
 const skMini=()=>!!(typeof S!=='undefined'&&S&&S.skMini);
 const GOLD='#e3b443', GOLDD='#a8761e', TURQ='#2fb8c4';
@@ -6192,7 +6236,7 @@ function drawPerson_(x,y,o,moving,wt,time){
   if(!rd&&!o.noSh){ ctx.fillStyle='rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x,y,10*ps,3.2*ps,0,0,6.3); ctx.fill(); }
   ctx.imageSmoothingEnabled=false; const sx0=x-16*ps, sy0=y-46*ps-bob+(rd?3*ps:0), ecs=eyeHex(o.ec);
   ctx.drawImage(s,sx0,sy0,32*ps,48*ps); /* 1) ฐานตัว/หน้า */
-  if(eyi>=0) drawEyes(x,y,ps,bob,rd,ex,eyi,ecs); /* 2) ตา+คิ้ว */
+  if(eyi>=0){ if(BLINK){ const ey=y-46*ps-bob+(rd?3*ps:0)+25.7*ps; ctx.save(); ctx.translate(0,ey); ctx.scale(1,.14); ctx.translate(0,-ey); drawEyes(x,y,ps,bob,rd,ex,eyi,ecs); ctx.restore(); } else drawEyes(x,y,ps,bob,rd,ex,eyi,ecs); } /* 2) ตา+คิ้ว (กะพริบ = บีบตาแบน) */
   ctx.imageSmoothingEnabled=false; if(s.hair) ctx.drawImage(s.hair,sx0,sy0,32*ps,48*ps); /* 3) ผม (ทับตา/คิ้ว) */
   { const hh=HD[hs].hi; if(hh) drawHairImg(x,y,ps,bob,rd,back,hcs,hh); }
   if(skm){ const R=(a,b,w,h,c)=>{ ctx.fillStyle=c; ctx.fillRect(Math.round(sx0+a*ps),Math.round(sy0+b*ps),Math.ceil(w*ps),Math.ceil(h*ps)); }; try{ skm.ov(R,back,fr); }catch(e){} } /* 4a) ลายชุดพรีเมียม (โหมดตัวในเกม) */
@@ -6492,7 +6536,7 @@ function draw(tms){
       if(vg){ const gl=ctx.createRadialGradient(cx,y-T*.4,2,cx,y-T*.4,T*.85); gl.addColorStop(0,vg===2?`hsla(${(time*160)%360},95%,62%,.75)`:'rgba(255,215,64,.75)'); gl.addColorStop(1,'rgba(255,215,64,0)'); ctx.fillStyle=gl; ctx.fillRect(cx-T,y-T*1.2,T*2,T*1.7); }
       drawVeh(v.t,vd,cx,y,moving,walkT,time,vg,0,vb); }
     { const hk=HPN?(performance.now()/1000-HPN.t0)/HP_DUR:2, u=T*.03*normSz(S.char&&S.char.sz)/WS, on=hk<1&&(!v||HPN.q.ride), dy=on&&!v&&HPN.q.dy?HPN.q.dy(hk,u):0; if(!on) HPN=null; /* ✨ ท่าเก็บผลผลิต */
-      drawPerson(S.x*T, yy+dy, Object.assign(charObj(S.char||CH),{fx:S.fx,fy:S.fy,rd:v?vd:''}), moving, walkT, time);
+      drawPerson(S.x*T, yy+dy, Object.assign(charObj(S.char||CH),{fx:S.fx,fy:S.fy,rd:v?vd:'',me:1}), moving, walkT, time);
       if(on&&HPN.q.fx){ ctx.save(); try{ HPN.q.fx(hk,S.x*T,yy+dy,u,(HPN.q.reach||2)*T); }catch(e){} ctx.restore(); }
       drawHFly(S.x,S.y-.6); }
     if(v) drawVeh(v.t,vd,S.x*T,y,moving,walkT,time,vg,1,vb);
@@ -6503,6 +6547,7 @@ function draw(tms){
   if(m===maps.farm&&m.ban) { const tn=taniStep(time); items.push({ fy:tn.y, d:() => drawTani(time) }); } /* นางตานี: ยืนอยู่ข้างหลังต้นกล้วย (เรียงลำดับตามแกน y) */
   items.sort((a,b) => a.fy - b.fy);
   items.forEach(i => i.d());
+  drawFxp();
   drawCrowBadges(time);
   drawNpcLabels(camX,camY); drawBubbles();
   if(S.map==='farm'&&!S.farm) for(const h of HR) if(h.d.aoe&&h.cast) akikoWave(h); /* คลื่นกลีบซากุระของอากิโกะ */
@@ -6639,7 +6684,9 @@ function sfx(n,a,b){ if(!AC||S.mute||SIM) return;
   else if(n==='splash'){ puff(.28,{f:800,v:.05,a:.03}); tone(420,.2,{to:220,v:.04,lp:800}); }
   else if(n==='level'){ ARP([523,659,784,1047,1319],{v:.09,d:.35,s:.09,type:'triangle'}); } }
 function sfxStep(dt){ if(S.veh&&S.veh[S.ride]) return; stepT+=dt; if(stepT>=.34){ stepT=0; sfx('step'); } }
-function coinSfx(c){ if(lastCoin===null){ lastCoin=c; return; } const d=c-lastCoin; lastCoin=c; if(!d) return; const n=performance.now(); if(n-coinT<120) return; coinT=n; sfx(d>0?'coin':'spend',Math.abs(d)); }
+let happyT=0;
+function coinSfx(c){ if(lastCoin===null){ lastCoin=c; return; } const d=c-lastCoin; lastCoin=c; if(!d) return;
+  if(d>=30&&!SIM&&playing){ const n=performance.now(); if(n-happyT>1500){ happyT=n; animPlay('happy'); fxAdd('heart',S.x,S.y-1.2,4); } } /* 💕 ได้เงิน (ขายของ) → กระโดดดีใจ */ const n=performance.now(); if(n-coinT<120) return; coinT=n; sfx(d>0?'coin':'spend',Math.abs(d)); }
 let rainSrc=null, rainStopT=0, rainTgt=-1, sndAcc=0;
 function rainStart(){ if(rainSrc||!AC||!NB) return; const sr=AC.createBufferSource(); sr.buffer=NB; sr.loop=true; const hp=AC.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=500; const lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=2200;
   rainG=AC.createGain(); rainG.gain.value=0; sr.connect(hp); hp.connect(lp); lp.connect(rainG); rainG.connect(MG); sr.start(); rainSrc=sr; rainTgt=0; }

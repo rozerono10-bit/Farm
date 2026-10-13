@@ -75,11 +75,11 @@ function reply(c, id, ok, data) { send(c, ok ? { t: 'res', id, ok: 1, data } : {
 function handle(c, m) {
   const { t, id } = m;
   if (t === 'hello') {
-    if (m.token) { const s = auth.session(m.token); if (!s) return reply(c, id, 0, 'bad_token'); c.uid = s.uid; c.user = s.user; c.token = m.token;
+    if (m.token) { const s = auth.session(m.token); if (!s) return reply(c, id, 0, 'bad_token'); c.uid = s.uid; c.user = s.user; c.num = s.num; c.token = m.token;
       const old = online.get(s.uid); if (old && old !== c) { send(old, { t: 'kick', why: 'elsewhere' }); old.ws.close(4001, 'logged in elsewhere'); }
       online.set(s.uid, c); }
     else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
-    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '' });
+    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '', num: c.user ? c.num : '' });
   }
   if (t === 'email_start' || t === 'email_verify' || t === 'line_ticket' || t === 'oauth_ticket') {
     const now = Date.now(); c.authTries = (c.authTries || []).filter(x => now - x < 60000);

@@ -40,6 +40,10 @@ module.exports = function createAuth(dataDir) {
   catch (e) { if (e.code !== 'ENOENT') console.error('auth load failed:', e.message); }
   const idx = new Map();                    // 'email:<addr>' | 'line:<id>' | 'google:<id>' -> uid
   for (const a of Object.values(accounts)) { if (a.email) idx.set('email:' + a.email, a.uid); for (const p of PROVIDERS) if (a[p]) idx.set(p + ':' + a[p].id, a.uid); }
+  /* 🔢 UID ที่ผู้เล่นเห็น: เลขสุ่ม 7 หลัก ไม่ซ้ำกัน (บัญชีเก่าที่ยังไม่มี ได้เลขตอนเปิดเซิร์ฟ) */
+  const nums = new Set(Object.values(accounts).map(a => a.num).filter(Boolean));
+  const newNum = () => { let n; do n = String(crypto.randomInt(1000000, 10000000)); while (nums.has(n)); nums.add(n); return n; };
+  let numAdded = 0; for (const a of Object.values(accounts)) if (!a.num) { a.num = newNum(); numAdded++; }
   const codes = new Map();                  // email -> {hash,exp,tries}
   const sends = new Map();                  // email -> [timestamps]
   const oauthStates = new Map();            // state -> {p,nonce,ret,claim,link,exp}
@@ -53,6 +57,7 @@ module.exports = function createAuth(dataDir) {
     try { fs.mkdirSync(dataDir, { recursive: true }); const tmp = AUTH_FILE + '.tmp'; fs.writeFileSync(tmp, JSON.stringify({ accounts, sessions })); fs.renameSync(tmp, AUTH_FILE); }
     catch (e) { console.error('auth save failed:', e.message); }
   }
+  if (numAdded) persist();
   setInterval(() => { const now = Date.now(); for (const m of [codes, oauthStates, tickets]) for (const [k, v] of m) if (v.exp < now) m.delete(k); }, 60000).unref();
 
   const sha = s => crypto.createHash('sha256').update(s).digest('hex');
@@ -73,7 +78,7 @@ module.exports = function createAuth(dataDir) {
     }
     if (owner && accounts[owner]) { const acc = accounts[owner]; for (const p of PROVIDERS) if (fields[p]) acc[p] = fields[p]; persist(); return newSession(acc, false); }
     const uid = validUid(claim) && !accounts[claim] ? claim : 'a' + rnd(12);
-    const acc = Object.assign({ uid, t: Date.now() }, fields); accounts[uid] = acc; idx.set(key, uid); persist();
+    const acc = Object.assign({ uid, num: newNum(), t: Date.now() }, fields); accounts[uid] = acc; idx.set(key, uid); persist();
     return newSession(acc, true);
   }
 
@@ -126,9 +131,9 @@ module.exports = function createAuth(dataDir) {
       if (typeof token !== 'string' || token.length !== 64) return null;
       const s = sessions[sha(token)]; if (!s || !accounts[s.uid]) return null;
       if (Date.now() - s.t > SESSION_MS) { delete sessions[sha(token)]; persist(); return null; }
-      return { uid: s.uid, user: label(accounts[s.uid]) };
+      return { uid: s.uid, user: label(accounts[s.uid]), num: accounts[s.uid].num };
     },
-    info(uid) { const a = accounts[uid]; if (!a) return null; return { user: label(a), email: a.email ? maskEmail(a.email) : '', line: a.line ? a.line.name || 'LINE' : '', google: a.google ? a.google.name || 'Google' : '' }; },
+    info(uid) { const a = accounts[uid]; if (!a) return null; return { user: label(a), num: a.num, email: a.email ? maskEmail(a.email) : '', line: a.line ? a.line.name || 'LINE' : '', google: a.google ? a.google.name || 'Google' : '' }; },
     enabled: () => ({ line: !!(env.LINE_CHANNEL_ID && env.LINE_CHANNEL_SECRET && env.PUBLIC_URL), google: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.PUBLIC_URL) }),
 
     async emailStart(email) {

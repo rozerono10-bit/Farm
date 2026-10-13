@@ -60,6 +60,16 @@ const FARM_SERVER_URL='wss://play.myfarm.com/ws';
 
 ไม่ใส่ `RESEND_API_KEY` = โหมดทดสอบ รหัสอีเมลจะแสดงในหน้าต่างเซิร์ฟเวอร์แทน · ไม่ใส่ค่า LINE = ปุ่ม LINE จะไม่ขึ้น
 
+## สำรองข้อมูล (Backup) ไปที่ Cloudflare R2
+
+1. ติดตั้ง rclone: `sudo apt install -y rclone`
+2. ใส่ค่า `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ENDPOINT`, `R2_BUCKET` ใน `.env`
+3. ลองรัน `./backup.sh` จะอัปโหลดโฟลเดอร์ `data/` (บีบอัด) ขึ้น R2
+4. ตั้งให้รันทุกวันด้วย `crontab -e` แล้วใส่บรรทัด `17 4 * * * /ที่อยู่/Farm/server/backup.sh >> ~/backup.log 2>&1`
+
+กู้คืน: `./backup.sh restore` (ดูรายการ) แล้ว `./backup.sh restore farm-YYYYMMDD-HHMMSS.tar.gz` (ปิดเซิร์ฟเวอร์ก่อน)
+Backup เก่าเกิน 30 วันจะถูกลบเองจาก lifecycle rule ของถัง
+
 ## สิ่งที่ทำแล้ว
 
 - ส่งตำแหน่งตัวละครเฉพาะคนที่อยู่แมพเดียวกัน (ลดเน็ตได้มากเมื่อคนเยอะ)

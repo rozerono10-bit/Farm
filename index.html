@@ -2198,7 +2198,7 @@ function buildWalkers(){ const m=maps.land, R=rng([...S.code].reduce((a,c)=>(a*3
     if(n<300){ m.occ[y*m.w+x]=1; m.walkers.push({walk:1,kind:'gem',tag:'💎 พ่อค้าเพชร',i:0,name:'พ่อค้าเพชร',fem:false,x:x+.5,y:y+.5,fx:0,fy:1,sk:SKIN[1]||SKIN[0],hc:'#2a2030',oc:'#7b3fe4',hs:28,os:28,ac:4,sp:.9,wt:0,wait:.5,mv:false,talk:0,d:null,o:0}); } }
   buildTownWalkers(); uniq(); }
 /* ---------- เมืองการค้า: ชาวเมืองเดินเล่น + 🤑 พ่อค้าทอง (ชุดทอง ออร่าทอง เดินเฉพาะบนถนน) ---------- */
-const TWN=0; /* 🚶 ชาวเมืองธรรมดาในเมืองการค้า (0 = ไม่มี · พ่อค้าทองยังอยู่) */
+const TWN=10; /* 🚶 ชาวเมืองธรรมดาในเมืองการค้า (0 = ไม่มี · พ่อค้าทองอยู่เสมอ) */
 function buildTownWalkers(){ const m=maps.town, R=rng(([...S.code].reduce((a,c)=>(a*31+c.charCodeAt(0))|0,19))+101), used=new Set((maps.land.walkers||[]).map(w=>w.name)),
     nm=[NM_M.filter(n=>!used.has(n)),NM_F.filter(n=>!used.has(n))], P=a=>a[(R()*a.length)|0];
   m.occ=new Int16Array(m.w*m.h); m.walkers=[];

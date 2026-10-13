@@ -49,6 +49,27 @@ function saveNow() {
   catch (e) { console.error('db save failed:', e.message); }
 }
 const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
+/* 🌾 ฟาร์มของคนอื่น (เพื่อนมาเยี่ยม / โจรมาปล้น): ปลูก-เก็บ-ลบ-แก้พืชไม่ได้ ทำได้แค่
+ *   crops[k].lk / .ln  ล็อกพืชตอนปล้น (ต้นนั้นต้องมีอยู่แล้ว ข้อมูลอื่นของต้นห้ามเปลี่ยน)
+ *   rs (ลดลงได้อย่างเดียว) · rt  ค้อนทุบโล่กันโจร · members  เพิ่มชื่อตัวเองเข้ารายชื่อคนที่เคยมา */
+const sameVal = (a, b) => (!a && !b) || (typeof a === 'number' || typeof b === 'number' ? +a === +b : JSON.stringify(a) === JSON.stringify(b)); // เกมเติมค่าเริ่มต้น (0 / '' ) ให้เอง
+function visitorWriteOk(c, t, cur, d) {
+  if (t !== 'update' || !isObj(cur)) return false;
+  for (const k of Object.keys(d)) {
+    const v = d[k];
+    if (k === 'rt') { if (typeof v !== 'number') return false; continue; }
+    if (k === 'rs') { if (typeof v !== 'number' || v < 0 || v > (+cur.rs || 0)) return false; continue; }
+    if (k === 'members') { const old = Array.isArray(cur.members) ? cur.members : []; if (!Array.isArray(v) || !old.every(x => v.includes(x)) || !v.every(x => old.includes(x) || x === c.uid)) return false; continue; }
+    if (k !== 'crops' || !isObj(v)) return false;
+    const cc = isObj(cur.crops) ? cur.crops : {};
+    for (const key of Object.keys(v)) { const o = cc[key], n = v[key];
+      if (!isObj(o) || !o.type || !isObj(n)) return false; /* ปลูกใหม่ / เก็บ (ลบ) / ต้นที่ไม่มีอยู่ */
+      for (const f of Object.keys(n)) { if (f === 'lk' || f === 'ln') continue;
+        if (f === 't' && n.lk && +n.t === +n.lk) continue; /* 💎 ต้นเพชรโดนล็อก: เวลาเริ่มต้นเลื่อนไปตอนปลดล็อก */
+        if (!sameVal(o[f], n[f])) return false; } }
+  }
+  return true;
+}
 function deepMerge(a, b) { const o = isObj(a) ? { ...a } : {}; for (const k in b) o[k] = isObj(b[k]) && isObj(o[k]) ? deepMerge(o[k], b[k]) : b[k]; return o; }
 function parsePath(p) {
   if (typeof p !== 'string' || p.length > 200) return null;
@@ -137,6 +158,7 @@ function handle(c, m) {
     if (t === 'get') return reply(c, id, 1, docs.has(p) ? docs.get(p) : null);
     if (OWN_ONLY.has(s[0]) && s[1] !== c.uid) return reply(c, id, 0, 'not_allowed');
     if (!isObj(m.data)) return reply(c, id, 0, 'bad_data');
+    if (s[0] === 'farms' && s[1] !== c.uid && !visitorWriteOk(c, t, docs.get(p), m.data)) return reply(c, id, 0, 'not_allowed');
     const next = t === 'set' ? m.data : (docs.has(p) ? deepMerge(docs.get(p), m.data) : undefined);
     if (next === undefined) return reply(c, id, 0, 'invalid_argument');
     if (Buffer.byteLength(JSON.stringify(next)) > MAX_DOC) return reply(c, id, 0, 'too_large');

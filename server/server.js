@@ -37,7 +37,8 @@ const auth = createAuth(DATA_DIR);
 const pay = require('./pay')(DATA_DIR);
 const guard = require('./guard')(DATA_DIR, pay); /* 🛡️ กันโกง: ตรวจทุกเซฟก่อนเก็บ (ดู guard.js · node admin.js) */
 guard.onBan((uid, reason) => { const c = online.get(uid); if (c) { send(c, { t: 'banned', reason }); c.ws.close(4003, 'banned'); } });
-const slip = require('./slip')(DATA_DIR, pay); pay.useSlip(slip.enabled); /* 🧾 พร้อมเพย์ + สลิป (EasySlip) — ถ้าตั้งค่าไว้ จะใช้แทน Stripe */
+const slip = require('./slip')(DATA_DIR, pay);
+const names = require('./names')(DATA_DIR); /* 🏷️ ชื่อตัวละครห้ามซ้ำ */ pay.useSlip(slip.enabled); /* 🧾 พร้อมเพย์ + สลิป (EasySlip) — ถ้าตั้งค่าไว้ จะใช้แทน Stripe */
 pay.onGrant((uid, owned, give) => { const c = online.get(uid); if (c) { c.premT = 0; send(c, { t: 'ent', owned, give }); } }); /* 💳 ซื้อสำเร็จ → แจ้งเกมที่เปิดอยู่ทันที */
 let docs = new Map();
 try { const raw = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); docs = new Map(Object.entries(raw)); console.log('loaded', docs.size, 'docs'); }
@@ -131,6 +132,8 @@ function handle(c, m) {
   }
   if (t === 'auth_cfg') return reply(c, id, 1, auth.enabled());
   if (t === 'ping') return reply(c, id, 1);
+  if (t === 'name_check') { const o = names.owner(m.name); return reply(c, id, 1, { free: !o || o === c.uid }); }
+  if (t === 'name_claim') { if (!c.user) return reply(c, id, 0, 'login_required'); try { names.claim(c.uid, m.name); return reply(c, id, 1); } catch (e) { return reply(c, id, 0, typeof e === 'string' ? e : 'error'); } }
   if (t === 'pay_cfg') return reply(c, id, 1, pay.catalog(c.user ? c.uid : ''));
   if (t === 'pay_ack') { if (c.user) pay.ack(c.uid, m.refs); return reply(c, id, 1); }
   if (t === 'pay_start' || t === 'pay_check' || t === 'slip_order' || t === 'slip_send') {
@@ -149,7 +152,7 @@ function handle(c, m) {
   if (t === 'save_get' || t === 'save_put') {
     if (!c.user) return reply(c, id, 0, 'login_required');
     if (t === 'save_get') return reply(c, id, 1, auth.saveGet(c.uid));
-    try { const prev = auth.saveGet(c.uid); guard.check(c.uid, prev && prev.data, m.data); auth.savePut(c.uid, m.ts, m.data, m.base); c.premT = 0; return reply(c, id, 1); }
+    try { const prev = auth.saveGet(c.uid); guard.check(c.uid, prev && prev.data, m.data); names.check(c.uid, m.data); auth.savePut(c.uid, m.ts, m.data, m.base); c.premT = 0; return reply(c, id, 1); }
     catch (e) { if (e === 'banned') { const bn = guard.banned(c.uid); send(c, { t: 'banned', reason: bn ? bn.reason : '', num: c.num }); } return reply(c, id, 0, typeof e === 'string' ? e : 'error'); }
   }
 
@@ -194,7 +197,7 @@ function handle(c, m) {
   }
   if (t === 'pres') {
     if (!c.rooms.has(m.room) || !isObj(m.data)) return reply(c, id, 0, 'not_joined');
-    const old = c.pres.get(m.room) || {}, nu = Object.assign({}, m.data); delete nu.adm; if (c.admin) nu.adm = 1; nu.pc = premium(c) ? 1 : 0; c.pres.set(m.room, nu); /* 👑 มงกุฎหน้าชื่อ = ของจริงเท่านั้น */
+    const old = c.pres.get(m.room) || {}, nu = Object.assign({}, m.data); delete nu.adm; if (c.admin) nu.adm = 1; if (typeof nu.n === 'string') { const o = names.owner(nu.n); if (o && o !== c.uid) nu.n = 'ผู้เล่น'; } /* ใช้ชื่อคนอื่นไม่ได้ */ nu.pc = premium(c) ? 1 : 0; c.pres.set(m.room, nu); /* 👑 มงกุฎหน้าชื่อ = ของจริงเท่านั้น */
     const mapChanged = old.map !== nu.map || old.at !== nu.at;
     const onlyPos = !mapChanged && Object.keys(nu).every(k => POS_KEYS.has(k) || JSON.stringify(old[k]) === JSON.stringify(nu[k]));
     for (const o of roomPeers(m.room)) {
@@ -260,6 +263,6 @@ wss.on('connection', ws => {
 // drop connections that stopped answering pings (closed tabs, lost phones)
 setInterval(() => { for (const ws of wss.clients) { if (!ws.isAlive) { ws.terminate(); continue; } ws.isAlive = false; ws.ping(); } }, 30000);
 
-process.on('SIGINT', () => { saveNow(); auth.flush(); guard.flush(); process.exit(0); });
-process.on('SIGTERM', () => { saveNow(); auth.flush(); guard.flush(); process.exit(0); });
+process.on('SIGINT', () => { saveNow(); auth.flush(); guard.flush(); names.flush(); process.exit(0); });
+process.on('SIGTERM', () => { saveNow(); auth.flush(); guard.flush(); names.flush(); process.exit(0); });
 server.listen(PORT, () => console.log('Farm server on http://localhost:' + PORT + '  (game: ' + GAME + ')'));

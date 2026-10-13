@@ -1280,7 +1280,7 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
    ตั้งที่อยู่เซิร์ฟเวอร์: ใส่ใน FARM_SERVER_URL ด้านล่าง เช่น 'wss://play.myfarm.com/ws' · หรือเปิดลิงก์ ?server=ws://localhost:8080/ws
    เปิดเกมผ่านเซิร์ฟเวอร์ (npm start) จะตั้งค่าให้เอง · ไม่ได้ตั้ง = ใช้ระบบเดิม (claude.ai) หรือเล่นออฟไลน์ */
 (function(){
-const FARM_SERVER_URL='';
+const FARM_SERVER_URL='wss://play.farmdtest.com/ws';
 let URL_=''; try{ URL_=new URLSearchParams(location.search).get('server')||window.FARM_SERVER||FARM_SERVER_URL; }catch(e){ URL_=window.FARM_SERVER||FARM_SERVER_URL; }
 if(!URL_||(window.claude&&window.claude.use)) return;
 let uid=''; try{ uid=localStorage.getItem('farm_uid')||''; }catch(e){}

@@ -38,12 +38,12 @@ const FARM_SERVER_URL='wss://play.myfarm.com/ws';
 
 ถ้าไม่ได้ตั้งค่า เกมจะใช้ระบบเดิม คือ claude.ai ถ้าเปิดเป็น Artifact หรือเล่นแบบออฟไลน์
 
-## บัญชีผู้เล่น: เข้าสู่ระบบด้วย LINE หรืออีเมล
+## บัญชีผู้เล่น: เข้าสู่ระบบด้วย Google หรือ LINE
 
-- หน้าเริ่มเกมและ ⚙️ ตั้งค่า มีปุ่ม **เข้าสู่ระบบด้วย LINE / อีเมล** (ขึ้นเฉพาะตอนต่อเซิร์ฟเวอร์นี้) ครั้งแรกจะสมัครให้อัตโนมัติ
-- **อีเมล:** ส่งรหัส 6 หลักไปทางอีเมล ใช้ได้ 10 นาที ใส่ผิดได้ 5 ครั้ง ขอรหัสใหม่ได้นาทีละครั้ง (ชั่วโมงละ 5 ครั้ง)
+- หน้าเริ่มเกมมีปุ่ม **ดำเนินการต่อด้วย Google** และ **ดำเนินการต่อด้วย LINE** (ขึ้นเฉพาะตอนต่อเซิร์ฟเวอร์นี้ และเฉพาะปุ่มที่ตั้งค่าแล้ว) ครั้งแรกจะสมัครให้อัตโนมัติ
+- **Google:** ใช้ Sign in with Google เซิร์ฟเวอร์รับข้อมูลตัวตนจาก Google โดยตรง
 - **LINE:** ใช้ LINE Login ของ LINE เอง เซิร์ฟเวอร์ตรวจสอบตัวตนกับ LINE โดยตรง
-- เชื่อม LINE และอีเมลเข้าบัญชีเดียวกันได้ (⚙️ ตั้งค่า > บัญชีผู้เล่น)
+- เชื่อม Google และ LINE เข้าบัญชีเดียวกันได้ (⚙️ ตั้งค่า > บัญชีผู้เล่น)
 - ล็อกอินครั้งแรก ฟาร์มและเซฟที่เล่นอยู่ในเครื่องนั้นยังเป็นของคุณ · ล็อกอินเครื่องใหม่ = ได้เซฟจากเซิร์ฟเวอร์
 - เล่นแล้วเซฟขึ้นเซิร์ฟเองทุก ~10 วินาที และตอนสลับแอป · ไม่เขียนทับเซฟใหม่กว่าจากอีกเครื่อง
 - ไอดีที่เป็นบัญชีแล้ว ใช้ได้เฉพาะคนที่ล็อกอิน (กันปลอมตัว)
@@ -56,9 +56,10 @@ const FARM_SERVER_URL='wss://play.myfarm.com/ws';
 | `PUBLIC_URL` | ที่อยู่ https ของเซิร์ฟเวอร์ เช่น `https://play.farmdtest.com` |
 | `ALLOWED_ORIGINS` | เว็บเกมที่อนุญาต เช่น `https://farmdtest.com,https://www.farmdtest.com` |
 | `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET` | developers.line.biz > สร้าง Provider > สร้างช่อง **LINE Login** · ตั้ง Callback URL เป็น `https://play.farmdtest.com/auth/line/callback` |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | console.cloud.google.com > APIs & Services > Credentials > OAuth client ID (Web application) · Authorized redirect URI: `https://play.farmdtest.com/auth/google/callback` |
 | `RESEND_API_KEY`, `MAIL_FROM` | resend.com > เพิ่มโดเมน `farmdtest.com` (ใส่ DNS ใน Cloudflare) > สร้าง API Key |
 
-ไม่ใส่ `RESEND_API_KEY` = โหมดทดสอบ รหัสอีเมลจะแสดงในหน้าต่างเซิร์ฟเวอร์แทน · ไม่ใส่ค่า LINE = ปุ่ม LINE จะไม่ขึ้น
+ไม่ใส่ค่า Google / LINE = ปุ่มนั้นจะไม่ขึ้น · หน้าเกมไม่มีเข้าด้วยอีเมลแล้ว (เซิร์ฟเวอร์ยังรองรับอยู่ ค่า Resend ไม่ใส่ก็ได้)
 
 ## สำรองข้อมูล (Backup) ไปที่ Cloudflare R2
 
@@ -88,6 +89,14 @@ Backup เก่าเกิน 30 วันจะถูกลบเองจา
 3. กด Verify ใน Resend รอจนเป็น Verified (ปกติไม่กี่นาที)
 4. Resend > API Keys > Create (สิทธิ์ Sending access, เลือกโดเมน farmdtest.com) → ใส่ `RESEND_API_KEY=re_...` ใน `.env` ส่วน `MAIL_FROM=Farm <login@farmdtest.com>` ใช้ได้เลย
 5. `systemctl restart farm` แล้วลองล็อกอินด้วยอีเมลในเกม · ถ้าไม่ได้รับ ดู `journalctl -u farm -n 50` จะเห็น `email send failed: ...` พร้อมเหตุผล
+
+### 2.5 ตั้ง Google Login
+1. console.cloud.google.com > สร้างโปรเจกต์ (เช่น Farm)
+2. APIs & Services > **OAuth consent screen** (หรือ Google Auth Platform > Branding) > ใส่ชื่อแอป `Farm`, อีเมลติดต่อ · Audience = **External**
+3. APIs & Services > **Credentials** > Create credentials > **OAuth client ID** > Application type = **Web application**
+4. **Authorized redirect URIs** ใส่ `https://play.farmdtest.com/auth/google/callback`
+5. คัดลอก **Client ID** และ **Client secret** ใส่ `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` ใน `.env` แล้ว `systemctl restart farm`
+6. ระหว่างแอปเป็น **Testing** เข้าได้เฉพาะอีเมลที่เพิ่มใน Test users · พร้อมเปิดให้ทุกคนกด **Publish app** (ใช้แค่ชื่อโปรไฟล์ ไม่ต้องรอ Google ตรวจ)
 
 ### 3. ตั้ง LINE Login
 1. developers.line.biz > Console > สร้าง Provider (เช่น Farm) > Create a new channel > **LINE Login**

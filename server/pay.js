@@ -24,8 +24,9 @@ module.exports = function createPay(dataDir) {
   let db = { sessions: {}, owned: {}, give: {} }; // sessions: payment ref -> {uid,item,thb,t} · owned: uid -> [item ids] (once) · give: uid -> [{ref,grant}] every repeatable item ever bought (kept forever: the game adds each ref once per save, so after an OBT wipe they come back)
   try { db = Object.assign(db, JSON.parse(fs.readFileSync(FILE, 'utf8'))); }
   catch (e) { if (e.code !== 'ENOENT') console.error('purchases load failed:', e.message); }
+  let wroteAt = 0;
   function persist() {
-    try { fs.mkdirSync(dataDir, { recursive: true }); const tmp = FILE + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(db)); fs.renameSync(tmp, FILE); }
+    try { fs.mkdirSync(dataDir, { recursive: true }); const tmp = FILE + '.tmp'; fs.writeFileSync(tmp, JSON.stringify(db)); fs.renameSync(tmp, FILE); wroteAt = fs.statSync(FILE).mtimeMs; }
     catch (e) { console.error('purchases save failed:', e.message); }
   }
   const byId = id => PRODUCTS.find(p => p.id === id);
@@ -33,6 +34,13 @@ module.exports = function createPay(dataDir) {
   const gives = uid => (db.give[uid] || []).slice();
   const enabled = () => !!env.STRIPE_SECRET_KEY;
   let onGrant = () => {};
+  /* node admin.js grant … แก้ purchases.json ตอนเซิร์ฟเปิดอยู่ → อ่านใหม่ แล้วส่งของให้คนที่ออนไลน์ */
+  try { wroteAt = fs.statSync(FILE).mtimeMs; } catch (e) {}
+  setInterval(() => { try { const mt = fs.statSync(FILE).mtimeMs; if (mt <= wroteAt + 50) return; wroteAt = mt;
+      const nd = Object.assign({ sessions: {}, owned: {}, give: {} }, JSON.parse(fs.readFileSync(FILE, 'utf8')));
+      const changed = new Set(); for (const [u, l] of Object.entries(nd.owned)) if (JSON.stringify(l) !== JSON.stringify(db.owned[u] || [])) changed.add(u);
+      for (const [u, l] of Object.entries(nd.give)) if (JSON.stringify(l) !== JSON.stringify(db.give[u] || [])) changed.add(u);
+      db = nd; for (const u of changed) onGrant(u, owned(u), gives(u)); } catch (e) {} }, 4000).unref();
 
   async function stripe(method, p, form) {
     const r = await fetch(API + p, { method, headers: { authorization: 'Bearer ' + env.STRIPE_SECRET_KEY, 'content-type': 'application/x-www-form-urlencoded' },

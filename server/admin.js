@@ -4,6 +4,7 @@
  *   node admin.js ban 1234567 เหตุผล    แบนเอง
  *   node admin.js jumps                เงิน/เพชร/เลเวลที่เพิ่มมากสุดใน 1 เซฟ ของแต่ละคน (ใช้ตั้ง CHEAT_*_JUMP)
  *   node admin.js who 1234567          ดูข้อมูลผู้เล่นคนนั้น (ของที่ซื้อ, ประวัติที่ระบบจดไว้)
+ *   node admin.js grant 1234567 all    ให้ของพรีเมียมทุกอย่าง (VIP ชุด ท่าเก็บ) ฟรี · หรือระบุรหัสสินค้า เช่น grant 1234567 crown
  *   node admin.js admin add 1234567    ให้เป็นแอดมิน (ป้าย ADMIN หน้าชื่อ) · admin remove 1234567 · admin list
  */
 'use strict';
@@ -32,6 +33,15 @@ else if (cmd === 'who') {
   console.log(name(u), bans[u] ? '🚫 แบน: ' + bans[u].reason : '✅ ปกติ');
   console.log('ของที่ซื้อ:', (pay.owned && pay.owned[u] || []).join(', ') || '-', '· โล่ที่ซื้อ:', (pay.give && pay.give[u] || []).map(x => x.grant).join(', ') || '-');
   const r = guard[u]; if (r) { console.log('เพิ่มมากสุดต่อเซฟ: 🪙+' + (r.jump.coins || 0), '💎+' + (r.jump.gems || 0), 'Lv+' + (r.jump.lv || 0)); for (const f of r.flags || []) console.log(' ', when(f.t), f.kind, f.text); }
+}
+else if (cmd === 'grant') {
+  const u = who(id); if (!u) { console.log('ไม่พบผู้เล่น UID', id); process.exit(1); }
+  const P = require('./products'), want = rest[0] === 'all' || !rest[0] ? P.filter(p => p.once).map(p => p.id) : rest;
+  const d = Object.assign({ sessions: {}, owned: {}, give: {} }, pay); const o = d.owned[u] || (d.owned[u] = []);
+  for (const it of want) { const p = P.find(x => x.id === it); if (!p) { console.log('ไม่มีสินค้า', it); continue; }
+    if (p.once) { if (!o.includes(it)) o.push(it); } else (d.give[u] || (d.give[u] = [])).push({ ref: 'admin:' + it + ':' + Date.now(), grant: p.grant });
+    d.sessions['admin:' + u + ':' + it + ':' + Date.now()] = { uid: u, item: it, thb: 0, t: Date.now(), admin: 1 }; }
+  write('purchases.json', d); console.log('🎁 ให้ของ', name(u), '·', want.join(', '), '· ได้ของภายในไม่กี่วินาที (ถ้าออนไลน์อยู่) หรือตอนเข้าเกมครั้งหน้า');
 }
 else if (cmd === 'admin') {
   const F = 'admins.json', L = new Set((Array.isArray(read(F)) ? read(F) : []).map(String)), [op, n] = [id, rest[0]];

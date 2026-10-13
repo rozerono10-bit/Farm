@@ -24,6 +24,7 @@ const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 const MAX_DOC = 256 * 1024;          // bytes per document (same limit as claude.ai db)
 const MAX_MSG = 1200 * 1024;         // bytes per websocket message (a cloud save can be up to 1 MB)
+let GAME_VER = ''; try { GAME_VER = require('crypto').createHash('sha1').update(require('fs').readFileSync(process.env.GAME_FILE || require('path').join(__dirname, '..', 'index.html'))).digest('hex').slice(0, 10); } catch (e) {} /* 🔄 เวอร์ชันเกม: เปลี่ยนเมื่อรีสตาร์ตหลังอัปเดต → เกมที่เปิดอยู่โหลดใหม่เอง */
 const SEASON = process.env.SEASON || 'cbt'; /* 🧪 รอบเกม (cbt / obt …) · เปลี่ยนค่า = เกมทุกเครื่องล้างเซฟในเครื่องตัวเอง (ดู obt-reset.sh) */
 const MAX_ROOM_PEERS = +process.env.MAX_ROOM_PEERS || 100;
 const RATE = { msgs: 60, per: 1000 }; // per connection
@@ -114,7 +115,7 @@ function handle(c, m) {
       online.set(s.uid, c); }
     else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
     c.admin = !!(c.user && c.num && admins.has(String(c.num)));
-    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '', num: c.user ? c.num : '', season: SEASON, admin: c.admin ? 1 : 0 });
+    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '', num: c.user ? c.num : '', season: SEASON, admin: c.admin ? 1 : 0, ver: GAME_VER });
   }
   if (t === 'email_start' || t === 'email_verify' || t === 'line_ticket' || t === 'oauth_ticket') {
     const now = Date.now(); c.authTries = (c.authTries || []).filter(x => now - x < 60000);

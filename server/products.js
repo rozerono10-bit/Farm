@@ -5,7 +5,7 @@
  * once  = ซื้อได้ครั้งเดียวต่อบัญชี (ไม่ใส่ = ซื้อซ้ำได้ เช่น โล่)
  */
 module.exports = [
-  { id: 'crown', e: '👑', name: 'มงกุฎพรีเมียม', desc: 'สตามิน่า x2 · กระเป๋า x2 · ขาย/โต/ตกปลา +5% · มงกุฎหน้าชื่อ', thb: 69, grant: 'crown', once: true },
+  { id: 'crown', e: '👑', name: 'VIP', desc: 'สตามิน่า x2 · กระเป๋า x2 · ขาย/โต/ตกปลา +5% · มงกุฎหน้าชื่อ', thb: 69, grant: 'crown', once: true },
   { id: 'skin_1', e: '🏴‍☠️', name: 'ชุดโจรสลัดสาวแดง', desc: '🎣 ตกปลาเร็วขึ้น 5%', thb: 29, grant: 'skin:1', once: true },
   { id: 'skin_2', e: '🕊️', name: 'ชุดนักบวชสาวชุดขาว', desc: '🌱 พืชโตเร็วขึ้น 5%', thb: 29, grant: 'skin:2', once: true },
   { id: 'skin_3', e: '🐍', name: 'ชุดราชินีแห่งไนล์', desc: '🪙 ขายแพงขึ้น 5%', thb: 29, grant: 'skin:3', once: true },

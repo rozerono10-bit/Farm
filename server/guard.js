@@ -1,7 +1,7 @@
 /* 🛡️ Anti-cheat, step 1: every save a player uploads is checked against the previous one before it is kept.
  *
  * Auto-ban (things normal play can never do):
- *   - premium items (crown, outfits, poses, accessories) that were never bought with real money
+ *   - premium items (VIP crown, outfits, poses) that were never bought with real money
  *     (CBT only: what an account already had the first time it is checked is kept as "legacy" · from OBT on nothing is grandfathered)
  *   - crow shields going up by more than what was just bought
  *   - claiming a payment ref that the server never issued
@@ -77,7 +77,7 @@ module.exports = function createGuard(dataDir, pay) {
       if (m.crown && !a.crown) bad.push('crown');
       for (const i of m.ownSk) if (!a.ownSk.has(i)) bad.push('skin:' + i);
       for (const k of m.ownHp) if (!a.ownHp.has(k)) bad.push('pose:' + k);
-      if (!a.allAcc) for (const i of m.own) if (!a.own.has(i)) bad.push('acc:' + i);
+      /* ของแต่งตัว (หมวก หู ปีก ฯลฯ) ซื้อด้วยเหรียญได้ → ไม่ตรวจ */
       if (bad.length) { ban(uid, 'ของพรีเมียมที่ไม่ได้ซื้อ: ' + bad.slice(0, 8).join(', ')); throw 'banned'; }
 
       /* crow shields: may only go up by the packs whose refs this save just applied (refs must be real) */

@@ -3721,10 +3721,8 @@ function decide(){
   else if(S.pSell) k='shop';                                       // 🐟 เก็บลูกปลาหมดบ่อแล้ว → เอาปลาไปขายให้หมดก่อน แล้วค่อยกลับไปทำงานเดิม
   else if(ai.fry&&pondOn()&&S.pond.rd.length&&(S.pDrain||S.pond.rd.length>=pondHold(S.pond.lv))&&bagTot()<BAGCAP){ k='fry'; S.pDrain=1; }   // ลูกปลาในบ่อเต็ม → ไปเก็บ · กระเป๋าเต็มกลางทาง → ไปขายแล้วกลับมาเก็บต่อจนบ่อว่าง (S.pDrain) แล้วค่อยทำงานเดิม
   else if(shieldNeed()) k='shield';                       // โล่ยังไม่เต็มและเหรียญพอ → เดินไปซื้อโล่กันโจร
-  else if(ai.plant&&f.empty.length&&seeds>0) k='plant';
-  else if(ai.harvest&&!full&&ripeP.length) k='harvest';           // เดินเก็บต้นที่ยังไม่ได้เก็บในรอบนี้
-  else if(ai.harvest&&!full&&f.ripe.length) k='harvest';          // มีต้นสุกพร้อมเก็บอยู่ (แม้เก็บไปแล้วในรอบนี้และโตใหม่) → เก็บก่อน ไม่ยืนรอต้นอื่น
-  else if(ai.sell&&prod>0&&growP.length&&soon>8000) k='shop';  // ต้องรอนาน → เอาผลที่มีไปขายก่อน
+  else if((ai.plant&&f.empty.length&&seeds>0)||(ai.harvest&&!full&&f.ripe.length)) k='work'; // 🌱🧺 ปลูก/เก็บ → เลือกช่องที่ใกล้ที่สุดของทั้งสองงาน (ไม่เดินข้ามฟาร์มไปปลูกแล้วเดินกลับมาเก็บ)
+  else if(ai.sell&&prod>0&&growP.length&&((bagTot()>=BAGCAP*.6&&soon>15000)||soon>45000)) k='shop';  // ต้องรอนาน + ของเยอะพอคุ้มเดิน → เอาไปขายก่อน
   else if(ai.harvest&&growP.length) k='wait';              // ต้นที่ยังไม่ได้เก็บแต่ยังไม่สุก → รอ
   else if(ai.sell&&prod>0) k='shop';                       // ครบรอบแล้วเอาไปขาย
   else if(ai.plant&&f.empty.length&&S.coins>=minSeed) k='shop'; // ไปซื้อเมล็ดมาปลูก
@@ -3741,12 +3739,16 @@ function decide(){
   else if(k==='shield'){ const n=m.npcs.find(q=>q.kind==='robber'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🛡️ เดินไปซื้อโล่ '+shBatch()+' อัน ที่โจรสวมดำ'); }
   else if(k==='fisher'){ const n=fbFind('fisher'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🎣 เดินไปขายกับลุงตกปลา (ปลา +'+Math.round((FISHER_MUL-1)*100)+'%)'); }
   else if(k==='gold'){ const tr=goldTr(); list=[{tx:Math.floor(tr.x),ty:Math.floor(tr.y)}]; task('🤑 เดินไปขายกับพ่อค้าทอง (+'+Math.round((GOLD_MUL-1)*100)+'%)'); }
-  else if(k==='plant'){ list=f.empty; task('🌱 กำลังปลูก '+(total-f.empty.length)+'/'+total); }
-  else if(k==='harvest'){ list=ripeP.length?ripeP:f.ripe; task('🧺 กำลังเก็บเกี่ยว (เหลือ '+list.length+')'); }
+  else if(k==='work'){ const hv=ai.harvest&&!full?(ripeP.length?ripeP:f.ripe):[], pl=ai.plant&&seeds>0?f.empty:[];
+    list=[...pl.map(t=>({tx:t.tx,ty:t.ty,k:'plant'})),...hv.map(t=>({tx:t.tx,ty:t.ty,c:t.c,k:'harvest'}))];
+    if(hv.length&&hpReach()>1&&!S.farm){ const rr=hpReach()+.3; let bt=null, bd=1e9; for(const t of list){ if(t.k!=='harvest') continue; const d=Math.hypot(t.tx+.5-S.x,t.ty+.5-S.y); if(d<=rr&&d<bd){ bd=d; bt=t; } } if(bt){ task('🧺 กำลังเก็บเกี่ยว (เหลือ '+hv.length+')'); B.path=null; B.act={k:'harvest',t:bt}; return; } } /* ✌️ อยู่ในระยะ = เก็บได้เลยไม่ต้องเดิน */
+    const pk=pick(m,r,list); if(!pk) return; k=pk.t.k;
+    task(k==='plant'?'🌱 กำลังปลูก '+(total-f.empty.length)+'/'+total:'🧺 กำลังเก็บเกี่ยว (เหลือ '+hv.length+')');
+    B.path=pathTo(m,r,pk.n); B.act={k,t:pk.t}; return; }
   else if(k==='fry'){ const pr=maps.farm.pond; list=[]; for(let x=Math.floor(pr.x);x<Math.ceil(pr.x+pr.w);x++) for(let y=Math.floor(pr.y);y<Math.ceil(pr.y+pr.h);y++) list.push({tx:x,ty:y}); task('🐟 เดินไปเก็บลูกปลา ('+S.pond.rd.length+'/'+pondHold(S.pond.lv)+')'); }
-  else { const so=growP.reduce((a,b)=>(cd(a.c)-(Date.now()-a.c.t)<cd(b.c)-(Date.now()-b.c.t))?a:b);
+  else { const left=t=>cd(t.c)-(Date.now()-t.c.t); let so=growP.find(t=>key(t)===B.waitK); /* ⏳ จำต้นที่ยืนรออยู่ ไม่สลับไปมาระหว่างต้น */
+    const best=growP.reduce((a,b)=>left(a)<left(b)?a:b); if(!so||left(so)-left(best)>5000) so=best; B.waitK=key(so);
     list=[so]; task('⏳ รอผักโต '+Math.ceil((1-cropProgress(so.c))*cd(so.c)/1000)+'s'); }
-  if(k==='harvest'&&hpReach()>1&&!S.farm){ const rr=hpReach()+.3; let bt=null, bd=1e9; for(const t of list){ const d=Math.hypot(t.tx+.5-S.x,t.ty+.5-S.y); if(d<=rr&&d<bd){ bd=d; bt=t; } } if(bt){ B.path=null; B.act={k,t:bt}; return; } } /* ✌️ อยู่ในระยะ = เก็บได้เลยไม่ต้องเดิน */
   const pk=pick(m,r,list); if(!pk) return;
   B.path=pathTo(m,r,pk.n); B.act={k,t:pk.t}; }
 /* เก็บเสร็จ → หยุด 0.17วิ แล้วรอคิด 0.25วิ ก่อนเลือกต้นถัดไป */

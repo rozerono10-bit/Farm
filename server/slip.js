@@ -8,7 +8,7 @@
  * Settings (server/.env):
  *   PROMPTPAY_QR        the text inside your PromptPay QR (starts 000201…)
  *   SLIP_API_KEY        EasySlip API key (developer.easyslip.com)
- *   SLIP_RECEIVER_NAME  part of your name as it shows on slips, e.g. วีรภัทร (optional but recommended)
+ *   SLIP_RECEIVER_NAME  part of your name as it shows on slips, e.g. สมชาย (optional but recommended)
  *   SLIP_RECEIVER_ACC   last digits of the receiving account / PromptPay id, default = last 3 digits from PROMPTPAY_QR
  *   SLIP_API_URL        default https://api.easyslip.com/v2
  */
@@ -69,13 +69,13 @@ module.exports = function createSlip(dataDir, pay) {
       let amount; for (let i = 0; i < 200; i++) { amount = prod.thb + (1 + crypto.randomInt(99)) / 100; if (!live.has(amount.toFixed(2))) break; }
       const oid = crypto.randomBytes(8).toString('hex'); db.orders[oid] = { uid, item: prod.id, amount, t: now }; persist();
       const q = qrcode(0, 'M'); q.addData(withAmount(base(), amount)); q.make();
-      return { oid, amount: amount.toFixed(2), exp: now + ORDER_MS, svg: q.createSvgTag({ cellSize: 6, margin: 24, scalable: true }), name: env.SLIP_RECEIVER_NAME || '' };
+      return { oid, amount: amount.toFixed(2), exp: now + ORDER_MS, svg: q.createSvgTag({ cellSize: 6, margin: 24, scalable: true }) };
     },
     /** slip picture (base64 / data URI) for an order → { ok, item } or throws a code */
     async verify(uid, oid, image) {
       if (!enabled()) throw 'pay_off';
       const o = db.orders[oid]; if (!o || o.uid !== uid) throw 'order_expired';
-      if (o.done) return { ok: true, item: o.item, owned: pay.owned(uid) };
+      if (o.done) return { ok: true, item: o.item, owned: pay.owned(uid), give: pay.gives(uid) };
       if (typeof image !== 'string' || image.length < 1000 || image.length > 1100 * 1024) throw 'bad_image';
       if (pending.has(oid)) throw 'busy'; pending.add(oid);
       try {
@@ -92,7 +92,7 @@ module.exports = function createSlip(dataDir, pay) {
         const when = Date.parse(s.date || ''); if (when && when < o.t - 5 * 60000) throw 'slip_old';
         db.used[ref] = { uid, item: o.item, amount: amt, t: Date.now() }; o.done = 1; persist();
         pay.grantRef('slip:' + ref, uid, o.item, amt);
-        return { ok: true, item: o.item, owned: pay.owned(uid) };
+        return { ok: true, item: o.item, owned: pay.owned(uid), give: pay.gives(uid) };
       } finally { pending.delete(oid); }
     },
     _withAmount: withAmount, _qrValid: qrValid,

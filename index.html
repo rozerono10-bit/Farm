@@ -1347,7 +1347,7 @@ window.farmAuth={
   user:()=>user, num:()=>num, ready,
   /* 💳 ชำระเงิน (Stripe): ของที่ขาย · ไปหน้าจ่ายเงิน · เช็กผลตอนกลับมา · แจ้งเมื่อได้ของ */
   slipOrder:item=>req('slip_order',{item}), slipSend:(oid,image)=>req('slip_send',{oid,image},45000),
-  payCfg:()=>req('pay_cfg',{}), payCheck:sid=>req('pay_check',{sid}), paidSid:()=>paidSid, payCancel:()=>payCancel, onEnt:f=>{ entCb=f; },
+  payCfg:()=>req('pay_cfg',{}), payAck:refs=>req('pay_ack',{refs}), payCheck:sid=>req('pay_check',{sid}), paidSid:()=>paidSid, payCancel:()=>payCancel, onEnt:f=>{ entCb=f; },
   async payStart(item){ if(!(await ready)) throw offline(); const r=await req('pay_start',{item,ret:location.href.split('#')[0]}); location.href=r.url; },
   error:()=>loginErr, linked:()=>linkedMsg,
   cfg:()=>ready.then(ok=>ok?req('auth_cfg',{}):{}).catch(()=>({})),
@@ -1368,7 +1368,7 @@ function kickOut(){ kicked=true; svStop=true; pendSave=null; clearTimeout(svTm);
   d.querySelector('button').onclick=()=>location.reload(); document.body.appendChild(d); try{ playing=false; }catch(e){} }
 function onMsg(m){
   if(m.t==='kick'){ kickOut(); return; }
-  if(m.t==='ent'){ if(entCb) try{ entCb(m.owned||[]); }catch(e){} return; }
+  if(m.t==='ent'){ if(entCb) try{ entCb(m.owned||[],m.give||[]); }catch(e){} return; }
   if(m.t==='res'){ const p=pend.get(m.id); if(!p) return; pend.delete(m.id); m.ok?p.res(m.data):p.rej(Object.assign(new Error(m.err),{code:m.err})); return; }
   if(m.t==='snap'){ const s=subs.get(m.sid); if(!s) return;
     if(s.kind==='doc'){ try{ s.cb(docSnap(s.id,m.data)); }catch(e){} return; }
@@ -4538,11 +4538,16 @@ $('meDlg').addEventListener('click',e=>{ if(e.target.id==='meDlg') $('meDlg').cl
 let PAY=null;
 const PAY_ERR={pay_off:'ยังไม่ได้เปิดระบบชำระเงินบนเซิร์ฟเวอร์',already_owned:'คุณมีของชิ้นนี้แล้ว',login_required:'เข้าสู่ระบบก่อนซื้อ',too_many_tries:'กดบ่อยเกินไป รอสักครู่',bad_return:'เว็บนี้ยังไม่ได้รับอนุญาตให้ชำระเงิน',offline:'📴 ต่อเซิร์ฟเวอร์ไม่ได้'};
 const pEsc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
-function applyEnt(owned){ if(!PAY||!S) return; PAY.owned=owned||[]; const got=[];
+function applyEnt(owned,give){ if(!PAY||!S) return; PAY.owned=owned||[]; const got=[], acked=[];
+  /* ของที่ซื้อซ้ำได้ (เช่น โล่): ใส่ลงเซฟครั้งเดียวต่อการจ่าย (จำ ref ไว้) แล้วบอกเซิร์ฟว่าได้แล้ว */
+  S.payRefs=Array.isArray(S.payRefs)?S.payRefs:[];
+  for(const g of give||[]){ if(!g||!g.ref) continue; acked.push(g.ref); if(S.payRefs.includes(g.ref)) continue; S.payRefs.push(g.ref); if(S.payRefs.length>300) S.payRefs.shift();
+    const m=/^shields:(\d+)$/.exec(g.grant||''); if(m){ S.shields=(S.shields|0)+(+m[1]); got.push({e:'🛡️',name:'โล่กันอีกา '+m[1]+' อัน'}); } }
   for(const id of PAY.owned){ const it=PAY.items.find(x=>x.id===id); if(!it) continue; const g=it.grant||'';
     if(g==='crown'){ if(!S.crown){ S.crown=1; try{ applyJob(); STAM=stMax(); restT=0; }catch(e){} got.push(it); } }
     else if(g.indexOf('pose:')===0){ const k=g.slice(5); S.ownHp=S.ownHp||[]; if(!S.ownHp.includes(k)){ S.ownHp.push(k); got.push(it); } }
     else if(g==='acc:all'){ S.own=S.own||[]; let add=0; for(let i=1;i<ACN;i++) if(!S.own.includes(i)){ S.own.push(i); add=1; } if(add) got.push(it); } }
+  if(acked.length){ try{ saveNow(); }catch(e){} farmAuth.payAck(acked).catch(()=>{}); }
   if(got.length){ try{ updateHUD(); save(); sendPres(); sfx('open',4,1); }catch(e){} toast('💳 ได้รับ '+got.map(i=>i.e+' '+i.name).join(' · ')+' แล้ว! ขอบคุณที่สนับสนุนเกม 💖',3600); }
   if(shopOpen&&shopMode==='premium') renderShop(); }
 function payUI(){ const own=PAY.owned||[];
@@ -4560,7 +4565,6 @@ function slipOpen(item,btn){ const it=PAY.items.find(x=>x.id===item); if(!it) re
   farmAuth.slipOrder(item).then(o=>{ btn.disabled=false; SLIP=Object.assign({it},o); const T_=window.__tr||(x=>x);
     $('slipBody').innerHTML='<div class="slItem">'+it.e+' '+pEsc(it.name)+'</div><div class="slAmt"><small>'+T_('ยอดที่ต้องโอน')+'</small><b>฿'+o.amount+'</b></div>'
       +'<p class="slNote">'+T_('โอนให้ตรงยอดนี้ทุกสตางค์ (เศษสตางค์ใช้บอกว่าเป็นออเดอร์ของคุณ)')+'</p><div class="slQr">'+o.svg+'</div>'
-      +(o.name?'<div class="slTo">'+T_('ชื่อบัญชีผู้รับ')+': <b>'+pEsc(o.name)+'</b></div>':'')
       +'<div class="slRow"><button type="button" class="btn small ghost" id="slSave">💾 '+T_('บันทึกรูป QR')+'</button></div>'
       +'<div class="slStep">'+T_('โอนเสร็จแล้ว อัปโหลดรูปสลิป')+'</div><label class="btn wide" id="slUpL">📤 '+T_('เลือกรูปสลิป')+'<input type="file" accept="image/*" id="slUp" hidden></label>'
       +'<div class="acctErr" id="slMsg"></div><p class="slNote" id="slExp"></p>';
@@ -4578,15 +4582,15 @@ function slipSaveQr(){ const sv=$('slipBody').querySelector('.slQr svg'); if(!sv
 function slipSend(f){ if(!SLIP) return; slipSay('⏳ กำลังตรวจสลิปกับธนาคาร…',1); $('slUpL').classList.add('dis');
   const fr=new FileReader(); fr.onload=()=>{ const im=new Image(); im.onload=()=>{ const k=Math.min(1,1400/Math.max(im.width,im.height)), c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k);
       const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); let d=c.toDataURL('image/jpeg',.9); if(d.length>1000*1024) d=c.toDataURL('image/jpeg',.7);
-      farmAuth.slipSend(SLIP.oid,d).then(r=>{ $('slUpL').classList.remove('dis'); slipSay('✅ ชำระเงินสำเร็จ!',1); applyEnt(r.owned); setTimeout(()=>$('slipDlg').classList.remove('on'),1200); })
+      farmAuth.slipSend(SLIP.oid,d).then(r=>{ $('slUpL').classList.remove('dis'); slipSay('✅ ชำระเงินสำเร็จ!',1); applyEnt(r.owned,r.give); setTimeout(()=>$('slipDlg').classList.remove('on'),1200); })
         .catch(e=>{ $('slUpL').classList.remove('dis'); slipSay('❌ '+(SLIP_ERR[e&&e.code]||PAY_ERR[e&&e.code]||'ตรวจสลิปไม่สำเร็จ ลองใหม่อีกครั้ง')); }); };
     im.onerror=()=>{ $('slUpL').classList.remove('dis'); slipSay('❌ '+SLIP_ERR.bad_image); }; im.src=fr.result; }; fr.readAsDataURL(f); }
 $('slipX').addEventListener('click',()=>$('slipDlg').classList.remove('on'));
 if(window.farmAuth){
-  farmAuth.onEnt(o=>applyEnt(o));
-  farmAuth.ready.then(ok=>ok&&farmAuth.user()&&farmAuth.payCfg()).then(c=>{ if(!c) return; PAY=c; applyEnt(c.owned);
+  farmAuth.onEnt((o,g)=>applyEnt(o,g));
+  farmAuth.ready.then(ok=>ok&&farmAuth.user()&&farmAuth.payCfg()).then(c=>{ if(!c) return; PAY=c; applyEnt(c.owned,c.give);
     const sid=farmAuth.paidSid(); if(!sid) return; let n=0;
-    const chk=()=>farmAuth.payCheck(sid).then(r=>{ if(r.paid) applyEnt(r.owned); else if(++n<20){ if(n===1) toast('⏳ กำลังรอยืนยันการชำระเงิน…',3000); setTimeout(chk,3000); } else toast('💳 ยังไม่ได้รับยืนยันการชำระเงิน — ถ้าจ่ายแล้ว ของจะเข้าเองภายในไม่กี่นาที',4200); },()=>{ if(++n<20) setTimeout(chk,3000); });
+    const chk=()=>farmAuth.payCheck(sid).then(r=>{ if(r.paid) applyEnt(r.owned,r.give); else if(++n<20){ if(n===1) toast('⏳ กำลังรอยืนยันการชำระเงิน…',3000); setTimeout(chk,3000); } else toast('💳 ยังไม่ได้รับยืนยันการชำระเงิน — ถ้าจ่ายแล้ว ของจะเข้าเองภายในไม่กี่นาที',4200); },()=>{ if(++n<20) setTimeout(chk,3000); });
     chk(); }).catch(()=>{});
   if(farmAuth.payCancel()) setTimeout(()=>toast('💳 ยกเลิกการชำระเงินแล้ว',2400),600); }
 /* 📶 แสดงปิงของเซิร์ฟเวอร์ ที่หน้าเริ่มเกม และข้างจำนวนคนออนไลน์ (อัปเดตทุก 3 วิ) */

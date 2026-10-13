@@ -107,7 +107,7 @@ Backup เก่าเกิน 30 วันจะถูกลบเองจา
 6. ช่องที่ยังเป็น **Developing** ล็อกอินได้เฉพาะบัญชีที่เป็น admin/tester ของช่อง · พร้อมเปิดให้คนทั่วไปแล้วกด **Publish** (มุมบนของหน้าช่อง)
 
 ### 3.5 ตั้งระบบเติมเงิน (Stripe: พร้อมเพย์ + บัตร)
-ของที่ขายและราคาอยู่ที่ `server/products.js` (มงกุฎ ฿99 · ท่าเก็บ 2 นิ้ว ฿59 · แฟชั่นทุกชิ้น ฿49 แก้ได้) · ผู้เล่นซื้อได้ที่ 👑 ร้านพรีเมียม > แท็บ 💳 เติมเงิน (ขึ้นเฉพาะตอนล็อกอินและตั้งค่า Stripe แล้ว)
+ของที่ขายและราคาอยู่ที่ `server/products.js` (มงกุฎ ฿69 · แฟชั่นทุกชิ้น ฿29 · ท่าเก็บ ฿39 · โล่กันอีกา 5/10/50 อัน ฿5/฿10/฿50 แก้ได้ · Stripe ขั้นต่ำ ฿10 ของที่ถูกกว่าจะขายเฉพาะแบบสลิป) · ผู้เล่นซื้อได้ที่ 👑 ร้านพรีเมียม > แท็บ 💳 เติมเงิน (ขึ้นเฉพาะตอนล็อกอินและตั้งค่า Stripe แล้ว)
 1. dashboard.stripe.com > Settings > **Payment methods** > เปิด **PromptPay** และ Cards
 2. Developers > **API keys** > คัดลอก **Secret key** ใส่ `STRIPE_SECRET_KEY` ใน `.env` (ทดสอบก่อนด้วย `sk_test_...` ได้ ไม่มีเงินจริง)
 3. Developers > **Webhooks** > Add endpoint: `https://play.farmdtest.com/stripe/webhook` · เลือก events `checkout.session.completed` และ `checkout.session.async_payment_succeeded` · คัดลอก **Signing secret** ใส่ `STRIPE_WEBHOOK_SECRET`
@@ -121,7 +121,7 @@ Backup เก่าเกิน 30 วันจะถูกลบเองจา
 2. `PROMPTPAY_QR` = ข้อความใน QR พร้อมเพย์ของคุณ (อ่าน QR ด้วยแอปสแกน QR ได้ ขึ้นต้นด้วย `000201`)
 3. `SLIP_RECEIVER_NAME` = ชื่อจริงของคุณตามที่ขึ้นในสลิป (เช่น ชื่อต้นอย่างเดียว) · เลขบัญชีจะเช็ก 3 ตัวท้ายจาก QR ให้เอง
 4. `systemctl restart farm` · สลิปที่ใช้แล้วเก็บที่ `data/slips.json` · ของที่ขายแล้วอยู่ `data/purchases.json`
-5. ⚠️ ชื่อผู้รับใน QR/สลิปคือชื่อจริงของเจ้าของบัญชี ผู้เล่นทุกคนจะเห็น
+5. หน้าเกมไม่แสดงชื่อผู้รับ (SLIP_RECEIVER_NAME ใช้ตรวจในเซิร์ฟเวอร์เท่านั้น) · แต่แอปธนาคารของผู้โอนจะแสดงชื่อเจ้าของบัญชีตอนสแกน QR เสมอ
 
 ### 4. แก้ farmdtest.com ขึ้น 404
 สาเหตุ: Cloudflare Workers สร้างเว็บจาก branch หลักของ repo (`claude/female-hairstyle-anime-fashion-16gg9i`) ซึ่งยังไม่มีไฟล์ `wrangler.jsonc` / โค้ดล่าสุด · ไฟล์ตั้งค่าอยู่ใน branch `claude/happy-bell-5sj3qh`

@@ -10,6 +10,9 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+/* settings from server/.env (KEY=value per line), e.g. LINE_CHANNEL_ID, RESEND_API_KEY — see auth.js */
+try { for (const line of fs.readFileSync(path.join(__dirname, '.env'), 'utf8').split(/\r?\n/)) { const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/); if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^(['"])(.*)\1$/, '$2'); } }
+catch (e) { if (e.code !== 'ENOENT') console.error('.env read failed:', e.message); }
 const crypto = require('crypto');
 const { WebSocketServer } = require('ws');
 const createAuth = require('./auth');
@@ -75,15 +78,22 @@ function handle(c, m) {
     else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
     return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '' });
   }
-  if (t === 'register' || t === 'login') {
+  if (t === 'email_start' || t === 'email_verify' || t === 'line_ticket') {
     const now = Date.now(); c.authTries = (c.authTries || []).filter(x => now - x < 60000);
-    if (c.authTries.length >= 10) return reply(c, id, 0, 'too_many_tries'); c.authTries.push(now);
-    const p = t === 'register' ? auth.register(m.user, m.pass, c.user ? '' : c.uid) : auth.login(m.user, m.pass);
-    p.then(r => reply(c, id, 1, r), e => reply(c, id, 0, typeof e === 'string' ? e : 'error'));
-    return;
+    if (c.authTries.length >= 15) return reply(c, id, 0, 'too_many_tries'); c.authTries.push(now);
+    // link = attach this login to the account already logged in on this connection · otherwise sign in (new accounts keep this guest id)
+    const link = m.link && c.user ? c.uid : '', claim = c.user ? '' : c.uid;
+    const fail = e => reply(c, id, 0, typeof e === 'string' ? e : (console.error(e), 'error'));
+    try {
+      if (t === 'email_start') return void auth.emailStart(m.email).then(r => reply(c, id, 1, r), fail);
+      if (t === 'email_verify') return reply(c, id, 1, auth.emailVerify(m.email, m.code, claim, link));
+      return reply(c, id, 1, { ticket: auth.lineTicket(m.ret, claim, link) });
+    } catch (e) { return fail(e); }
   }
+  if (t === 'auth_cfg') return reply(c, id, 1, { line: auth.lineEnabled() });
   if (!c.uid) return reply(c, id, 0, 'hello_first');
   if (t === 'logout') { auth.logout(c.token); return reply(c, id, 1); }
+  if (t === 'acct_info') return reply(c, id, 1, c.user ? auth.info(c.uid) : null);
   if (t === 'save_get' || t === 'save_put') {
     if (!c.user) return reply(c, id, 0, 'login_required');
     if (t === 'save_get') return reply(c, id, 1, auth.saveGet(c.uid));
@@ -152,6 +162,17 @@ function leaveRoom(c, name) {
 /* ---------- http + websocket ---------- */
 const server = http.createServer((req, res) => {
   const u = (req.url || '/').split('?')[0];
+  if (u === '/auth/line/start') {
+    const to = auth.lineStartUrl(new URL(req.url, 'http://x').searchParams.get('t') || '');
+    res.writeHead(to ? 302 : 400, to ? { location: to } : { 'content-type': 'text/plain; charset=utf-8' }); return res.end(to ? '' : 'ลิงก์หมดอายุ กลับไปกดเข้าสู่ระบบด้วย LINE ในเกมอีกครั้ง');
+  }
+  if (u === '/auth/line/callback') {
+    const q = new URL(req.url, 'http://x').searchParams;
+    auth.lineFinish(q.get('code'), q.get('state') || '', q.get('error')).then(to => {
+      res.writeHead(to ? 302 : 400, to ? { location: to } : { 'content-type': 'text/plain; charset=utf-8' }); res.end(to ? '' : 'ลิงก์หมดอายุ กลับไปกดเข้าสู่ระบบด้วย LINE ในเกมอีกครั้ง');
+    });
+    return;
+  }
   if (u === '/health') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ ok: 1, conns: wss.clients.size, rooms: rooms.size, docs: docs.size })); }
   if (u === '/' || u === '/index.html') {
     fs.readFile(GAME, 'utf8', (err, html) => {

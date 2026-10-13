@@ -1,0 +1,16 @@
+{
+  "name": "farm-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Online server for the Farm web game (rooms, presence, chat, trade relay, shared farm data)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

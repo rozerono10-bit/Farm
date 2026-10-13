@@ -1249,6 +1249,76 @@ canvas.triPv.inv[data-rm=bow]{background:radial-gradient(circle,#5a2350,#1d0a1c)
 </div>
 
 <script>
+/* 🌐 เซิร์ฟเวอร์ออนไลน์ของเราเอง (โฟลเดอร์ server/) — ใช้แทนระบบออนไลน์ของ claude.ai (user / db / room) ด้วย API หน้าตาเดียวกัน
+   ตั้งที่อยู่เซิร์ฟเวอร์: ใส่ใน FARM_SERVER_URL ด้านล่าง เช่น 'wss://play.myfarm.com/ws' · หรือเปิดลิงก์ ?server=ws://localhost:8080/ws
+   เปิดเกมผ่านเซิร์ฟเวอร์ (npm start) จะตั้งค่าให้เอง · ไม่ได้ตั้ง = ใช้ระบบเดิม (claude.ai) หรือเล่นออฟไลน์ */
+(function(){
+const FARM_SERVER_URL='';
+let URL_=''; try{ URL_=new URLSearchParams(location.search).get('server')||window.FARM_SERVER||FARM_SERVER_URL; }catch(e){ URL_=window.FARM_SERVER||FARM_SERVER_URL; }
+if(!URL_||(window.claude&&window.claude.use)) return;
+let uid=''; try{ uid=localStorage.getItem('farm_uid')||''; }catch(e){}
+if(!/^[\w-]{6,64}$/.test(uid)){ uid='u'+Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join(''); try{ localStorage.setItem('farm_uid',uid); }catch(e){} }
+const J=v=>v==null?v:JSON.parse(JSON.stringify(v));
+let ws=null, open=false, myPeer='', seq=0, firstOk=null, retry=1000;
+const pend=new Map(), subs=new Map(), rooms=new Map();
+const ready=new Promise(r=>{ firstOk=r; setTimeout(()=>r(false),8000); });
+function raw(m){ if(open&&ws.readyState===1){ ws.send(JSON.stringify(m)); return true; } return false; }
+function req(t,body){ return new Promise((res,rej)=>{ const id=++seq; if(!raw(Object.assign({t,id},body))) return rej(new Error('offline')); pend.set(id,{res,rej}); setTimeout(()=>{ if(pend.delete(id)) rej(new Error('timeout')); },15000); }); }
+function connect(){
+  try{ ws=new WebSocket(URL_); }catch(e){ firstOk(false); return; }
+  ws.onopen=()=>{ open=true; retry=1000; req('hello',{uid}).then(r=>{ myPeer=r.peer; firstOk(true);
+      for(const [sid,s] of subs) req('sub',{path:s.path,sid}).catch(()=>{});
+      for(const R of rooms.values()) R._rejoin(); }).catch(()=>{}); };
+  ws.onmessage=e=>{ let m; try{ m=JSON.parse(e.data); }catch(_){ return; } onMsg(m); };
+  ws.onclose=()=>{ open=false; for(const p of pend.values()) p.rej(new Error('offline')); pend.clear(); for(const R of rooms.values()) R._drop(); setTimeout(connect,retry); retry=Math.min(15000,retry*2); };
+  ws.onerror=()=>{}; }
+function docSnap(id,d){ return {id,exists:d!=null,data:()=>d==null?undefined:J(d),metadata:{hasPendingWrites:false,fromCache:false}}; }
+function onMsg(m){
+  if(m.t==='res'){ const p=pend.get(m.id); if(!p) return; pend.delete(m.id); m.ok?p.res(m.data):p.rej(Object.assign(new Error(m.err),{code:m.err})); return; }
+  if(m.t==='snap'){ const s=subs.get(m.sid); if(!s) return;
+    if(s.kind==='doc'){ try{ s.cb(docSnap(s.id,m.data)); }catch(e){} return; }
+    if(m.full){ s.cache=new Map(m.full.map(x=>[x.id,x.data])); } else if(m.ch) for(const x of m.ch){ if(x.data==null) s.cache.delete(x.id); else s.cache.set(x.id,x.data); }
+    const docs=[...s.cache].map(([id,d])=>docSnap(id,d)); try{ s.cb({docs,size:docs.length,empty:!docs.length}); }catch(e){} return; }
+  const R=rooms.get(m.room); if(R) R._msg(m); }
+function sub(path,kind,cb,err){ const sid='s'+(++seq); subs.set(sid,{path,kind,cb,id:path.split('/').pop(),cache:new Map()}); req('sub',{path,sid}).catch(e=>{ if(err) try{ err(e); }catch(_){} }); return ()=>{ subs.delete(sid); raw({t:'unsub',sid}); }; }
+const db={
+  doc(path){ const id=String(path).split('/').pop(); return {id,path,
+    get:()=>req('get',{path}).then(d=>docSnap(id,d)),
+    set:d=>req('set',{path,data:J(d)}).then(()=>{}),
+    update:d=>req('update',{path,data:J(d)}).then(()=>{}),
+    onSnapshot:(cb,err)=>sub(path,'doc',cb,err)}; },
+  collection(path){ return {path,
+    get:()=>req('list',{path}).then(a=>{ const docs=a.map(x=>docSnap(x.id,x.data)); return {docs,size:docs.length,empty:!docs.length}; }),
+    onSnapshot:(cb,err)=>sub(path,'col',cb,err),
+    doc:id=>db.doc(path+'/'+id)}; } };
+function mkRoom(name){
+  const peers=new Map(), on=new Map(), pcb=new Set(); let me=null, joined=false;
+  const list=()=>[...peers.values()].map(p=>({peer:p.peer,presence:p.presence,isMe:p.uid===uid,sameTab:p.peer===myPeer,guest:false}));
+  const fire=()=>{ const L=list(); for(const f of pcb) try{ f(L); }catch(e){} };
+  const R={
+    peers:list,
+    on(topic,fn){ if(!on.has(topic)) on.set(topic,new Set()); on.get(topic).add(fn); return ()=>on.get(topic).delete(fn); },
+    onPeers(fn){ pcb.add(fn); try{ fn(list()); }catch(e){} return ()=>pcb.delete(fn); },
+    emit:(topic,data)=>req('emit',{room:name,topic,data:J(data)}).then(()=>{}),
+    presence(patch){ me=Object.assign({},me||{},J(patch)); const p=peers.get(myPeer); if(p) p.presence=me; return joined?req('pres',{room:name,data:me}).then(()=>{}):Promise.resolve(); },
+    leave(){ rooms.delete(name); joined=false; return req('leave',{room:name}).then(()=>{}).catch(()=>{}); },
+    _join(){ return req('join',{room:name}).then(r=>{ joined=true; peers.clear(); for(const p of r.peers) peers.set(p.peer,p); if(me){ const s=peers.get(myPeer); if(s) s.presence=me; req('pres',{room:name,data:me}).catch(()=>{}); } fire(); }); },
+    _rejoin(){ R._join().catch(()=>{}); },
+    _drop(){ joined=false; peers.clear(); fire(); },
+    _msg(m){
+      if(m.t==='peer'){ peers.set(m.p.peer,m.p); fire(); }
+      else if(m.t==='gone'){ if(peers.delete(m.peer)) fire(); }
+      else if(m.t==='pres'){ const p=peers.get(m.peer)||{peer:m.peer,uid:'',presence:null}; const nm=(p.presence||{}).n!==(m.presence||{}).n; p.presence=m.presence; peers.set(m.peer,p); if(nm) fire(); }
+      else if(m.t==='ev'){ const ev={topic:m.topic,data:m.data,peer:m.peer,isMe:m.uid===uid,sameTab:m.peer===myPeer,guest:false}; for(const f of on.get(m.topic)||[]) try{ f(ev); }catch(e){} } } };
+  return R; }
+const room={ join(name){ name=String(name); let R=rooms.get(name); if(R) return Promise.resolve(R); R=mkRoom(name); rooms.set(name,R); return R._join().then(()=>R,e=>{ rooms.delete(name); throw e; }); } };
+const user={ id:async()=>uid, me:async()=>({id:uid,name:'',guest:false}), isOwner:()=>false, canEdit:()=>false, can:()=>null };
+const NS={user,db,room};
+window.claude={ use:name=>ready.then(ok=>ok&&NS[name]||null) };
+connect();
+})();
+</script>
+<script>
 /* 🌐 ภาษา: English = แปลข้อความไทยบนจอ (DOM + ตัวหนังสือบนแมพ) ตอนแสดงผล · ตั้งค่าที่ ⚙️ > ทั่วไป > 🌐 ภาษา (เก็บใน localStorage 'farmLang') */
 (function(){
 let L='th'; try{ L=localStorage.getItem('farmLang')||'th'; }catch(e){}

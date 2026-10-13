@@ -1,5 +1,5 @@
 /* 🧾 Pay by PromptPay QR + bank slip, checked automatically by EasySlip.
- * 1. The player picks an item → an order with a unique amount (price + random satang, e.g. ฿99.37) and a PromptPay QR
+ * 1. The player picks an item → an order for exactly the item's price and a PromptPay QR
  *    with that amount filled in (built from your own PromptPay QR)
  * 2. The player transfers, then uploads the slip picture
  * 3. EasySlip reads the slip with the bank → the server checks: amount = this order, paid to you (name / account),
@@ -65,8 +65,7 @@ module.exports = function createSlip(dataDir, pay) {
       if (!enabled()) throw 'pay_off';
       const prod = PRODUCTS.find(p => p.id === item); if (!prod) throw 'bad_item';
       if (prod.once && pay.owned(uid).includes(prod.id)) throw 'already_owned';
-      const now = Date.now(), live = new Set(Object.values(db.orders).filter(o => now - o.t < ORDER_MS).map(o => o.amount.toFixed(2)));
-      let amount; for (let i = 0; i < 200; i++) { amount = prod.thb + (1 + crypto.randomInt(99)) / 100; if (!live.has(amount.toFixed(2))) break; }
+      const now = Date.now(), amount = +prod.thb; /* ยอดเท่าราคาสินค้าพอดี (ไม่บวกเศษสตางค์) · กันสลิปซ้ำด้วย transRef + เวลาสลิปต้องหลังสร้างออเดอร์ */
       const oid = crypto.randomBytes(8).toString('hex'); db.orders[oid] = { uid, item: prod.id, amount, t: now }; persist();
       const q = qrcode(0, 'M'); q.addData(withAmount(base(), amount)); q.make();
       return { oid, amount: amount.toFixed(2), exp: now + ORDER_MS, svg: q.createSvgTag({ cellSize: 6, margin: 24, scalable: true }) };

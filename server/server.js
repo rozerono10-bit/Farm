@@ -64,6 +64,7 @@ function colDocs(col) { const out = []; for (const [p, v] of docs) { const s = p
 
 /* ---------- rooms ---------- */
 const rooms = new Map(); // name -> Map<peer, conn>
+const online = new Map(); // account uid -> its one logged-in connection (logging in again elsewhere kicks the old one)
 function roomPeers(name) { const r = rooms.get(name); return r ? [...r.values()] : []; }
 function peerInfo(c, name) { return { peer: c.peer, uid: c.uid, presence: c.pres.get(name) || null }; }
 
@@ -74,7 +75,9 @@ function reply(c, id, ok, data) { send(c, ok ? { t: 'res', id, ok: 1, data } : {
 function handle(c, m) {
   const { t, id } = m;
   if (t === 'hello') {
-    if (m.token) { const s = auth.session(m.token); if (!s) return reply(c, id, 0, 'bad_token'); c.uid = s.uid; c.user = s.user; c.token = m.token; }
+    if (m.token) { const s = auth.session(m.token); if (!s) return reply(c, id, 0, 'bad_token'); c.uid = s.uid; c.user = s.user; c.token = m.token;
+      const old = online.get(s.uid); if (old && old !== c) { send(old, { t: 'kick', why: 'elsewhere' }); old.ws.close(4001, 'logged in elsewhere'); }
+      online.set(s.uid, c); }
     else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
     return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '' });
   }
@@ -193,7 +196,7 @@ wss.on('connection', ws => {
     if (!m || typeof m !== 'object') return;
     try { handle(c, m); } catch (e) { console.error('handle error:', e); }
   });
-  ws.on('close', () => { for (const f of c.subs.values()) f(); c.subs.clear(); for (const r of [...c.rooms]) leaveRoom(c, r); });
+  ws.on('close', () => { if (online.get(c.uid) === c) online.delete(c.uid); for (const f of c.subs.values()) f(); c.subs.clear(); for (const r of [...c.rooms]) leaveRoom(c, r); });
 });
 // drop connections that stopped answering pings (closed tabs, lost phones)
 setInterval(() => { for (const ws of wss.clients) { if (!ws.isAlive) { ws.terminate(); continue; } ws.isAlive = false; ws.ping(); } }, 30000);

@@ -3242,12 +3242,19 @@ function sendPres(){ if(!sroom||!S.char||SIM) return; const c=S.char, k=[S.x.toF
 /* 🚶 ผู้เล่นคนอื่นเดินลื่น: เก็บตำแหน่งที่ได้รับ (พร้อมเวลา) แล้ววาดย้อนหลัง PEER_DELAY ms เลื่อนเป็นเส้นตรงระหว่างจุด (ความเร็วคงที่ ไม่เดิน-หยุด) · ห่างเกิน 4 ช่อง = วาร์ป */
 const PEER_DELAY=220;
 function peerAt(id,r){ const now=performance.now(), x=+r.x||0, y=+r.y||0; let q=peerPos[id];
-  if(!q) q=peerPos[id]={x,y,s:[{x,y,t:now}],mv:false,live:true,off:null,ts:null};
+  if(!q) q=peerPos[id]={x,y,s:[{x,y,t:now}],mv:false,live:true,off:null,ts:null,gap:120,jit:0,dl:PEER_DELAY};
   /* เวลาของจุด: ใช้เวลาที่ผู้ส่งแนบมา (ts) + ส่วนต่างนาฬิกาที่น้อยที่สุดที่เคยเห็น → ไม่แกว่งตามความหน่วงของเน็ตแต่ละครั้ง */
-  let t=now; if(typeof r.ts==='number'&&r.ts!==q.ts){ q.ts=r.ts; const o=now-r.ts; if(q.off==null||o<q.off||o>q.off+1500) q.off=o; else q.off+=.02; }
+  let t=now; if(typeof r.ts==='number'&&r.ts!==q.ts){ const pt=q.ts; q.ts=r.ts; const o=now-r.ts;
+    if(q.off==null||o<q.off||o>q.off+3000) q.off=o; else q.off+=.02;
+    /* 📶 เน็ตกระตุก/ส่งห่าง → ดีเลย์ของคนนี้ยืดออกเอง (เน็ตดี ~0.2 วิ · เน็ตแย่สุด 1.2 วิ) ภาพเลยเดินต่อเนื่อง ไม่หยุด-วาร์ป */
+    if(pt!=null&&r.ts>pt&&r.ts-pt<1100){ const g=r.ts-pt; q.gap+=(g-q.gap)*(g>q.gap?.3:.05); } /* ช่วงยืนนิ่ง (ไม่ได้ส่ง) ไม่นับ */
+    const j=o-q.off; q.jit+=(j-q.jit)*(j>q.jit?.3:.03);
+    q.dl=Math.max(PEER_DELAY,Math.min(1200,q.gap*1.4+q.jit*1.6+60)); }
   if(q.off!=null&&typeof r.ts==='number') t=Math.min(now,r.ts+q.off);
-  const L=q.s[q.s.length-1]; if(L.x!==x||L.y!==y){ if(Math.hypot(x-L.x,y-L.y)>4) q.s=[{x,y,t}]; else if(t>L.t){ q.s.push({x,y,t}); if(q.s.length>16) q.s.shift(); } }
-  const rt=now-PEER_DELAY, s=q.s; let a=s[0], b=null;
+  const L=q.s[q.s.length-1]; if(L.x!==x||L.y!==y){ const d=Math.hypot(x-L.x,y-L.y);
+    if(d>12||(d>4&&d/Math.max(1,t-L.t)*1000>25)) q.s=[{x,y,t}]; /* วาร์ปจริง (ไกลมาก/เร็วเกินเดิน) → ย้ายทันที */
+    else if(t>L.t){ q.s.push({x,y,t}); if(q.s.length>32) q.s.shift(); } }
+  const rt=now-q.dl, s=q.s; let a=s[0], b=null;
   for(let i=0;i<s.length;i++){ if(s[i].t<=rt) a=s[i]; else { b=s[i]; break; } }
   let nx=a.x, ny=a.y; if(b&&b!==a&&b.t>a.t){ const k=Math.min(1,Math.max(0,(rt-a.t)/(b.t-a.t))); nx=a.x+(b.x-a.x)*k; ny=a.y+(b.y-a.y)*k; }
   q.mv=Math.hypot(nx-q.x,ny-q.y)>.002; q.live=!!b; q.x=nx; q.y=ny; return q; }

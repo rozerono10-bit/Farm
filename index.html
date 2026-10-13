@@ -6810,7 +6810,7 @@ function drawCropShow(s,time){ const c=ctx, cx=s.x*T, by=s.y*T, cw=T*1.22, bw=cw
   c.fillStyle='#f6e7c4'; c.beginPath(); c.roundRect(x0+T*.08,y0+T*.34,bw-T*.16,bh-T*.42,T*.09); c.fill();
   const tt=lbl('🌟 '+(window.__tr||(x=>x))('ตัวอย่างพืชพิเศษ'),Math.max(9,T*.24),'#fff4c8','rgba(40,20,5,.9)',3); c.drawImage(tt.c,cx-tt.w/2,y0+T*.17-tt.h/2,tt.w,tt.h);
   const hd=S.hide; S.hide=Object.assign({},hd||{},{money:1,shield:1,shine:0,bar:1,time:1,ready:1});
-  try{ CSHOW.forEach((o,i)=>{ const sx=x0+T*.15+i*cw, mx=sx+cw/2; c.save(); c.beginPath(); c.rect(sx+T*.03,y0+T*.36,cw-T*.06,T*1.2); c.clip(); c.translate(mx,y0+T*1.0); c.scale(.85,.85); c.translate(-T/2,-T/2); drawCrop(o,0,0,time); c.restore();
+  try{ CSHOW.forEach((o,i)=>{ const sx=x0+T*.15+i*cw, mx=sx+cw/2; c.save(); c.beginPath(); c.rect(sx+T*.03,y0+T*.36,cw-T*.06,T*1.2); c.clip(); c.translate(mx,y0+T*1.12); c.scale(.62,.62); c.translate(-T/2,-T/2); drawCrop(o,0,0,time); c.restore();
       const l=lbl(o.n,Math.max(8,T*.17),o.col,'rgba(0,0,0,.8)',3), l2=lbl('x'+o.m(),Math.max(8,T*.17),'#fff','rgba(0,0,0,.8)',3);
       c.drawImage(l.c,mx-l.w/2,y0+bh-T*.5-l.h/2,l.w,l.h); c.drawImage(l2.c,mx-l2.w/2,y0+bh-T*.2-l2.h/2,l2.w,l2.h); }); }
   finally{ S.hide=hd; }

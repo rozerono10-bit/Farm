@@ -4524,7 +4524,8 @@ function closeShop(){ shopOpen = false; try{ rateHide(); }catch(e){} $('shop').c
 $('shopClose').addEventListener('click', closeShop);
 let hasStarted = false;
 function startPlay(){
-  hasStarted = true; playing = true; setTimeout(()=>{ warmMap('town'); warmMap('land'); },2500);
+  hasStarted = true; playing = true;
+  try{ if(!BGS.boot){ BGS.boot=1; const gap=realNow()-(+S.svT||0); if(S.auto&&S.svT&&gap>60000) BGS.lag=Math.min(gap,BG_MAX); } }catch(e){} /* ⏩ ปิดเกมไปตอนเปิดออโต้ → เปิดใหม่ เร่งเวลาให้บอททำงานส่วนที่หายไป (สูงสุด 6 ชม.) */ setTimeout(()=>{ warmMap('town'); warmMap('land'); },2500);
   $('title').classList.remove('on');
   updateHUD();
   toast('📍 ' + maps[S.map].name, 2000);
@@ -6889,7 +6890,20 @@ function bgRun(budget){ if(!bgOK()){ BGS.lag=0; return; } BGS.lag=Math.min(BGS.l
   if(BGS.lag<=0) BGS.lag=0; }
 function bgUI(){ const e=$('bgFast'); if(!e) return; const on=BGS.lag>1500&&!document.hidden; if(on){ const m=BGS.lag/60000; e.textContent='⏩ เร่งเวลาย้อนหลังตอนพับจอ · เหลือ '+(m>=1?Math.ceil(m)+' นาที':Math.ceil(BGS.lag/1000)+' วิ'); } e.style.display=on?'':'none'; }
 document.addEventListener('visibilitychange',()=>{ const n=realNow(); if(document.hidden){ BGS.last=n; BGS.on=true; } else if(BGS.on){ BGS.on=false; if(bgOK()) BGS.lag+=Math.max(0,n-BGS.last); bgUI(); } });
-setInterval(()=>{ if(!document.hidden||!BGS.on) return; const n=realNow(); if(bgOK()) BGS.lag+=Math.max(0,n-BGS.last); BGS.last=n; bgRun(150); },1000);
+setInterval(()=>{ if(!document.hidden||!BGS.on) return; const n=realNow(); if(bgOK()) BGS.lag+=Math.max(0,n-BGS.last); BGS.last=n; bgRun(150); if(sroom&&!SIM) sendPres(); },250);
+/* 🔊 ตัวช่วยให้เกมไม่ถูกหยุดตอนพับจอ: เปิดออโต้อยู่ → เล่นเสียงเบามาก (ความถี่ต่ำ หูแทบไม่ได้ยิน) วนไว้
+ *   เบราว์เซอร์มือถือ/คอมจะถือว่าหน้านี้ "กำลังเล่นเสียง" เลยไม่หยุดโค้ดเกม → ตัวละครเดิน/ปลูก/เก็บต่อจริงแม้จอดับ (เพื่อนเห็นเราเดินอยู่)
+ *   ถ้าเครื่องยังหยุดเกมอยู่ดี (เช่นโหมดประหยัดแบต) กลับมาแล้วระบบเร่งเวลาข้างบนเติมส่วนที่ขาดให้ */
+let KA=null, kaURL='';
+function kaWav(){ const sr=8000, n=sr*2, b=new ArrayBuffer(44+n*2), v=new DataView(b), w=(o,t)=>{ for(let i=0;i<t.length;i++) v.setUint8(o+i,t.charCodeAt(i)); };
+  w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt '); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,'data'); v.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++) v.setInt16(44+i*2,Math.round(Math.sin(i/sr*2*Math.PI*50)*28),true); /* 50Hz เบามาก (~-61dB) */
+  return URL.createObjectURL(new Blob([b],{type:'audio/wav'})); }
+function kaSync(){ try{ const want=playing&&(S.auto||rdOn())&&!window.FARM_HALT;
+  if(want){ if(!KA){ kaURL=kaWav(); KA=new Audio(kaURL); KA.loop=true; KA.setAttribute('playsinline',''); }
+    if(KA.paused) KA.play().then(()=>{ if(navigator.mediaSession&&window.MediaMetadata){ navigator.mediaSession.metadata=new MediaMetadata({title:'🤖 ออโต้ฟาร์มทำงานอยู่',artist:'Farm D Test'}); } }).catch(()=>{}); }
+  else if(KA&&!KA.paused) KA.pause(); }catch(e){} }
+document.addEventListener('pointerdown',kaSync,true); document.addEventListener('keydown',kaSync,true); setInterval(kaSync,2000);
 function frame(t){
   if(window.FARM_HALT) return; /* ⛔ โดนเด้ง/แบน: หยุดลูปเกม */
   requestAnimationFrame(frame); lruF++;

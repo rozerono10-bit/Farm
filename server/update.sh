@@ -8,7 +8,7 @@ BR="$(sudo -u "$OWNER" git rev-parse --abbrev-ref HEAD)"
 OLD="$(sudo -u "$OWNER" git rev-parse HEAD)"
 sudo -u "$OWNER" git pull --ff-only origin "$BR"
 NEW="$(sudo -u "$OWNER" git rev-parse HEAD)"
-if [ "$OLD" != "$NEW" ] && git diff --name-only "$OLD" "$NEW" | grep -q '^server/package'; then
+if [ "$OLD" != "$NEW" ] && sudo -u "$OWNER" git diff --name-only "$OLD" "$NEW" | grep -q '^server/package'; then
   echo "== package.json เปลี่ยน → npm install"; (cd server && sudo -u "$OWNER" npm install --omit=dev --no-audit --no-fund)
 fi
 systemctl restart farm

@@ -2866,7 +2866,7 @@ function drawPond(m,time,items){ const r=m.pond, P=S.pond, LV=Math.max(1,Math.mi
 /* ---------- state ---------- */
 function defaultState(){
   return { job:'', jobs:{}, v:0, rows:0, coins:20, gems:0, crown:0, salt:0, locks:{}, shields:0, hammers:0, rshield:0, rsAuto:{on:false,n:10}, rsBuyN:10, rsUnl:0, noRaid:0, rlog:[], rtSeen:0, rnT:0, rl:[], own:[], helpers:[], seed:Object.assign(Z(),{corn:3,carrot:3}), seedG:Z(), seedR:Z(), bags:0, fs:{}, rod:0, rods:[], fish:[], pond:{own:0,lv:1,f:[],br:0,t:0,n:0,rd:[]}, veh:[], ride:-1, crop:Z(), gold:Z(), vd:Z(), vbags:0, mv:{crop:Z(),gold:Z(),rb:Z(),vd:Z()}, auto:false, autoSell:false, ai:{plant:true,harvest:true,sell:true,fry:true,gold:false}, fb:{npc:'gold',back:true,leg:false}, st:{gold:0,grow:0,fish:0}, xp:0, lv:1, sel:'corn',
-           crops:{}, rb:Z(), hv:0, farm:'', char:null, code:Math.random().toString(36).slice(2,8).toUpperCase(), muteWx:false, kbs:'creamy', kbH:1, kbF:1, perf:0, bloom:0, skMini:1, skV:2, vol:100, volWx:100, ntf:{}, hide:{bar:0,ready:0,time:0,money:0,shield:0,shine:0}, map:'land', x:11.5, y:9.5, fx:0, fy:1 };
+           crops:{}, rb:Z(), hv:0, farm:'', char:null, code:Math.random().toString(36).slice(2,8).toUpperCase(), muteWx:false, kbs:'creamy', kbH:1, kbF:1, perf:0, bloom:0, light:0, skMini:1, skV:2, vol:100, volWx:100, ntf:{}, hide:{bar:0,ready:0,time:0,money:0,shield:0,shine:0}, map:'land', x:11.5, y:9.5, fx:0, fy:1 };
 }
 let S = defaultState();
 let FC={}, DB=null, myId='', FID='', unF=null, SRV={}, ONL=[];
@@ -4455,6 +4455,7 @@ function renderSet(){
       +'<div class="tgGrid">'+HU.map(([k,e,n])=>chip(!hd[k],`data-hud="${k}"`,e+' '+n)).join('')+'</div>';
     h+=sec('📱 หน้าจอ & ความลื่น')
       +`<div class="slab">⚡ โหมดการแสดงผล</div><div class="mrow"><button class="btn small tog ${S.perf===1?'ghost':'on'}" data-perf="0">🚀 ปกติ</button><button class="btn small tog ${S.perf===1?'on':'ghost'}" data-perf="1">🐢 ประหยัด</button></div><p class="sNote">ประหยัด = ลดความละเอียด/เอฟเฟกต์ เครื่องไม่ร้อน แบตอยู่นาน</p>`
+      +`<div class="slab">🌤️ แสง & เงา (ภาพสวยขึ้น)</div><div class="mrow"><button class="btn small tog ${S.light===1?'on':'ghost'}" data-light="1">🌤️ เปิด</button><button class="btn small tog ${S.light===1?'ghost':'on'}" data-light="0">⬜ ปิด</button></div><p class="sNote">แดดอุ่นจากมุมซ้ายบน · ลำแสงแดด · เงาต้นไม้/บ้าน/ตัวละคร · ขอบจอนุ่ม ๆ — เครื่องรุ่นเก่าอาจหน่วงขึ้นนิดหน่อย (โหมด 🐢 ประหยัด ปิดให้อัตโนมัติ)</p>`
       +`<div class="slab">✨ Bloom (แสงฟุ้ง นุ่ม ๆ)</div><div class="mrow"><button class="btn small tog ${S.bloom!==0?'on':'ghost'}" data-bloom="1">✨ เปิด</button><button class="btn small tog ${S.bloom===0?'on':'ghost'}" data-bloom="0">⬜ ปิด</button></div><p class="sNote">ทำให้ภาพดูฟุ้ง ๆ มีแสงนุ่ม · โหมดประหยัดจะปิดให้อัตโนมัติ${S.perf===1&&S.bloom!==0?' (ตอนนี้ปิดอยู่เพราะเปิดโหมดประหยัด)':''}</p>`
       +`<div class="slab">🧭 แถบปุ่มล่าง (ออโต้/ตกปลา/แชท …)</div><div class="mrow"><button class="btn small tog ${S.warpMin?'ghost':'on'}" data-warp="0">📂 แสดง</button><button class="btn small tog ${S.warpMin?'on':'ghost'}" data-warp="1">◀ ย่อเก็บ</button></div>`
       +`<div class="slab">👗 ชุดพรีเมียม</div><div class="mrow"><button class="btn small tog ${skMini()?'on':'ghost'}" data-skm="1">🎮 แบบตัวในเกม</button><button class="btn small tog ${skMini()?'ghost':'on'}" data-skm="0">✨ แบบชุดใหญ่ (Beta)</button></div>`;
@@ -4489,6 +4490,7 @@ $('setBody').addEventListener('click',e=>{
   else if(b.dataset.set==='mutewx'){ initAudio(); S.muteWx=!S.muteWx; sndTick(1); }
   else if(b.dataset.warp!==undefined){ S.warpMin=+b.dataset.warp?1:0; warpUI(); }
   else if(b.dataset.skm!==undefined){ S.skMini=+b.dataset.skm?1:0; pfSig=''; }
+  else if(b.dataset.light!==undefined){ S.light=+b.dataset.light?1:0; toast(S.light?'🌤️ เปิดแสง & เงาแล้ว':'⬜ ปิดแสง & เงาแล้ว',1600); }
   else if(b.dataset.bloom!==undefined){ S.bloom=+b.dataset.bloom?1:0; toast(S.bloom?'✨ เปิด Bloom แล้ว — ภาพฟุ้ง ๆ นุ่ม ๆ':'⬜ ปิด Bloom แล้ว',1600); }
   else if(b.dataset.perf!==undefined){ S.perf=+b.dataset.perf===1?1:0; if(S.perf===0) autoCap=2; applyPerf(); toast(S.perf===1?'🐢 โหมดประหยัด: ลดความละเอียด/เอฟเฟกต์':'🚀 โหมดปกติ (ปรับความละเอียดอัตโนมัติถ้าเครื่องช้า)',2000); }
   else if(b.dataset.tog==='auto'){ S.auto=!S.auto; B.pause=0; B.path=B.act=null; toast(S.auto?'🤖 ออโต้เปิด — เดินปลูก เก็บ และไปขายให้เอง':'🤖 ออโต้ปิด',2200); }
@@ -6118,7 +6120,7 @@ function mkSpr(hs,os,hcs,ocs,sk,back,fr,ex,rd,ac,acc,eyi,fem){
   out.hair=cvH; if(top&&!H.hi) out.top=top; if(top&&H.hi){ const sl3=document.createElement('canvas'); sl3.width=32; sl3.height=48; const q3=sl3.getContext('2d'); q3.drawImage(top,0,0); q3.globalCompositeOperation='source-in'; q3.fillStyle='#1b1620'; q3.fillRect(0,0,32,48); const t2=document.createElement('canvas'); t2.width=32; t2.height=48; const o3=t2.getContext('2d'); for(const d of [[-1,0],[1,0],[0,-1],[0,1]]) o3.drawImage(sl3,d[0],d[1]); o3.drawImage(top,0,0); out.top=t2; }
   return out;
 }
-function drawPerson(x,y,o,moving,wt,time){ try{ drawPerson_(x,y,o,moving,wt,time); }catch(e){ ctx.fillStyle='#e8c6a0'; ctx.fillRect(x-T*.2,y-T*.9,T*.4,T*.9); } }
+function drawPerson(x,y,o,moving,wt,time){ if(LITF) personShadow(x,y); try{ drawPerson_(x,y,o,moving,wt,time); }catch(e){ ctx.fillStyle='#e8c6a0'; ctx.fillRect(x-T*.2,y-T*.9,T*.4,T*.9); } }
 /* 🎮 โหมด "ตัวแบบในเกม": ชุดพรีเมียมทุกชุดวาดเป็นตัวพิกเซลแบบตัวละครปกติ (32×48) แต่สี/ลาย/ของประดับเหมือนชุดหลัก · สลับได้ที่ร้านพรีเมียม > แฟชั่น */
 const skMini=()=>!!(typeof S!=='undefined'&&S&&S.skMini);
 const GOLD='#e3b443', GOLDD='#a8761e', TURQ='#2fb8c4';
@@ -6416,18 +6418,20 @@ function draw(tms){
   const x0 = Math.max(0, Math.floor(camX/T)), x1 = Math.min(m.w-1, Math.floor((camX+W)/T));
   const y0 = Math.max(0, Math.floor(camY/T)-1), y1 = Math.min(m.h-1, Math.floor((camY+H)/T)+1);
   drawChunks(m,x0,y0,x1,y1);
-  const items = [], crops = []; NLB.length=0; CSB.length=0;
+  const items = [], crops = [], LIT=litOn(); LITF=LIT; NLB.length=0; CSB.length=0; LT_TRS.length=0;
   for(let ty=y0; ty<=y1; ty++){
     for(let tx=x0; tx<=x1; tx++){
       const v = m.t[ty*m.w+tx], sx = tx*T, sy = ty*T;
       if((v===WTR&&!m.mount)||v===PORT) drawGround(m,v,tx,ty,sx,sy,time);
       if(v===SOIL){ const c = FC[m.sk[ty*m.w+tx]]; if(c) crops.push([c,sx,sy]); }
+      if(v===TREE&&LIT) LT_TRS.push(tx,ty);
       if(v===TREE) items.push({ fy:(m.ban&&m.ban.has(tx+','+ty))?ty+.96+BAN_DY:ty+1, d:(m.ban&&m.ban.has(tx+','+ty))?(() => drawBananaOv(tx,ty,time)):(() => drawTree(tx,ty,time)) });
     }
   }
   drawFish(m,time,x0,y0,x1,y1);
   if(m.sea) drawSeaAnim(m,time,x0,y0,x1,y1);
   if(m.mount) drawMountAnim(m,time,x0,y0,x1,y1);
+  if(LIT) drawShadows(m,x0,y0,x1,y1);
   drawCropsCached(crops,x0,y0,x1,y1,time);
   if(S.map==='farm'&&FLYS.length) items.push({ fy:9999, d:() => drawCflyFx(time) });
   if(S.map==='farm'&&pondOn()) drawPond(m,time,items);
@@ -6508,6 +6512,7 @@ function draw(tms){
   ctx.restore();
   drawWeather();
   for(let i=0;i<(LOW?0:3);i++){ const cx=((time*10+i*W*.5)%(W+360))-180; ctx.fillStyle='rgba(0,20,0,.06)'; ctx.beginPath(); ctx.ellipse(cx,H*(.25+i*.28),150,60,0,0,6.3); ctx.fill(); }
+  LITF=false; if(litOn()) lightPass(time);
   if(S.bloom!==0&&S.perf!==1) bloomPass();
   if(fade > 0){ ctx.fillStyle = `rgba(0,0,0,${fade})`; ctx.fillRect(0,0,W,H); }
   // action button label
@@ -6516,6 +6521,32 @@ function draw(tms){
   if(label !== lastLabel){ $('act').textContent = label; lastLabel = label; }
   if(dim !== lastDim){ $('act').classList.toggle('dim', dim); lastDim = dim; }
 }
+/* 🌤️ แสง & เงา (ตั้งค่า → เปิด/ปิด · ปิดเองในโหมดประหยัด)
+ *  เงา: ต้นไม้/ตึก/ตัวละคร มีเงาตกไปทางขวาล่าง (แดดส่องจากซ้ายบน)
+ *  แสง: แดดอุ่นจากมุมซ้ายบน + ลำแสงแดดจาง ๆ เคลื่อนช้า ๆ + ขอบจอมืดลงนิด ๆ (vignette) ภาพดูมีมิติ */
+const litOn=()=>S.light===1&&S.perf!==1;
+var LITF=false; const LT_TRS=[], LT_LSHC='rgba(22,32,68,.28)';
+function drawShadows(m,x0,y0,x1,y1){ ctx.save(); ctx.fillStyle=LT_LSHC; ctx.beginPath();
+  for(let i=0;i<LT_TRS.length;i+=2){ const cx=(LT_TRS[i]+.8)*T, cy=(LT_TRS[i+1]+.97)*T; ctx.moveTo(cx+T*.62,cy); ctx.ellipse(cx,cy,T*.62,T*.24,-.22,0,6.3); }
+  ctx.fill(); ctx.beginPath();
+  for(const b of m.b){ if(b.x+b.w<x0-1||b.x>x1+1||b.y+b.h<y0-1||b.y>y1+2) continue; const bx=(b.x+.3)*T, by=(b.y+.45)*T, bw=b.w*T, bh=b.h*T, r=T*.3;
+    ctx.moveTo(bx+r,by); ctx.lineTo(bx+bw-r,by); ctx.quadraticCurveTo(bx+bw,by,bx+bw,by+r); ctx.lineTo(bx+bw,by+bh-r); ctx.quadraticCurveTo(bx+bw,by+bh,bx+bw-r,by+bh); ctx.lineTo(bx+r,by+bh); ctx.quadraticCurveTo(bx,by+bh,bx,by+bh-r); ctx.lineTo(bx,by+r); ctx.quadraticCurveTo(bx,by,bx+r,by); }
+  ctx.fill(); ctx.restore(); }
+/* เงาตัวละคร (เรียกจาก drawPerson): วงรีเอียงทอดไปทางขวา */
+function personShadow(x,y){ ctx.fillStyle=LT_LSHC; ctx.beginPath(); ctx.ellipse(x+T*.16,y+T*.02,T*.34,T*.11,-.2,0,6.3); ctx.fill(); }
+let LT_LGC=null, LT_LGK='', LT_LRC=null, LT_LVG=null;
+function lightPass(time){ const k=W+'x'+H;
+  if(LT_LGK!==k){ LT_LGK=k; const w=Math.max(4,W>>3), h=Math.max(4,H>>3);
+    LT_LGC=document.createElement('canvas'); LT_LGC.width=w; LT_LGC.height=h; let g=LT_LGC.getContext('2d'), lg=g.createLinearGradient(0,0,w,h);
+    lg.addColorStop(0,'rgba(255,205,130,.75)'); lg.addColorStop(.45,'rgba(255,236,200,.18)'); lg.addColorStop(1,'rgba(70,80,150,.45)'); g.fillStyle=lg; g.fillRect(0,0,w,h);
+    LT_LRC=document.createElement('canvas'); LT_LRC.width=w; LT_LRC.height=h; g=LT_LRC.getContext('2d'); g.translate(0,0); g.rotate(-.55);
+    for(let i=0;i<5;i++){ const x=-w*.3+i*w*.42, bw=w*(.08+(i%3)*.05), gr=g.createLinearGradient(x,0,x+bw,0); gr.addColorStop(0,'rgba(255,240,190,0)'); gr.addColorStop(.5,'rgba(255,240,190,.55)'); gr.addColorStop(1,'rgba(255,240,190,0)'); g.fillStyle=gr; g.fillRect(x,-h,bw,h*4); }
+    LT_LVG=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.hypot(W,H)*.62); LT_LVG.addColorStop(0,'rgba(0,0,20,0)'); LT_LVG.addColorStop(1,'rgba(10,10,40,.38)'); }
+  ctx.save(); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.globalCompositeOperation='soft-light'; ctx.drawImage(LT_LGC,0,0,W,H);
+  ctx.globalCompositeOperation='screen'; ctx.globalAlpha=.16+Math.sin(time*.45)*.05; const ox=Math.sin(time*.12)*W*.06; ctx.drawImage(LT_LRC,ox-W*.05,0,W*1.1,H);
+  ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over'; ctx.fillStyle=LT_LVG; ctx.fillRect(0,0,W,H);
+  ctx.restore(); }
 /* ✨ Bloom: ย่อภาพทั้งจอลง 2 ชั้น (เบลอเองตอนขยายกลับ) · คูณสีตัวเอง = เหลือแต่ส่วนสว่าง · แล้วฉาบแบบ screen ให้ฟุ้ง ๆ นุ่ม ๆ */
 let BLA=null, BLB=null, blmF=0;
 function bloomPass(){ const c=mainCtx.canvas, W=c.width, H=c.height; if(W<8||H<8) return;

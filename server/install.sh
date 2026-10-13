@@ -56,7 +56,9 @@ ufw --force enable >/dev/null
 ufw status | head -5
 
 echo "== 5/6 daily backup to R2 (skips until R2 keys are in .env)"
-( crontab -u $APP_USER -l 2>/dev/null | grep -v 'server/backup.sh' ; echo "17 4 * * * $APP_DIR/server/backup.sh >> /home/$APP_USER/backup.log 2>&1" ) | crontab -u $APP_USER -
+CRON_OLD="$(crontab -u $APP_USER -l 2>/dev/null | grep -v 'server/backup.sh' || true)"
+printf '%s\n%s\n' "$CRON_OLD" "17 4 * * * $APP_DIR/server/backup.sh >> /home/$APP_USER/backup.log 2>&1" | sed '/^$/d' | crontab -u $APP_USER -
+crontab -u $APP_USER -l | grep -q backup.sh && echo "   backup scheduled daily at 04:17 UTC"
 
 echo "== 6/6 check"
 sleep 2

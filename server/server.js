@@ -94,6 +94,7 @@ function handle(c, m) {
     } catch (e) { return fail(e); }
   }
   if (t === 'auth_cfg') return reply(c, id, 1, auth.enabled());
+  if (t === 'ping') return reply(c, id, 1);
   if (!c.uid) return reply(c, id, 0, 'hello_first');
   if (t === 'logout') { auth.logout(c.token); return reply(c, id, 1); }
   if (t === 'acct_info') return reply(c, id, 1, c.user ? auth.info(c.uid) : null);

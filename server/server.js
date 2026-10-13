@@ -2,6 +2,7 @@
  * - Serves the game (../index.html) over HTTP and a WebSocket at /ws
  * - Replaces the claude.ai capabilities the game uses: user (id), db (doc/collection), room (join/emit/presence/peers)
  * - Stores shared docs (farms/, players/, chatw/) in memory and saves them to data/db.json
+ * - Player accounts, login sessions and cloud saves: see auth.js
  *
  * Run:  npm install && npm start      (PORT=8080 by default)
  */
@@ -11,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { WebSocketServer } = require('ws');
+const createAuth = require('./auth');
 
 const PORT = +process.env.PORT || 8080;
 const GAME = path.resolve(process.env.GAME_FILE || path.join(__dirname, '..', 'index.html'));
@@ -18,7 +20,7 @@ const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 const MAX_DOC = 256 * 1024;          // bytes per document (same limit as claude.ai db)
-const MAX_MSG = 300 * 1024;          // bytes per websocket message
+const MAX_MSG = 1200 * 1024;         // bytes per websocket message (a cloud save can be up to 1 MB)
 const MAX_ROOM_PEERS = +process.env.MAX_ROOM_PEERS || 100;
 const RATE = { msgs: 60, per: 1000 }; // per connection
 const POS_KEYS = new Set(['x', 'y', 'fx', 'fy', 'mv']);
@@ -26,6 +28,7 @@ const COLLECTIONS = new Set(['farms', 'players', 'chatw']);
 const OWN_ONLY = new Set(['players', 'chatw']); // only the owner (players/<uid>, chatw/<uid>) may write
 
 /* ---------- storage ---------- */
+const auth = createAuth(DATA_DIR);
 let docs = new Map();
 try { const raw = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); docs = new Map(Object.entries(raw)); console.log('loaded', docs.size, 'docs'); }
 catch (e) { if (e.code !== 'ENOENT') console.error('db load failed:', e.message); }
@@ -67,8 +70,25 @@ function reply(c, id, ok, data) { send(c, ok ? { t: 'res', id, ok: 1, data } : {
 
 function handle(c, m) {
   const { t, id } = m;
-  if (t === 'hello') { if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) c.uid = m.uid; return reply(c, id, 1, { uid: c.uid, peer: c.peer }); }
+  if (t === 'hello') {
+    if (m.token) { const s = auth.session(m.token); if (!s) return reply(c, id, 0, 'bad_token'); c.uid = s.uid; c.user = s.user; c.token = m.token; }
+    else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
+    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '' });
+  }
+  if (t === 'register' || t === 'login') {
+    const now = Date.now(); c.authTries = (c.authTries || []).filter(x => now - x < 60000);
+    if (c.authTries.length >= 10) return reply(c, id, 0, 'too_many_tries'); c.authTries.push(now);
+    const p = t === 'register' ? auth.register(m.user, m.pass, c.user ? '' : c.uid) : auth.login(m.user, m.pass);
+    p.then(r => reply(c, id, 1, r), e => reply(c, id, 0, typeof e === 'string' ? e : 'error'));
+    return;
+  }
   if (!c.uid) return reply(c, id, 0, 'hello_first');
+  if (t === 'logout') { auth.logout(c.token); return reply(c, id, 1); }
+  if (t === 'save_get' || t === 'save_put') {
+    if (!c.user) return reply(c, id, 0, 'login_required');
+    if (t === 'save_get') return reply(c, id, 1, auth.saveGet(c.uid));
+    try { auth.savePut(c.uid, m.ts, m.data, m.base); return reply(c, id, 1); } catch (e) { return reply(c, id, 0, typeof e === 'string' ? e : 'error'); }
+  }
 
   if (t === 'get' || t === 'set' || t === 'update') {
     const s = parsePath(m.path); if (!s || s.length % 2) return reply(c, id, 0, 'bad_path');
@@ -160,6 +180,6 @@ wss.on('connection', ws => {
 // drop connections that stopped answering pings (closed tabs, lost phones)
 setInterval(() => { for (const ws of wss.clients) { if (!ws.isAlive) { ws.terminate(); continue; } ws.isAlive = false; ws.ping(); } }, 30000);
 
-process.on('SIGINT', () => { saveNow(); process.exit(0); });
-process.on('SIGTERM', () => { saveNow(); process.exit(0); });
+process.on('SIGINT', () => { saveNow(); auth.flush(); process.exit(0); });
+process.on('SIGTERM', () => { saveNow(); auth.flush(); process.exit(0); });
 server.listen(PORT, () => console.log('Farm server on http://localhost:' + PORT + '  (game: ' + GAME + ')'));

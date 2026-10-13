@@ -1511,6 +1511,7 @@ const CROPS = {
   ,gemp:  { name:'ต้นเพชร (Secret)', emoji:'💎', grow:GEMP_MS, rg:GEMP_MS, seed:99999, gch:1, gemp:1, tier:7, sell:0, xp:0 } /* เมล็ดจากนางจิ้งจอก · ผลิตเพชรให้เองทุกนาที */
 };
 CROPS.corn.tier=0;
+for(const k in CROPS) CROPS[k].rg=CROPS[k].grow; /* 🌱 ออกผลรอบต่อไป (หลังเก็บ) ใช้เวลาเท่ากับตอนปลูกใหม่ */
 const TIERS=[['Common','ธรรมดา','#9aa0a6'],['Uncommon','ไม่ธรรมดา','#4fae3a'],['Rare','หายาก','#4a8fd8'],['Epic','เอปิค','#8a5cc8'],['Legendary','ตำนาน','#f2b01e'],['Mythic','มิธิค','#e84f6a'],['Curse','คำสาป','#8a2be2'],['Secret','ความลับ','#ff3df0']];
 const GEMIMG='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFgAAABUCAMAAAAxiQB9AAAAYFBMVEUAAAAWOGzW+v940vgofdccXLRGqu7///9gxPSW4vr//8gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAClCEkhAAAAGHRSTlMA/////////////wAAAAAAAAAAAAAAAAAUfvF1AAAAxElEQVR42u3Y2w6CMBBF0QpewP//YDsJY8axp51iNVHPfoISFiTlkjSlgV220uh+GD40Kp1zzTVxwg+oTsjkQnj4bv8Y1hPWnMKK2W05tuTQJBLG6Lol21Mji1cvQPiO6svQC2tFnHDog94b4fK/UAZmk+yfTbJ/dMnYyQSfCsJF2OMeDqGEuyawBjd/qIQhjuCuiSMcxhEcRgmH4d0oYYgjeBdKuIpb+CWUcGjBacjqH2HCH4Q9PnQlm/ATnt4RYca+oRvnoyQhrAUerwAAAABJRU5ErkJggg==', UI=n=>'<svg class="uic" aria-hidden="true"><use href="#i-'+n+'"/></svg>', gIc=()=>'<img class="gimg" alt="💎" draggable="false" src="'+GEMIMG+'">'; /* 💎 โมเดลเพชร (พิกเซล) */
 /* 🪴 ไอคอนเมล็ดเวนัสฟลายแทรป: วาดจากโมเดลต้นจริงในฟาร์ม (drawTrap) · สร้างครั้งเดียวแล้วแคช */
@@ -3651,14 +3652,22 @@ function bagIsFull(){ return bagTot()>=BAGCAP; }
 function sellableCnt(){ let n=0; for(const q of stackKeys()) if(!isLocked('c:'+q)) n+=S.fs[q].n|0; for(const f of S.fish) if(!isLocked('f:'+fishKey(f))) n++; return n; }
 /* เมล็ดที่ซื้อได้ที่ร้านเท่านั้น: ไม่รวมถุงสุ่ม/ถุง Void/เมล็ดพิเศษ (Curse, 💎 ต้นเพชร ได้จากนางจิ้งจอกอย่างเดียว) */
 const seedBuyable=k=>{ const c=CROPS[k]; return !!c&&!c.bag&&!c.vbag&&!c.gch&&!c.gemp; };
+/* 🎁 เปิดถุงเมล็ดสุ่ม n ถุง (สุ่มแบบเดียวกับกดเปิดในร้าน) → จำนวนเมล็ดที่ได้ */
+function openBagsN(n){ n=Math.min(n,S.bags|0); let got=0; S.bags-=n;
+  for(let i=0;i<n;i++){ let r=Math.random()*100, k=BAGK[BAGK.length-1]; for(const q of BAGK){ if(r<CROPS[q].w){ k=q; break; } r-=CROPS[q].w; }
+    const x=Math.random(), gx=greedX(); S.seed[k]+=gx; if(x<BAG_RB) S.seedR[k]+=gx; else if(x<BAG_RB+BAG_GOLD) S.seedG[k]+=gx; got+=gx; addJobXp('greed',1); }
+  return got; }
+function autoOpenBags(need){ let got=0; while(got<need&&(S.bags|0)>0) got+=openBagsN(1); if(got){ toast('🎁 บอทเปิดถุงเมล็ดสุ่ม ได้เมล็ด '+got+' เม็ด',1800); updateHUD(); save(); } return got; }
+let lastBagBuy=0;
 function autoShop(){
-  const ai=S.ai; let g=0, bought=0, fn=0;
+  const ai=S.ai; let g=0, bought=0, fn=0; lastBagBuy=0;
   if(ai.sell){ for(const k in CROPS) for(let i=0;i<4;i++) g+=takeVal(i,k,S[INV[i]][k]); { const r=takeFish(1); g+=r.g; fn=r.n; } S.coins+=g; }
   if(ai.plant){ let need=farmStats().empty.length-sum(S.seed);
+    while(need>0&&S.coins>=BAG_PRICE){ S.coins-=BAG_PRICE; S.bags=(S.bags|0)+1; lastBagBuy++; const n=openBagsN(1); need-=n; bought+=n; } /* 🎁 ซื้อถุงเมล็ดสุ่มก่อน · เหรียญไม่พอถุง → ซื้อเมล็ดธรรมดาแทน */
     const ks=[S.sel,...Object.keys(CROPS).filter(k=>k!==S.sel)].filter(seedBuyable);
     while(need>0){ const k=ks.find(q=>S.coins>=CROPS[q].seed); if(!k) break; S.coins-=CROPS[k].seed; S.seed[k]++; need--; bought++; } }
   const n=maps.land.npcs[0]; if(g) floatText(n.x,n.y-.8,'+🪙'+g);
-  toast('🏪 '+(ai.sell?'ขายของทั้งหมด 🪙'+g+(fn?' (ปลา '+fn+' ตัว)':''):'')+(bought?(ai.sell?' · ':'')+'ซื้อเมล็ด '+bought+' เม็ด':''),2400); updateHUD(); save(); }
+  toast('🏪 '+(ai.sell?'ขายของทั้งหมด 🪙'+g+(fn?' (ปลา '+fn+' ตัว)':''):'')+(bought?(ai.sell?' · ':'')+'ซื้อเมล็ด '+bought+' เม็ด'+(lastBagBuy?' (ถุงสุ่ม '+lastBagBuy+' ถุง)':''):''),2400); updateHUD(); save(); }
 function goldTr(){ return ((maps.town&&maps.town.walkers)||[]).find(w=>w.kind==='gold'); }
 function autoGold(){ const tr=goldTr();
   if(!tr||S.map!=='town'||Math.hypot(tr.x-S.x,tr.y-S.y)>3.2){ B.think=0; return; }
@@ -3723,11 +3732,12 @@ function decide(){
   else if(S.pSell) k='shop';                                       // 🐟 เก็บลูกปลาหมดบ่อแล้ว → เอาปลาไปขายให้หมดก่อน แล้วค่อยกลับไปทำงานเดิม
   else if(ai.fry&&pondOn()&&S.pond.rd.length&&(S.pDrain||S.pond.rd.length>=pondHold(S.pond.lv))&&bagTot()<BAGCAP){ k='fry'; S.pDrain=1; }   // ลูกปลาในบ่อเต็ม → ไปเก็บ · กระเป๋าเต็มกลางทาง → ไปขายแล้วกลับมาเก็บต่อจนบ่อว่าง (S.pDrain) แล้วค่อยทำงานเดิม
   else if(shieldNeed()) k='shield';                       // โล่ยังไม่เต็มและเหรียญพอ → เดินไปซื้อโล่กันโจร
-  else if((ai.plant&&f.empty.length&&seeds>0)||(ai.harvest&&!full&&f.ripe.length)) k='work'; // 🌱🧺 ปลูก/เก็บ → เลือกช่องที่ใกล้ที่สุดของทั้งสองงาน (ไม่เดินข้ามฟาร์มไปปลูกแล้วเดินกลับมาเก็บ)
-  else if(ai.sell&&prod>0&&growP.length&&((bagTot()>=BAGCAP*.6&&soon>15000)||soon>45000)) k='shop';  // ต้องรอนาน + ของเยอะพอคุ้มเดิน → เอาไปขายก่อน
-  else if(ai.harvest&&growP.length) k='wait';              // ต้นที่ยังไม่ได้เก็บแต่ยังไม่สุก → รอ
-  else if(ai.sell&&prod>0) k='shop';                       // ครบรอบแล้วเอาไปขาย
-  else if(ai.plant&&f.empty.length&&S.coins>=minSeed) k='shop'; // ไปซื้อเมล็ดมาปลูก
+  /* 🤖 ลำดับงาน: ① ฟาร์มว่างแต่ไม่มีเมล็ด → ไปซื้อเมล็ด (ถุงสุ่ม) ② ปลูกให้เต็ม ③ เก็บผลผลิต ④ กระเป๋ายังไม่เต็ม → ยืนรอผลผลิต ⑤ กระเป๋าเต็ม → ไปขาย (บรรทัดบนสุด) */
+  else if(ai.plant&&f.empty.length&&seeds<1&&(S.bags|0)<1&&S.coins>=minSeed) k='shop';    // ① ไปซื้อเมล็ด
+  else if(ai.plant&&f.empty.length&&(seeds>0||(S.bags|0)>0)&&(seeds>0||autoOpenBags(f.empty.length)>0)) k='plant'; // ② ปลูกจนเต็ม (มีถุงสุ่มในกระเป๋า → เปิดเลย)
+  else if(ai.harvest&&!full&&f.ripe.length) k='harvest';                                       // ③ เก็บ
+  else if(ai.harvest&&f.grow.length&&!full) k='wait';                                          // ④ กระเป๋ายังไม่เต็ม → รอผลผลิต
+  else if(ai.sell&&prod>0) k='shop';                       // ไม่มีอะไรให้เก็บ/รอแล้ว → เอาไปขาย
   else if(ai.harvest&&(f.ripe.length+f.grow.length)){ B.done.clear(); B.think=0; task('🔄 ครบทั้งฟาร์มแล้ว เริ่มรอบใหม่'); return; }
   else { task(ai.sell&&!ai.plant&&!ai.harvest?'💰 ไม่มีผลผลิตให้ขาย':ai.plant&&f.empty.length?'🪙 เหรียญไม่พอซื้อเมล็ด':ai.plant&&!ai.harvest?'✅ ปลูกเต็มแล้ว':'😴 ไม่มีงานให้ทำ'); return; }
   if(k==='shop'&&ai.gold&&ai.sell&&prod>0&&goldTr()) k='gold'; /* ติ๊กไปขายกับพ่อค้าทอง → ไปเมืองการค้า */
@@ -3741,15 +3751,15 @@ function decide(){
   else if(k==='shield'){ const n=m.npcs.find(q=>q.kind==='robber'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🛡️ เดินไปซื้อโล่ '+shBatch()+' อัน ที่โจรสวมดำ'); }
   else if(k==='fisher'){ const n=fbFind('fisher'); if(!n){ B.think=1; return; } list=[{tx:Math.floor(n.x),ty:Math.floor(n.y)}]; task('🎣 เดินไปขายกับลุงตกปลา (ปลา +'+Math.round((FISHER_MUL-1)*100)+'%)'); }
   else if(k==='gold'){ const tr=goldTr(); list=[{tx:Math.floor(tr.x),ty:Math.floor(tr.y)}]; task('🤑 เดินไปขายกับพ่อค้าทอง (+'+Math.round((GOLD_MUL-1)*100)+'%)'); }
-  else if(k==='work'){ const hv=ai.harvest&&!full?(ripeP.length?ripeP:f.ripe):[], pl=ai.plant&&seeds>0?f.empty:[];
+  else if(k==='plant'||k==='harvest'){ const hv=k==='harvest'?(ripeP.length?ripeP:f.ripe):[], pl=k==='plant'?f.empty:[];
     list=[...pl.map(t=>({tx:t.tx,ty:t.ty,k:'plant'})),...hv.map(t=>({tx:t.tx,ty:t.ty,c:t.c,k:'harvest'}))];
     if(hv.length&&hpReach()>1&&!S.farm){ const rr=hpReach()+.3; let bt=null, bd=1e9; for(const t of list){ if(t.k!=='harvest') continue; const d=Math.hypot(t.tx+.5-S.x,t.ty+.5-S.y); if(d<=rr&&d<bd){ bd=d; bt=t; } } if(bt){ task('🧺 กำลังเก็บเกี่ยว (เหลือ '+hv.length+')'); B.path=null; B.act={k:'harvest',t:bt}; return; } } /* ✌️ อยู่ในระยะ = เก็บได้เลยไม่ต้องเดิน */
     const pk=pick(m,r,list); if(!pk) return; k=pk.t.k;
     task(k==='plant'?'🌱 กำลังปลูก '+(total-f.empty.length)+'/'+total:'🧺 กำลังเก็บเกี่ยว (เหลือ '+hv.length+')');
     B.path=pathTo(m,r,pk.n); B.act={k,t:pk.t}; return; }
   else if(k==='fry'){ const pr=maps.farm.pond; list=[]; for(let x=Math.floor(pr.x);x<Math.ceil(pr.x+pr.w);x++) for(let y=Math.floor(pr.y);y<Math.ceil(pr.y+pr.h);y++) list.push({tx:x,ty:y}); task('🐟 เดินไปเก็บลูกปลา ('+S.pond.rd.length+'/'+pondHold(S.pond.lv)+')'); }
-  else { const left=t=>cd(t.c)-(Date.now()-t.c.t); let so=growP.find(t=>key(t)===B.waitK); /* ⏳ จำต้นที่ยืนรออยู่ ไม่สลับไปมาระหว่างต้น */
-    const best=growP.reduce((a,b)=>left(a)<left(b)?a:b); if(!so||left(so)-left(best)>5000) so=best; B.waitK=key(so);
+  else { const left=t=>cd(t.c)-(Date.now()-t.c.t); const gw=growP.length?growP:f.grow; let so=gw.find(t=>key(t)===B.waitK); /* ⏳ จำต้นที่ยืนรออยู่ ไม่สลับไปมาระหว่างต้น */
+    const best=gw.reduce((a,b)=>left(a)<left(b)?a:b); if(!so||left(so)-left(best)>5000) so=best; B.waitK=key(so);
     list=[so]; task('⏳ รอผักโต '+Math.ceil((1-cropProgress(so.c))*cd(so.c)/1000)+'s'); }
   const pk=pick(m,r,list); if(!pk) return;
   B.path=pathTo(m,r,pk.n); B.act={k,t:pk.t}; }

@@ -12,6 +12,12 @@ BUCKET="${R2_BUCKET:-farm-backup}"
 export RCLONE_CONFIG_R2_TYPE=s3 RCLONE_CONFIG_R2_PROVIDER=Cloudflare RCLONE_CONFIG_R2_ENDPOINT="$R2_ENDPOINT" \
        RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true
 
+if [ "${1:-}" = "check" ]; then
+  # ./backup.sh check   → test the R2 keys without uploading anything
+  if rclone lsf "r2:$BUCKET/" >/dev/null; then echo "R2 OK: keys work, bucket $BUCKET has $(rclone lsf "r2:$BUCKET/" | wc -l) file(s)"; else echo "R2 FAILED: check R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_ENDPOINT in .env and that the token can write to $BUCKET"; exit 1; fi
+  exit 0
+fi
+
 if [ "${1:-}" = "restore" ]; then
   # ./backup.sh restore                 → list backups
   # ./backup.sh restore <file.tar.gz>   → stop the server first, then restore that backup into data/
@@ -26,5 +32,6 @@ fi
 NAME="farm-$(date -u +%Y%m%d-%H%M%S).tar.gz"
 tar -czf "/tmp/$NAME" data
 rclone copyto "/tmp/$NAME" "r2:$BUCKET/$NAME"
+rclone lsf "r2:$BUCKET/$NAME" | grep -q . || { echo "upload of $NAME not found in R2"; rm -f "/tmp/$NAME"; exit 1; }
 echo "$(date -u +%FT%TZ) uploaded $NAME ($(du -h "/tmp/$NAME" | cut -f1))"
 rm -f "/tmp/$NAME"

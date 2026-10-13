@@ -12,7 +12,6 @@ module.exports = [
   { id: 'skin_4', e: '🌑', name: 'ชุดจอมมารเงาม่วง', desc: '🏃 เดินเร็วขึ้น 5%', thb: 29, grant: 'skin:4', once: true },
   { id: 'fashion_all', e: '🎩', name: 'ของแต่งตัวทุกชิ้น', desc: 'ปลดล็อกหมวก หู ปีก หาง ฯลฯ ทุกชิ้น', thb: 29, grant: 'acc:all', once: true },
   { id: 'pose_law', e: '✌️', name: 'ท่าเก็บ 2 นิ้ว', desc: 'ระยะเก็บกว้างขึ้น x3 · เดินเร็วขึ้น 5%', thb: 39, grant: 'pose:law', once: true },
-  { id: 'shield_5', e: '🛡️', name: 'โล่กันอีกา 5 อัน', desc: 'ต้นที่ติดโล่ อีกาขโมยไม่ได้', thb: 5, grant: 'shields:5' },
   { id: 'shield_10', e: '🛡️', name: 'โล่กันอีกา 10 อัน', desc: 'ต้นที่ติดโล่ อีกาขโมยไม่ได้', thb: 10, grant: 'shields:10' },
   { id: 'shield_50', e: '🛡️', name: 'โล่กันอีกา 50 อัน', desc: 'ต้นที่ติดโล่ อีกาขโมยไม่ได้', thb: 50, grant: 'shields:50' },
 ];

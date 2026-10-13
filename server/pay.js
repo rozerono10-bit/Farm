@@ -21,7 +21,7 @@ const API = process.env.STRIPE_API_URL || 'https://api.stripe.com';
 module.exports = function createPay(dataDir) {
   const FILE = path.join(dataDir, 'purchases.json');
   const env = process.env;
-  let db = { sessions: {}, owned: {}, give: {} }; // sessions: payment ref -> {uid,item,thb,t} · owned: uid -> [item ids] (once) · give: uid -> [{ref,grant}] repeatable items not yet put in the save
+  let db = { sessions: {}, owned: {}, give: {} }; // sessions: payment ref -> {uid,item,thb,t} · owned: uid -> [item ids] (once) · give: uid -> [{ref,grant}] every repeatable item ever bought (kept forever: the game adds each ref once per save, so after an OBT wipe they come back)
   try { db = Object.assign(db, JSON.parse(fs.readFileSync(FILE, 'utf8'))); }
   catch (e) { if (e.code !== 'ENOENT') console.error('purchases load failed:', e.message); }
   function persist() {
@@ -61,7 +61,7 @@ module.exports = function createPay(dataDir) {
   return {
     enabled, grantRef, gives,
     /** the game put these repeatable items into the save → stop sending them */
-    ack(uid, refs) { const g = db.give[uid]; if (!g || !Array.isArray(refs)) return; db.give[uid] = g.filter(x => !refs.includes(x.ref)); if (!db.give[uid].length) delete db.give[uid]; persist(); }, useSlip: f => { slipOn = f; },
+    ack() { /* ประวัติโล่เก็บถาวร (ไม่ลบ) */ }, useSlip: f => { slipOn = f; },
     onGrant: f => { onGrant = f; },
     /** what the game shows: the products, and which ones this account already has */
     catalog: uid => ({ on: enabled() || slipOn(), mode: slipOn() ? 'slip' : enabled() ? 'stripe' : '', items: PRODUCTS.filter(p => slipOn() || p.thb >= 10).map(p => ({ id: p.id, e: p.e, name: p.name, desc: p.desc, thb: p.thb, once: !!p.once, grant: p.grant })), owned: uid ? owned(uid) : [], give: uid ? gives(uid) : [] }),

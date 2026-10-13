@@ -24,6 +24,7 @@ const DB_FILE = path.join(DATA_DIR, 'db.json');
 
 const MAX_DOC = 256 * 1024;          // bytes per document (same limit as claude.ai db)
 const MAX_MSG = 1200 * 1024;         // bytes per websocket message (a cloud save can be up to 1 MB)
+const SEASON = process.env.SEASON || 'cbt'; /* 🧪 รอบเกม (cbt / obt …) · เปลี่ยนค่า = เกมทุกเครื่องล้างเซฟในเครื่องตัวเอง (ดู obt-reset.sh) */
 const MAX_ROOM_PEERS = +process.env.MAX_ROOM_PEERS || 100;
 const RATE = { msgs: 60, per: 1000 }; // per connection
 const POS_KEYS = new Set(['x', 'y', 'fx', 'fy', 'mv']);
@@ -82,7 +83,7 @@ function handle(c, m) {
       const old = online.get(s.uid); if (old && old !== c) { send(old, { t: 'kick', why: 'elsewhere' }); old.ws.close(4001, 'logged in elsewhere'); }
       online.set(s.uid, c); }
     else if (typeof m.uid === 'string' && /^[\w-]{6,64}$/.test(m.uid)) { if (auth.isOwned(m.uid)) return reply(c, id, 0, 'login_required'); c.uid = m.uid; c.user = ''; }
-    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '', num: c.user ? c.num : '' });
+    return reply(c, id, 1, { uid: c.uid, peer: c.peer, user: c.user || '', num: c.user ? c.num : '', season: SEASON });
   }
   if (t === 'email_start' || t === 'email_verify' || t === 'line_ticket' || t === 'oauth_ticket') {
     const now = Date.now(); c.authTries = (c.authTries || []).filter(x => now - x < 60000);

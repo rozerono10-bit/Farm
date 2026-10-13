@@ -33,6 +33,7 @@ const OWN_ONLY = new Set(['players', 'chatw']); // only the owner (players/<uid>
 /* ---------- storage ---------- */
 const auth = createAuth(DATA_DIR);
 const pay = require('./pay')(DATA_DIR);
+const slip = require('./slip')(DATA_DIR, pay); pay.useSlip(slip.enabled); /* 🧾 พร้อมเพย์ + สลิป (EasySlip) — ถ้าตั้งค่าไว้ จะใช้แทน Stripe */
 pay.onGrant((uid, owned) => { const c = online.get(uid); if (c) send(c, { t: 'ent', owned }); }); /* 💳 ซื้อสำเร็จ → แจ้งเกมที่เปิดอยู่ทันที */
 let docs = new Map();
 try { const raw = JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); docs = new Map(Object.entries(raw)); console.log('loaded', docs.size, 'docs'); }
@@ -98,11 +99,13 @@ function handle(c, m) {
   if (t === 'auth_cfg') return reply(c, id, 1, auth.enabled());
   if (t === 'ping') return reply(c, id, 1);
   if (t === 'pay_cfg') return reply(c, id, 1, pay.catalog(c.user ? c.uid : ''));
-  if (t === 'pay_start' || t === 'pay_check') {
+  if (t === 'pay_start' || t === 'pay_check' || t === 'slip_order' || t === 'slip_send') {
     if (!c.user) return reply(c, id, 0, 'login_required');
     const now = Date.now(); c.payTries = (c.payTries || []).filter(x => now - x < 60000);
     if (c.payTries.length >= 10) return reply(c, id, 0, 'too_many_tries'); c.payTries.push(now);
     const fail = e => reply(c, id, 0, typeof e === 'string' ? e : (console.error('pay:', e.message), 'pay_failed'));
+    if (t === 'slip_order') { try { return reply(c, id, 1, slip.order(c.uid, m.item)); } catch (e) { return fail(e); } }
+    if (t === 'slip_send') return void slip.verify(c.uid, m.oid, m.image).then(r => reply(c, id, 1, r), fail);
     if (t === 'pay_start') { if (!auth.okReturn(m.ret)) return reply(c, id, 0, 'bad_return'); return void pay.start(c.uid, c.num, m.item, m.ret).then(url => reply(c, id, 1, { url }), fail); }
     return void pay.check(c.uid, m.sid).then(r => reply(c, id, 1, r), fail);
   }

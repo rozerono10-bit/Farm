@@ -40,22 +40,27 @@ module.exports = function createPay(dataDir) {
     if (!r.ok) throw new Error('stripe ' + r.status + ': ' + ((j.error && j.error.message) || '').slice(0, 200));
     return j;
   }
-  /** record a paid session (idempotent) → true when newly granted */
+  /** record one payment (idempotent by ref) → true when newly granted */
+  function grantRef(ref, uid, item, thb) {
+    const prod = byId(item); if (!ref || !uid || !prod || db.sessions[ref]) return false;
+    db.sessions[ref] = { uid, item: prod.id, thb: +thb || 0, t: Date.now() };
+    const o = db.owned[uid] || (db.owned[uid] = []); if (!o.includes(prod.id)) o.push(prod.id);
+    persist(); console.log('💳 paid:', uid, prod.id, +thb || 0, 'THB', ref);
+    onGrant(uid, owned(uid)); return true;
+  }
+  /** a Stripe checkout session that is paid */
   function grant(s) {
-    const m = s.metadata || {}, prod = byId(m.item);
-    if (!s.id || !m.uid || !prod || s.payment_status !== 'paid') return false;
-    if (db.sessions[s.id]) return false;
-    db.sessions[s.id] = { uid: m.uid, item: prod.id, thb: (s.amount_total || 0) / 100, t: Date.now() };
-    const o = db.owned[m.uid] || (db.owned[m.uid] = []); if (!o.includes(prod.id)) o.push(prod.id);
-    persist(); console.log('💳 paid:', m.uid, prod.id, (s.amount_total || 0) / 100, 'THB', s.id);
-    onGrant(m.uid, owned(m.uid)); return true;
+    const m = s.metadata || {};
+    if (!s.id || s.payment_status !== 'paid') return false;
+    return grantRef(s.id, m.uid, m.item, (s.amount_total || 0) / 100);
   }
 
+  let slipOn = () => false;
   return {
-    enabled,
+    enabled, grantRef, useSlip: f => { slipOn = f; },
     onGrant: f => { onGrant = f; },
     /** what the game shows: the products, and which ones this account already has */
-    catalog: uid => ({ on: enabled(), items: PRODUCTS.map(p => ({ id: p.id, e: p.e, name: p.name, desc: p.desc, thb: p.thb, once: !!p.once, grant: p.grant })), owned: uid ? owned(uid) : [] }),
+    catalog: uid => ({ on: enabled() || slipOn(), mode: slipOn() ? 'slip' : enabled() ? 'stripe' : '', items: PRODUCTS.map(p => ({ id: p.id, e: p.e, name: p.name, desc: p.desc, thb: p.thb, once: !!p.once, grant: p.grant })), owned: uid ? owned(uid) : [] }),
     owned,
     /** create a Stripe Checkout page for one product → its url */
     async start(uid, num, item, ret) {

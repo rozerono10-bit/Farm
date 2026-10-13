@@ -115,6 +115,14 @@ Backup เก่าเกิน 30 วันจะถูกลบเองจา
 5. ประวัติการซื้ออยู่ที่ `data/purchases.json` (รวมอยู่ใน backup) และใน Stripe Dashboard > Payments
 6. เปลี่ยนเป็นเงินจริง: ใช้ `sk_live_...` และสร้าง webhook ใหม่ในโหมด Live (signing secret คนละตัวกับโหมดทดสอบ)
 
+### 3.6 รับเงินด้วยพร้อมเพย์ของตัวเอง + ตรวจสลิปอัตโนมัติ (EasySlip) — ใช้แทน Stripe ได้
+ผู้เล่นกดซื้อ → เกมแสดง QR พร้อมเพย์ที่มียอดเงินของออเดอร์นั้น (ราคา + เศษสตางค์ไม่ซ้ำกัน เช่น ฿99.37 ใช้ได้ 30 นาที) → โอน → อัปโหลดสลิป → เซิร์ฟเวอร์ส่งให้ EasySlip ตรวจกับธนาคาร แล้วเช็กว่า ยอดตรงทุกสตางค์ · โอนเข้าชื่อ/บัญชีของคุณ · สลิปทำหลังออเดอร์ · สลิปไม่เคยใช้มาก่อน → ให้ของทันที
+1. สมัคร developer.easyslip.com > เลือกแพ็กเกจ > คัดลอก API key ใส่ `SLIP_API_KEY`
+2. `PROMPTPAY_QR` = ข้อความใน QR พร้อมเพย์ของคุณ (อ่าน QR ด้วยแอปสแกน QR ได้ ขึ้นต้นด้วย `000201`)
+3. `SLIP_RECEIVER_NAME` = ชื่อจริงของคุณตามที่ขึ้นในสลิป (เช่น ชื่อต้นอย่างเดียว) · เลขบัญชีจะเช็ก 3 ตัวท้ายจาก QR ให้เอง
+4. `systemctl restart farm` · สลิปที่ใช้แล้วเก็บที่ `data/slips.json` · ของที่ขายแล้วอยู่ `data/purchases.json`
+5. ⚠️ ชื่อผู้รับใน QR/สลิปคือชื่อจริงของเจ้าของบัญชี ผู้เล่นทุกคนจะเห็น
+
 ### 4. แก้ farmdtest.com ขึ้น 404
 สาเหตุ: Cloudflare Workers สร้างเว็บจาก branch หลักของ repo (`claude/female-hairstyle-anime-fashion-16gg9i`) ซึ่งยังไม่มีไฟล์ `wrangler.jsonc` / โค้ดล่าสุด · ไฟล์ตั้งค่าอยู่ใน branch `claude/happy-bell-5sj3qh`
 1. Cloudflare > Workers & Pages > `farmdtest` > Settings > Build > **Branch control** > Production branch = `claude/happy-bell-5sj3qh` (หรือ merge branch นี้เข้า branch หลักบน GitHub ก็ได้)
